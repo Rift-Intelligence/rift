@@ -66,67 +66,68 @@
 
 :root {
   --radius: 0.375rem;
-  /* Rift Design System - Dark Terminal Theme */
-  --background: #0a0e17;
-  --foreground: #e2e8f0;
-  --card: #111827;
-  --card-foreground: #e2e8f0;
-  --popover: #111827;
-  --popover-foreground: #e2e8f0;
-  --primary: #1e3a5f;
-  --primary-foreground: #ffffff;
-  --secondary: #1e3a5f;
-  --secondary-foreground: #e2e8f0;
-  --muted: #1a1f2e;
-  --muted-foreground: #64748b;
-  --accent: #059669;
-  --accent-foreground: #ffffff;
+  /* Rift Design System - zauth-grade neutral dark theme
+     (neutral greys + emerald accent; no blue/navy surfaces) */
+  --background: #1d1d1d;
+  --foreground: #f4f4f5;
+  --card: #212121;
+  --card-foreground: #f4f4f5;
+  --popover: #212121;
+  --popover-foreground: #f4f4f5;
+  --primary: #10b981;
+  --primary-foreground: #0a0a0a;
+  --secondary: #262626;
+  --secondary-foreground: #f4f4f5;
+  --muted: #242424;
+  --muted-foreground: #a1a1aa;
+  --accent: #2a2a2a;
+  --accent-foreground: #f4f4f5;
   --destructive: #dc2626;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #059669;
-  --chart-1: #059669;
-  --chart-2: #1e3a5f;
+  --border: #2b2b2b;
+  --input: #2b2b2b;
+  --ring: #10b981;
+  --chart-1: #10b981;
+  --chart-2: #34d399;
   --chart-3: #0ea5e9;
   --chart-4: #8b5cf6;
   --chart-5: #f97316;
-  --sidebar: #0d121d;
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary: #1e3a5f;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1f2e;
-  --sidebar-accent-foreground: #e2e8f0;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #059669;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #f4f4f5;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #242424;
+  --sidebar-accent-foreground: #f4f4f5;
+  --sidebar-border: #2b2b2b;
+  --sidebar-ring: #10b981;
 
   /* Custom chat input */
-  --fill-input-chat: #1a1f2e;
+  --fill-input-chat: #242424;
 
   /* Custom link colors */
-  --link-color: #059669;
+  --link-color: #34d399;
 
   /* Premium/Upgrade colors */
-  --premium-bg: #1e3a5f;
-  --premium-text: #059669;
-  --premium-hover: #2563eb;
+  --premium-bg: #242424;
+  --premium-text: #34d399;
+  --premium-hover: #10b981;
 
   /* Scrollbar colors */
-  --scrollbar-track: #0a0e17;
-  --scrollbar-thumb: rgba(5, 150, 105, 0.3);
-  --scrollbar-thumb-hover: rgba(5, 150, 105, 0.5);
+  --scrollbar-track: #1d1d1d;
+  --scrollbar-thumb: rgba(16, 185, 129, 0.3);
+  --scrollbar-thumb-hover: rgba(16, 185, 129, 0.5);
 
   /* Sidebar text mask for truncation */
   --sidebar-mask: linear-gradient(
     90deg,
-    #0a0e17 0%,
-    #0a0e17 95%,
+    #1a1a1a 0%,
+    #1a1a1a 95%,
     transparent 100%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #0a0e17 0%,
-    #0a0e17 88%,
+    #1a1a1a 0%,
+    #1a1a1a 88%,
     transparent 93%,
     transparent 100%
   );
