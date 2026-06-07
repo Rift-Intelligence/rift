@@ -4,7 +4,9 @@ import { ConvexHttpClient } from "convex/browser";
 import { ArrowRight, Gift } from "lucide-react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { HackerAISVG } from "@/components/icons/hackerai-svg";
+import ZauthPageShell from "@/app/components/ZauthPageShell";
+import DottedWordmark from "@/app/components/DottedWordmark";
+import { RiftLogo } from "@/components/icons/rift-logo";
 import {
   getReferralRewardConfig,
   isValidReferralCode,
@@ -100,17 +102,23 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
     : "You're signing up through a custom referral link. Create your account to redeem your starter requests.";
 
   return (
-    <main className="bg-background text-foreground flex min-h-dvh items-center justify-center px-5 py-10">
+    <ZauthPageShell header={false} center>
       <div className="w-full max-w-xl">
-        <div className="mb-14 flex justify-start">
-          <HackerAISVG theme="dark" scale={0.15} />
+        <div className="mb-14 flex items-center gap-2.5">
+          <RiftLogo size={28} className="text-terminal-green" />
+          <DottedWordmark
+            word="RIFT"
+            animate={false}
+            fill="#f4f4f5"
+            className="h-[18px] w-auto"
+          />
         </div>
 
-        <h1 className="text-4xl font-semibold tracking-normal md:text-5xl">
+        <h1 className="text-4xl font-semibold tracking-normal text-[#f4f4f5] md:text-5xl">
           Create your account
         </h1>
 
-        <div className="border-border bg-muted/25 mt-8 rounded-2xl border p-6">
+        <div className="mt-8 rounded-[14px] border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
           <div className="flex gap-4">
             <div className="bg-background border-border flex size-10 shrink-0 items-center justify-center rounded-xl border">
               <Gift className="size-5" />
@@ -156,6 +164,6 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           .
         </p>
       </div>
-    </main>
+    </ZauthPageShell>
   );
 }

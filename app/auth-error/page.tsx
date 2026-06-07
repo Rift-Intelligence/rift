@@ -1,5 +1,6 @@
 import { AlertCircle, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
+import ZauthPageShell from "@/app/components/ZauthPageShell";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -71,8 +72,8 @@ export default async function AuthErrorPage({
   const errorInfo = ERROR_MESSAGES[code as ErrorCode] ?? DEFAULT_ERROR;
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <ZauthPageShell header={false} center>
+      <Card className="w-full max-w-md border-white/10 bg-white/[0.03] backdrop-blur-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
             <AlertCircle className="h-6 w-6 text-destructive" />
@@ -108,6 +109,6 @@ export default async function AuthErrorPage({
           </Button>
         </CardFooter>
       </Card>
-    </div>
+    </ZauthPageShell>
   );
 }

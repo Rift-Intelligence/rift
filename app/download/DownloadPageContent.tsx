@@ -5,7 +5,9 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/app/components/Header";
-import { HackerAISVG } from "@/components/icons/hackerai-svg";
+import ZauthBackdrop from "@/app/components/ZauthBackdrop";
+import DottedWordmark from "@/app/components/DottedWordmark";
+import { RiftLogo } from "@/components/icons/rift-logo";
 import { DownloadSection, useDetectedPlatform } from "./DownloadSection";
 import { downloadLinks } from "./constants";
 import { AppleIcon, WindowsIcon, LinuxIcon } from "./icons";
@@ -15,10 +17,13 @@ function AuthenticatedHeader() {
     <header className="w-full px-6 max-sm:px-4 flex-shrink-0">
       <div className="py-[10px] flex gap-10 items-center justify-between">
         <div className="flex items-center gap-2">
-          <HackerAISVG theme="dark" scale={0.15} />
-          <span className="text-foreground text-xl font-semibold max-sm:text-lg">
-            HackerAI
-          </span>
+          <RiftLogo size={24} className="text-terminal-green" />
+          <DottedWordmark
+            word="RIFT"
+            animate={false}
+            fill="#f4f4f5"
+            className="h-[14px] w-auto"
+          />
         </div>
         <Button
           asChild
@@ -46,7 +51,7 @@ function DownloadContent() {
       <div className="container mx-auto max-w-3xl space-y-8">
         <div className="text-center">
           <h1 className="mb-4 text-4xl font-bold text-card-foreground">
-            {isMobile ? "Install HackerAI" : "Download HackerAI"}
+            {isMobile ? "Install Rift" : "Download Rift"}
           </h1>
           <p className="text-lg text-muted-foreground">
             {isMobile
@@ -109,15 +114,18 @@ function DownloadContent() {
 
 export function DownloadPageContent() {
   return (
-    <div className="min-h-screen bg-background">
-      <Authenticated>
-        <AuthenticatedHeader />
-        <DownloadContent />
-      </Authenticated>
-      <Unauthenticated>
-        <Header hideDownload />
-        <DownloadContent />
-      </Unauthenticated>
+    <div className="relative min-h-screen overflow-hidden bg-[#1d1d1d]">
+      <ZauthBackdrop className="z-0" />
+      <div className="relative z-10">
+        <Authenticated>
+          <AuthenticatedHeader />
+          <DownloadContent />
+        </Authenticated>
+        <Unauthenticated>
+          <Header hideDownload />
+          <DownloadContent />
+        </Unauthenticated>
+      </div>
     </div>
   );
 }
