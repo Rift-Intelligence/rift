@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { RiftLogo } from "@/components/icons/rift-logo";
+import DottedWordmark from "./DottedWordmark";
 
 interface HeaderProps {
   chatTitle?: string;
@@ -39,9 +40,12 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       <div className="relative py-[10px] flex items-center justify-between max-md:hidden">
         <div className="flex items-center gap-2">
           <RiftLogo size={26} className="text-terminal-green" />
-          <span className="display-emphasis text-2xl leading-none text-foreground">
-            rift
-          </span>
+          <DottedWordmark
+            word="RIFT"
+            animate={false}
+            fill="#f4f4f5"
+            className="h-[15px] w-auto"
+          />
         </div>
 
         {chatTitle ? (
@@ -115,9 +119,12 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       <div className="py-3 flex items-center justify-between md:hidden">
         <div className="flex items-center gap-2">
           <RiftLogo size={22} className="text-terminal-green" />
-          <span className="display-emphasis text-xl leading-none text-foreground">
-            rift
-          </span>
+          <DottedWordmark
+            word="RIFT"
+            animate={false}
+            fill="#f4f4f5"
+            className="h-[13px] w-auto"
+          />
         </div>
         {!loading && !user && (
           <div className="flex items-center gap-2">
