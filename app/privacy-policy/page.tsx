@@ -1,20 +1,19 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | HackerAI",
-  description:
-    "Privacy Policy and data handling practices for HackerAI services.",
+  title: "Privacy Policy | Rift",
+  description: "Privacy Policy and data handling practices for Rift services.",
   openGraph: {
-    title: "Privacy Policy | HackerAI",
+    title: "Privacy Policy | Rift",
     description:
-      "Privacy Policy and data handling practices for HackerAI services.",
+      "Privacy Policy and data handling practices for Rift services.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Privacy Policy | HackerAI",
+    title: "Privacy Policy | Rift",
     description:
-      "Privacy Policy and data handling practices for HackerAI services.",
+      "Privacy Policy and data handling practices for Rift services.",
   },
 };
 
@@ -24,13 +23,13 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="px-4 py-8 pb-16 md:px-0">
       <div className="container mx-auto max-w-2xl space-y-6 rounded-md border bg-card px-4 py-8 shadow-lg sm:px-8">
-        <h1 className="mb-5 text-center text-3xl font-semibold text-card-foreground">
-          HackerAI Privacy Policy
+        <h1 className="mb-5 text-center text-3xl font-semibold text-card-foreground text-neon-glow">
+          Rift Privacy Policy
         </h1>
 
         <div className="mt-4 text-lg leading-relaxed text-card-foreground">
           <p className="mb-6">
-            Welcome to HackerAI. This Privacy Policy explains how HackerAI LLC
+            Welcome to Rift. This Privacy Policy explains how Rift LLC
             (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) collects, uses,
             shares, and protects information in relation to our website and any
             associated services, software, and content (collectively, the
@@ -66,7 +65,7 @@ export default function PrivacyPolicyPage() {
             <li className="mb-3">
               <strong>Information Sharing and Disclosure:</strong> We do not
               share personal information with companies, organizations, or
-              individuals outside of HackerAI LLC except in the following
+              individuals outside of Rift LLC except in the following
               circumstances:
               <ul className="ml-6 mt-2 list-disc">
                 <li>With your consent.</li>
@@ -107,12 +106,12 @@ export default function PrivacyPolicyPage() {
               <strong>Contact Us:</strong> If you have any questions about this
               Privacy Policy, please visit our help center at{" "}
               <a
-                href="https://help.hackerai.co/en/"
+                href="https://help.rift.security/en/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
               >
-                https://help.hackerai.co/en/
+                https://help.rift.security/en/
               </a>
             </li>
           </ul>

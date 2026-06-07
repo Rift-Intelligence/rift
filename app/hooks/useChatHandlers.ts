@@ -2,6 +2,7 @@ import { RefObject, useEffect, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useGlobalState } from "../contexts/GlobalState";
+import { useInputApi } from "../contexts/InputContext";
 import { useLatestRef } from "@/app/hooks/useLatestRef";
 import { isTauriEnvironment } from "@/app/hooks/useTauri";
 import { shouldUseAgentLongForAgent } from "@/lib/chat/agent-routing";
@@ -59,11 +60,10 @@ export const useChatHandlers = ({
   resetAutoContinueCount,
 }: UseChatHandlersProps) => {
   const { setIsAutoResuming } = useDataStreamDispatch();
+  const { inputRef, clearInput } = useInputApi();
   const {
-    input,
     uploadedFiles,
     chatMode,
-    clearInput,
     clearUploadedFiles,
     todos,
     setTodos,
@@ -224,6 +224,11 @@ export const useChatHandlers = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Read the latest composer text from the ref so this handler does not have
+    // to subscribe to the reactive input value (which would re-render chat.tsx
+    // on every keystroke).
+    const input = inputRef.current;
 
     setIsAutoResuming(false);
 

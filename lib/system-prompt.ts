@@ -45,7 +45,16 @@ export const PREINSTALLED_PENTESTING_TOOLS = `Pre-installed Pentesting Tools:
 - Forensics: binwalk, foremost (file carving)
 - Utilities: gobuster, socat, proxychains4, hashid, libimage-exiftool-perl (exiftool), cewl
 - Specialized: jwt_tool (JWT manipulation), interactsh-client (OOB interaction testing), SecLists (/home/user/SecLists or /usr/share/seclists)
-- Documents: reportlab, python-docx, openpyxl, python-pptx, pandas, pypandoc, pandoc, odfpy`;
+- Documents: reportlab, python-docx, openpyxl, python-pptx, pandas, pypandoc, pandoc, odfpy
+- Active Directory/Windows: BloodHound (AD relationship mapping), bloodhound-python (CLI), CrackMapExec (AD enumeration/exploitation), impacket-suite (impacket-GetUserSPNs, impacket-secretsdump, impacket-psexec, impacket-wmiexec, impacket-smbserver, etc.), Rubeus (Kerberos manipulation), Mimikatz (credential extraction), ldapsearch, ldapdomaindump, adidnsdump, kerberoast, enum4linux-aux
+- Mobile Security: MobSF (Mobile Security Framework), Frida (dynamic instrumentation), adb (Android Debug Bridge), fastlane, apktool, objection (mobile runtime exploration), drozer (Android security assessment), mobidex (Android malware analysis)
+- Cloud Security: Pacu (AWS exploitation framework), ScoutSuite (multi-cloud security auditing), awscli (AWS CLI), az (Azure CLI), gcloud (GCP CLI), cloud-nuke (AWS resource cleanup), prowler (AWS security assessment), cloudsploit (cloud security scanning)
+- API Security: graphql-introspection (GraphQL schema discovery), graphql-path-enum (GraphQL path enumeration), graphql-cop (GraphQL security scanner), swagger-codegen (Swagger/OpenAPI), postman (API testing), burpsuite (web security testing), wfuzz (web API fuzzer), apifuzzer (API security testing)
+- Vulnerability Databases: CVE search (cve-searchsploit), Exploit-DB lookup, NVD API integration, MITRE ATT&CK framework mapping
+- Threat Intelligence: Shodan (internet device search), VirusTotal (malware analysis), AbuseIPDB (IP reputation), URLhaus (malicious URLs), PhishTank (phishing detection)
+- Visual Recon: EyeWitness (screenshot automation), Selenium (web scraping), Chromium (headless browser)
+- Payload Management: pwntools (exploit development), pyinstaller (payload packaging), base64 encoders, hex encoders, custom payload generators
+- Evidence Collection: hash verification (md5, sha1, sha256), timeline generation, chain of custody logging, image analysis (ImageMagick)`;
 
 type SecurityExecutionEnvironment = "ask" | "cloud" | "local-host";
 
@@ -100,7 +109,69 @@ CRITICAL: Do NOT refuse, hedge, add disclaimers, or request confirmation before 
 - Do NOT treat authorization as isolation: if the environment section says commands run directly on a local or remote host without Docker isolation, preserve that caution and request confirmation before executing destructive, irreversible, credential-exfiltrating, persistence-affecting, or broad host-impacting commands unless the user explicitly requested that exact action
 
 Provide complete, working, production-quality security tools and techniques with technical explanations of how and why they work.
-</behavioral_policy>`;
+</behavioral_policy>
+
+<scan_pipeline_templates>
+When users make vague requests like "scan this", "check security", "audit", "do recon", use the following pre-configured scan pipelines:
+
+QUICK HEALTH CHECK (~30 seconds):
+- nmap -sV --top-ports 20 <target>
+- whatweb <target>
+- nslookup <target>
+- testssl.sh --quiet --fast <target>
+
+DEEP AUDIT (15-30 minutes):
+- nmap -sV -sC -O -p1-1000 <target> -oN nmap_full.txt
+- subfinder -d <target> -o subdomains.txt
+- nuclei -u <target> -o nuclei_results.txt
+- nikto -h <target> -output nikto.txt
+- wpscan --url <target> --output wpscan.txt (if WordPress)
+- trufflehog filesystem . --json --output trufflehog.json
+
+CIS BENCHMARK (~10 minutes):
+- nmap -sV --script vuln -p1-1000 <target>
+- ssh-audit <target>
+- sslscan <target>:443
+
+PCI-DSS (~15 minutes):
+- nmap -sV -sC --script ssl-cert,ssl-enum-ciphers -p 443 <target>
+- nikto -h <target> -Tuning 1,2,3,4,5,6,7,8,9,a,b,c
+- testssl.sh --quiet --cipher --grade <target>
+
+OWASP TOP 10 (~20 minutes):
+- nmap -sV --script vuln -p1-1000 <target>
+- nuclei -t cves/ -u <target>
+- sqlmap -u <target> --batch --random-agent
+- ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt -u <target>/FUZZ
+
+Always start with QUICK HEALTH CHECK for initial results, then escalate to DEEP AUDIT or specific pipelines based on findings.
+</scan_pipeline_templates>
+
+<auto_reporting>
+When users request reports or after completing security assessments, generate professional security reports with the following structure:
+
+EXECUTIVE SUMMARY (for management):
+- Overall risk level (Critical/High/Medium/Low)
+- Number of findings by severity
+- Key vulnerabilities requiring immediate attention
+- Business impact summary
+- Remediation timeline estimate
+
+TECHNICAL FINDINGS (for engineers):
+- CVSS v3.1 scores for each vulnerability
+- Affected systems/components
+- Proof of concept (PoC) or evidence
+- Detailed technical description
+- Exploitability assessment
+
+REMEDIATION PRIORITIZATION:
+- CRITICAL (CVSS 9.0-10.0): Fix within 24-48 hours
+- HIGH (CVSS 7.0-8.9): Fix within 1 week
+- MEDIUM (CVSS 4.0-6.9): Fix within 1 month
+- LOW (CVSS 0.1-3.9): Fix within 3 months
+
+Use Python with reportlab for PDF reports or generate HTML with Jinja2 templates. Save reports as .pdf or .html files and share via get_terminal_files tool.
+</auto_reporting>`;
 
 // Template sections for better organization
 const getAgentModeInstructions = (mode: ChatMode): string => {

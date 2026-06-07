@@ -17,6 +17,7 @@ import {
 import SidebarUserNav from "./SidebarUserNav";
 import SidebarHistory from "./SidebarHistory";
 import SidebarHeaderContent from "./SidebarHeader";
+import { PentestArsenal } from "./PentestArsenal";
 
 /** Chat list data lifted from parent so the subscription stays active when sidebar closes. */
 export type ChatListData = ReturnType<typeof useChats>;
@@ -29,7 +30,7 @@ const ChatListContent: FC<{ chatListData: ChatListData }> = ({
 
   return (
     <div
-      className="h-full min-w-0 overflow-y-auto overflow-x-hidden"
+      className="h-full min-w-0 overflow-y-auto overflow-x-hidden terminal-scrollbar"
       ref={scrollContainerRef}
       data-testid="sidebar-chat-list-scroll-container"
     >
@@ -56,7 +57,7 @@ const DesktopSidebarContent: FC<{
     <Sidebar
       side="left"
       collapsible="icon"
-      className={`${isMobile ? "w-full" : "w-72"}`}
+      className={`${isMobile ? "w-full" : "w-72"} terminal-sidebar`}
     >
       <SidebarHeader>
         <SidebarHeaderContent
@@ -66,7 +67,14 @@ const DesktopSidebarContent: FC<{
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
+        {!isCollapsed && (
+          <SidebarGroup className="border-b border-sidebar-border/60 pb-1">
+            <SidebarGroupContent>
+              <PentestArsenal />
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        <SidebarGroup className="min-h-0 flex-1">
           <SidebarGroupContent>
             {/* Subscription stays active in MainSidebar; only render list when expanded */}
             {!isCollapsed && <ChatListContent chatListData={chatListData} />}
@@ -108,6 +116,11 @@ const MainSidebar: FC<{
             isCollapsed={false}
             isMobileOverlay={true}
           />
+
+          {/* Pentest Arsenal */}
+          <div className="border-b border-sidebar-border/60 pb-1">
+            <PentestArsenal />
+          </div>
 
           {/* Chat List */}
           <div className="flex-1 overflow-hidden">

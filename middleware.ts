@@ -30,18 +30,6 @@ const UNAUTHENTICATED_PATHS = new Set([
   "/manifest.json",
 ]);
 
-function getRedirectUri(): string | undefined {
-  if (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}/callback`;
-  }
-  return undefined;
-}
-
-function isDesktopApp(request: NextRequest): boolean {
-  const userAgent = request.headers.get("user-agent") || "";
-  return userAgent.includes("HackerAI-Desktop");
-}
-
 function isUnauthenticatedPath(pathname: string): boolean {
   if (UNAUTHENTICATED_PATHS.has(pathname)) {
     return true;
@@ -53,6 +41,18 @@ function isUnauthenticatedPath(pathname: string): boolean {
     return true;
   }
   return false;
+}
+
+function getRedirectUri(): string | undefined {
+  if (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/callback`;
+  }
+  return undefined;
+}
+
+function isDesktopApp(request: NextRequest): boolean {
+  const userAgent = request.headers.get("user-agent") || "";
+  return userAgent.includes("HackerAI-Desktop");
 }
 
 function isBrowserRequest(request: NextRequest): boolean {

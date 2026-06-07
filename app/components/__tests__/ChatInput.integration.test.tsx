@@ -3,6 +3,7 @@ import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ChatInput } from "../ChatInput";
 import { GlobalStateProvider } from "../../contexts/GlobalState";
+import { InputProvider } from "../../contexts/InputContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ReactNode } from "react";
 
@@ -40,7 +41,9 @@ jest.mock("../../hooks/useFileUpload", () => ({
 const TestWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <GlobalStateProvider>
-      <TooltipProvider>{children}</TooltipProvider>
+      <InputProvider>
+        <TooltipProvider>{children}</TooltipProvider>
+      </InputProvider>
     </GlobalStateProvider>
   );
 };

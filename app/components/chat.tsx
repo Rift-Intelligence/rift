@@ -22,6 +22,7 @@ import Footer from "./Footer";
 import { useMessageScroll } from "../hooks/useMessageScroll";
 import { useChatHandlers } from "../hooks/useChatHandlers";
 import { useGlobalState } from "../contexts/GlobalState";
+import { useInputApi } from "../contexts/InputContext";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useDocumentDragAndDrop } from "../hooks/useDocumentDragAndDrop";
 import { DragDropOverlay } from "./DragDropOverlay";
@@ -57,6 +58,8 @@ import { parseRateLimitWarning } from "@/lib/utils/parse-rate-limit-warning";
 import Loading from "@/components/ui/loading";
 
 import { HackingSuggestions } from "./HackingSuggestions";
+import Waves from "./Waves";
+import { PentestQuickStart } from "./PentestQuickStart";
 
 // --- Streaming ephemeral state reducer ---
 // Consolidates high-frequency streaming state updates into a single dispatch
@@ -200,8 +203,8 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   const { uploadStatus, summarizationStatus, rateLimitWarning, contextUsage } =
     streamingState;
 
+  const { inputRef } = useInputApi();
   const {
-    input,
     chatMode,
     setChatMode,
     sidebarOpen,
@@ -1130,8 +1133,10 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     } catch {
       return;
     }
-    // Wait for chat to be ready with draft input loaded
-    if (status !== "ready" || !input.trim()) return;
+    // Wait for chat to be ready with draft input loaded. Read the composer
+    // text from the ref (not a reactive value) so this component does not
+    // re-render on every keystroke.
+    if (status !== "ready" || !inputRef.current.trim()) return;
     // Wait for server messages to be loaded (forked chat has messages)
     if (!isExistingChat || messages.length === 0) return;
 
@@ -1139,7 +1144,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     sessionStorage.removeItem("autoSendChatId");
     // Trigger submit with a synthetic event
     handleSubmit(new Event("submit") as unknown as React.FormEvent);
-  }, [chatId, status, input, isExistingChat, messages.length, handleSubmit]);
+  }, [chatId, status, inputRef, isExistingChat, messages.length, handleSubmit]);
 
   const hasMessages = messages.length > 0;
   const showChatLayout = hasMessages || isExistingChat;
@@ -1243,8 +1248,24 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                   branchedFromChatTitle={branchedFromChatTitle}
                 />
               ) : (
-                <div className="flex-1 flex flex-col min-h-0">
-                  <div className="flex-1 flex flex-col items-center justify-center px-4 min-h-0">
+                <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-[#0a0a0c]">
+                  {/* Animated waves background (zauth-style) */}
+                  <Waves
+                    className="pointer-events-none z-0"
+                    lineColor="rgba(63, 63, 70, 0.4)"
+                    backgroundColor="transparent"
+                    waveSpeedX={0.02}
+                    waveSpeedY={0.01}
+                    waveAmpX={40}
+                    waveAmpY={20}
+                    xGap={12}
+                    yGap={36}
+                    friction={0.9}
+                    tension={0.01}
+                    maxCursorMove={120}
+                  />
+                  <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(70%_55%_at_50%_-5%,rgba(255,255,255,0.06),transparent_72%)]" />
+                  <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 min-h-0">
                     <div className="w-full max-w-full sm:max-w-[768px] sm:min-w-[390px] flex flex-col items-center">
                       <div className="text-center">
                         {temporaryChatsEnabled ? (
@@ -1254,7 +1275,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                             </h1>
                             <p className="text-muted-foreground max-w-md mx-auto px-4 py-3">
                               This chat won&apos;t appear in history, use or
-                              update HackerAI&apos;s memory, or be used to train
+                              update RIFT&apos;s memory, or be used to train
                               models. This chat will be deleted when you refresh
                               the page.
                             </p>
@@ -1288,11 +1309,18 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                           />
                         </div>
                       )}
+
+                      {/* Pentest quick-start launcher (desktop, persistent chats) */}
+                      {!isMobile && !temporaryChatsEnabled && (
+                        <div className="w-full max-w-2xl">
+                          <PentestQuickStart />
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   {/* Footer - only show when user is not logged in */}
-                  <div className="flex-shrink-0">
+                  <div className="relative z-10 flex-shrink-0">
                     <Footer />
                   </div>
                 </div>

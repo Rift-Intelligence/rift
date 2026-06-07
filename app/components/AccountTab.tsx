@@ -87,14 +87,14 @@ const AccountTab = () => {
           <div>
             <div className="font-medium">
               {subscription === "ultra"
-                ? "HackerAI Ultra"
+                ? "RIFT Ultra"
                 : subscription === "team"
-                  ? "HackerAI Team"
+                  ? "RIFT Team"
                   : subscription === "pro-plus"
-                    ? "HackerAI Pro+"
+                    ? "RIFT Pro+"
                     : subscription === "pro"
-                      ? "HackerAI Pro"
-                      : "Get HackerAI Pro"}
+                      ? "RIFT Pro"
+                      : "Get RIFT Pro"}
             </div>
           </div>
           {subscription !== "free" ? (

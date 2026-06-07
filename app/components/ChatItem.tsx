@@ -286,10 +286,8 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
   return (
     <div
-      className={`group relative flex w-full cursor-pointer items-center rounded-lg p-2 hover:bg-sidebar-accent/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-        isCurrentlyActive
-          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-          : ""
+      className={`group relative flex w-full cursor-pointer items-center rounded-[0px] p-2 hover:bg-terminal-green/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-terminal-green focus-visible:ring-offset-2 terminal-message ${
+        isCurrentlyActive ? "bg-terminal-green/20 terminal-glow-subtle" : ""
       }`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

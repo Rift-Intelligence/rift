@@ -2,39 +2,73 @@
 
 import React from "react";
 import Link from "next/link";
-import { HackerAISVG } from "@/components/icons/hackerai-svg";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@workos-inc/authkit-nextjs/components";
 import { navigateToAuth } from "@/app/hooks/useTauri";
-import { Download } from "lucide-react";
+import {
+  Download,
+  Terminal,
+  ShieldCheck,
+  FileText,
+  Tag,
+  type LucideIcon,
+} from "lucide-react";
+import { RiftLogo } from "@/components/icons/rift-logo";
 
 interface HeaderProps {
   chatTitle?: string;
   hideDownload?: boolean;
 }
 
+const NAV_ITEMS: { label: string; icon: LucideIcon }[] = [
+  { label: "Product", icon: Terminal },
+  { label: "Security", icon: ShieldCheck },
+  { label: "Docs", icon: FileText },
+  { label: "Pricing", icon: Tag },
+];
+
 const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
   const { user, loading } = useAuth();
 
+  const goToSignup = () =>
+    navigateToAuth("/signup", { preferSignInForReturningUser: true });
+
   return (
-    <header className="w-full px-6 max-sm:px-4 flex-shrink-0">
+    <header className="w-full px-6 max-sm:px-4 flex-shrink-0 terminal-header terminal-border">
       {/* Desktop header */}
-      <div className="py-[10px] flex gap-10 items-center justify-between max-md:hidden">
+      <div className="relative py-[10px] flex items-center justify-between max-md:hidden">
         <div className="flex items-center gap-2">
-          <HackerAISVG theme="dark" scale={0.15} />
-          <span className="text-foreground text-xl font-semibold">
-            HackerAI
+          <RiftLogo size={26} className="text-terminal-green" />
+          <span className="display-emphasis text-2xl leading-none text-foreground">
+            rift
           </span>
         </div>
-        <div className="flex flex-1 gap-2 justify-between items-center">
-          {chatTitle && (
-            <div className="flex-1 text-center">
-              <span className="text-foreground text-lg font-medium truncate">
-                {chatTitle}
-              </span>
-            </div>
-          )}
-          {!chatTitle && <div className="flex gap-[40px]"></div>}
+
+        {chatTitle ? (
+          <div className="absolute left-1/2 -translate-x-1/2 max-w-[40%] text-center">
+            <span className="text-foreground text-lg font-medium truncate">
+              [{chatTitle}]
+            </span>
+          </div>
+        ) : (
+          !loading &&
+          !user && (
+            <nav className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-7">
+              {NAV_ITEMS.map(({ label, icon: Icon }) => (
+                <button
+                  key={label}
+                  onClick={goToSignup}
+                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </nav>
+          )
+        )}
+
+        <div className="flex items-center">
           {!loading && !user && (
             <div className="flex gap-2 items-center">
               {!hideDownload && (
@@ -42,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
                   asChild
                   variant="ghost"
                   size="default"
-                  className="rounded-[10px]"
+                  className="rounded-lg text-muted-foreground hover:text-foreground"
                 >
                   <Link href="/download">
                     <Download className="h-4 w-4 mr-1.5" />
@@ -53,11 +87,11 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
               <Button
                 data-testid="sign-in-button"
                 onClick={() => navigateToAuth("/login")}
-                variant="default"
+                variant="outline"
                 size="default"
-                className="min-w-[74px] rounded-[10px]"
+                className="min-w-[74px] rounded-lg border-border bg-secondary/40 text-foreground hover:bg-secondary/70"
               >
-                Sign in
+                Log in
               </Button>
               <Button
                 data-testid="sign-up-button"
@@ -66,9 +100,9 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
                     preferSignInForReturningUser: true,
                   })
                 }
-                variant="outline"
+                variant="default"
                 size="default"
-                className="min-w-16 rounded-[10px]"
+                className="min-w-16 rounded-lg bg-terminal-green text-black hover:bg-terminal-green/90"
               >
                 Get started
               </Button>
@@ -80,9 +114,9 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       {/* Mobile header */}
       <div className="py-3 flex items-center justify-between md:hidden">
         <div className="flex items-center gap-2">
-          <HackerAISVG theme="dark" scale={0.12} />
-          <span className="text-foreground text-lg font-semibold">
-            HackerAI
+          <RiftLogo size={22} className="text-terminal-green" />
+          <span className="display-emphasis text-xl leading-none text-foreground">
+            rift
           </span>
         </div>
         {!loading && !user && (
@@ -90,11 +124,11 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
             <Button
               data-testid="sign-in-button-mobile"
               onClick={() => navigateToAuth("/login")}
-              variant="default"
+              variant="outline"
               size="sm"
-              className="rounded-[10px]"
+              className="rounded-lg border-border bg-secondary/40 text-foreground hover:bg-secondary/70"
             >
-              Sign in
+              Log in
             </Button>
             <Button
               data-testid="sign-up-button-mobile"
@@ -103,9 +137,9 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
                   preferSignInForReturningUser: true,
                 })
               }
-              variant="outline"
+              variant="default"
               size="sm"
-              className="rounded-[10px]"
+              className="rounded-lg bg-terminal-green text-black hover:bg-terminal-green/90"
             >
               Get started
             </Button>

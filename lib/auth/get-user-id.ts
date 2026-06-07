@@ -5,6 +5,10 @@ import {
   parseEntitlements,
   resolveSubscriptionTier,
 } from "@/lib/auth/entitlements";
+import {
+  MOCK_TIER_STORAGE_KEY,
+  resolveMockTierFromCookie,
+} from "@/lib/billing/mock-billing";
 
 /**
  * Get the current user ID from the authenticated session
@@ -58,7 +62,13 @@ export const getUserIDAndPro = async (
     }
 
     const entitlements = parseEntitlements(session.entitlements);
-    const subscription = resolveSubscriptionTier(entitlements);
+    // Mock billing: honor a locally-set tier cookie so agent mode and other
+    // paid features can be exercised end-to-end during local testing. This is
+    // a no-op unless the MOCK_BILLING server env is explicitly enabled.
+    const mockTier = resolveMockTierFromCookie(
+      req.cookies.get(MOCK_TIER_STORAGE_KEY)?.value,
+    );
+    const subscription = mockTier ?? resolveSubscriptionTier(entitlements);
 
     return {
       userId: session.user.id,

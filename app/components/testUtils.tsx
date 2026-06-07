@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import { GlobalStateProvider } from "@/app/contexts/GlobalState";
+import { InputProvider } from "@/app/contexts/InputContext";
 import { DataStreamProvider } from "./DataStreamProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -9,9 +10,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 export const TestWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <GlobalStateProvider>
-      <DataStreamProvider>
-        <TooltipProvider>{children}</TooltipProvider>
-      </DataStreamProvider>
+      <InputProvider>
+        <DataStreamProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </DataStreamProvider>
+      </InputProvider>
     </GlobalStateProvider>
   );
 };

@@ -1,6 +1,14 @@
 import { useEffect, useCallback } from "react";
 import { useGlobalState } from "../contexts/GlobalState";
+import { useIsMobile } from "@/hooks/use-mobile";
 import type { SidebarContent } from "@/types/chat";
+
+/**
+ * Module-level guard so the agent activity panel auto-opens at most once per
+ * page load. After the first tool runs we surface the live activity, but we
+ * never fight the operator if they choose to close it again.
+ */
+let hasAutoOpenedToolSidebar = false;
 
 interface UseToolSidebarOptions {
   /** The toolCallId for this tool invocation */
@@ -44,6 +52,7 @@ export function useToolSidebar({
     sidebarContent,
     updateSidebarContent,
   } = useGlobalState();
+  const isMobile = useIsMobile();
 
   const isSidebarActive =
     !disabled &&
@@ -80,6 +89,18 @@ export function useToolSidebar({
     updateSidebarContent(content);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSidebarActive, content]);
+
+  // Surface the agent activity panel the first time a tool produces content,
+  // so the live terminal/file/command stream is prominent. Desktop only, and
+  // only once per page load so we never repeatedly fight the operator.
+  useEffect(() => {
+    if (hasAutoOpenedToolSidebar) return;
+    // Require an explicit desktop result (isMobile is undefined on first render).
+    if (disabled || !content || isMobile !== false) return;
+    hasAutoOpenedToolSidebar = true;
+    if (!sidebarOpen) openSidebar(content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabled, content, isMobile]);
 
   return { handleOpenInSidebar, handleKeyDown, isSidebarActive };
 }

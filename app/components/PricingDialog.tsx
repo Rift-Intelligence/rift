@@ -457,7 +457,7 @@ const PricingDialog: React.FC<PricingDialogProps> = ({ isOpen, onClose }) => {
   const premiumDescription =
     selectedPremiumPlan === "pro-plus"
       ? "For power users who need more"
-      : "Get the most out of HackerAI";
+      : "Get the most out of RIFT";
   const premiumFeatures =
     selectedPremiumPlan === "pro-plus" ? proPlusFeatures : ultraFeatures;
   const premiumFeatureHeader =
@@ -515,7 +515,7 @@ const PricingDialog: React.FC<PricingDialogProps> = ({ isOpen, onClose }) => {
                 <PlanCard
                   planName="Free"
                   price={0}
-                  description="Try HackerAI"
+                  description="Try RIFT"
                   features={freeFeatures}
                   buttonText={freeButtonConfig.text}
                   buttonVariant={freeButtonConfig.variant}

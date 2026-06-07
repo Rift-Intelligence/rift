@@ -32,6 +32,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useSandboxPreference } from "@/app/hooks/useSandboxPreference";
 import { isTauriEnvironment } from "@/app/hooks/useTauri";
 import { resolveSubscriptionTier } from "@/lib/auth/entitlements";
+import { isMockBillingEnabled, getMockTier } from "@/lib/billing/mock-billing";
 import { chatSidebarStorage } from "@/lib/utils/sidebar-storage";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -49,10 +50,6 @@ import {
 } from "@/lib/utils/client-storage";
 
 interface GlobalStateType {
-  // Input state
-  input: string;
-  setInput: (value: string) => void;
-
   // File upload state
   uploadedFiles: UploadedFileState[];
   setUploadedFiles: (files: UploadedFileState[]) => void;
@@ -129,7 +126,6 @@ interface GlobalStateType {
   setSelectedModel: (model: SelectedModel) => void;
 
   // Utility methods
-  clearInput: () => void;
   clearUploadedFiles: () => void;
   openSidebar: (content: SidebarContent) => void;
   updateSidebarContent: (updates: Partial<SidebarContent>) => void;
@@ -173,7 +169,6 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
   const isMobile = useIsMobile();
   const prevIsMobile = useRef(isMobile);
   const shownReferralRewardNotificationsRef = useRef(new Set<string>());
-  const [input, setInput] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFileState[]>([]);
   const [chatMode, setChatMode] = useState<ChatMode>(() => {
     const saved = readChatMode();
@@ -417,6 +412,16 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
       return;
     }
 
+    // Mock billing: a locally-persisted tier takes precedence over WorkOS
+    // entitlements so upgrades reflect immediately during local testing.
+    if (isMockBillingEnabled()) {
+      const mockTier = getMockTier();
+      if (mockTier) {
+        setSubscriptionWithNormalize(mockTier);
+        return;
+      }
+    }
+
     if (Array.isArray(entitlements)) {
       setSubscriptionWithNormalize(resolveSubscriptionTier(entitlements));
     }
@@ -616,10 +621,6 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     };
   }, [migrateFromPentestgptDialogOpen]);
 
-  const clearInput = () => {
-    setInput("");
-  };
-
   const clearUploadedFiles = () => {
     setUploadedFiles([]);
   };
@@ -779,8 +780,6 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
   );
 
   const value: GlobalStateType = {
-    input,
-    setInput,
     uploadedFiles,
     setUploadedFiles,
     addUploadedFile,
@@ -807,7 +806,6 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     subscription,
     isCheckingProPlan,
 
-    clearInput,
     clearUploadedFiles,
     openSidebar,
     updateSidebarContent,

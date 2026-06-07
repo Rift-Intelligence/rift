@@ -15,6 +15,21 @@ ENV GOCACHE=/home/user/go/.cache
 ENV PATH=/home/user/.local/bin:/usr/local/go/bin:/home/user/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # ============================================================================
+# dpkg slimming — never install documentation, manpages, locales, etc.
+# Applied before any apt install so every package layer is genuinely smaller
+# (deleting these in a later layer would NOT reclaim build disk).
+# ============================================================================
+RUN { \
+      echo 'path-exclude /usr/share/doc/*'; \
+      echo 'path-include /usr/share/doc/*/copyright'; \
+      echo 'path-exclude /usr/share/man/*'; \
+      echo 'path-exclude /usr/share/groff/*'; \
+      echo 'path-exclude /usr/share/info/*'; \
+      echo 'path-exclude /usr/share/lintian/*'; \
+      echo 'path-exclude /usr/share/locale/*'; \
+    } > /etc/dpkg/dpkg.cfg.d/01_nodoc
+
+# ============================================================================
 # Base System Setup (use default Kali CDN mirror - auto-routes to healthy mirrors)
 # ============================================================================
 RUN apt-get update && \
@@ -103,6 +118,23 @@ RUN apt-get update && \
     nbtscan \
     python3-impacket \
     enum4linux \
+    # Active Directory/Windows tools (Linux-compatible)
+    ldap-utils \
+    crackmapexec \
+    python3-ldap3 \
+    python3-asn1crypto \
+    python3-dnspython \
+    python3-requests \
+    python3-pyasn1 \
+    # Mobile security tools
+    adb \
+    apktool \
+    # Cloud security tools
+    awscli \
+    azure-cli \
+    # API security tools
+    wfuzz \
+    burpsuite \
     # Network discovery
     hping3 \
     arp-scan \
@@ -149,7 +181,7 @@ RUN set -eux; \
 # ============================================================================
 # User Setup
 # ============================================================================
-RUN useradd --create-home --shell /bin/bash user && \
+RUN (id -u user >/dev/null 2>&1 || useradd --create-home --shell /bin/bash user) && \
     usermod -aG sudo user && \
     echo 'user ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers && \
     mkdir -p /home/user/upload /home/user/go && \
@@ -158,13 +190,13 @@ RUN useradd --create-home --shell /bin/bash user && \
 WORKDIR /home/user
 
 # Ensure Go bin paths are in PATH for login shells (su - user, bash -l)
-RUN printf 'export PATH=/home/user/.local/bin:/usr/local/go/bin:/home/user/go/bin:$PATH\n' \
+RUN echo 'export PATH=/home/user/.local/bin:/usr/local/go/bin:/home/user/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:$PATH}' \
     > /etc/profile.d/00-hackerai-path.sh && chmod 644 /etc/profile.d/00-hackerai-path.sh
 
 # ============================================================================
 # Python Packages for Document Generation & Security Tools
 # ============================================================================
-RUN pip3 install --break-system-packages \
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
     reportlab \
     python-docx \
     openpyxl \
@@ -174,20 +206,103 @@ RUN pip3 install --break-system-packages \
     odfpy
 
 # Additional security-focused Python packages
-RUN pip3 install --break-system-packages requests aiohttp jinja2 'httpx[cli]' ratelimit pycryptodomex
+RUN pip3 install --break-system-packages --ignore-installed --no-compile requests aiohttp jinja2 httpx ratelimit pycryptodomex
+
+# Active Directory Python tools
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    ldapdomaindump \
+    adidnsdump \
+    kerberoast \
+    impacket \
+    bloodhound
+
+# ============================================================================
+# Google Cloud CLI (provides `gcloud`) — installed from the official apt repo
+# since `google-cloud-sdk` is not available in the Kali repositories.
+# ============================================================================
+RUN set -eux; \
+    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" > /etc/apt/sources.list.d/google-cloud-sdk.list && \
+    apt-get update && apt-get install -y --no-install-recommends google-cloud-cli && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# Mobile Security Python tools
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    frida-tools \
+    objection \
+    androguard
+
+# Cloud Security Python tools
+# Note: cloud-nuke (Go) and cloudsploit (Node) are not PyPI packages and are
+# intentionally omitted here. ScoutSuite is the primary multi-cloud auditor.
+# pacu and prowler are intentionally omitted: they bundle duplicate multi-cloud
+# SDK stacks (aws/azure/gcp) that exceed the build disk budget and are already
+# largely covered by ScoutSuite + the aws/az/gcloud CLIs.
+RUN pip3 install --break-system-packages --ignore-installed --no-compile ScoutSuite
+
+# API Security Python tools
+# Note: swagger-codegen-cli (Java), graphql-path-enum (GitLab-only) and
+# graphql-cop (GitHub-only) are not on PyPI and are omitted.
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    graphql-core
+
+# Reporting & CVSS tools
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    cvss \
+    jinja2
+
+# Vulnerability Database tools
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    cve-searchsploit \
+    mitreattack-python \
+    requests
+
+# Threat Intelligence tools
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    shodan \
+    vt-py \
+    python-abuseipdb
+
+# Visual Recon tools
+# Note: chromium + xvfb + EyeWitness (web screenshotting) are intentionally
+# omitted — the headless browser stack (~1GB) exceeds the build disk budget.
+# HTTP recon is still covered by httpx, whatweb, gospider, katana, etc.
+
+# Payload Management tools
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    pwntools \
+    pyinstaller
+
+# Evidence Collection tools
+RUN apt-get update && apt-get install -y \
+    python3-tk \
+    imagemagick \
+    && rm -rf /var/lib/apt/lists/*
+
+# Note: hashlib is part of the Python standard library; the PyPI "hashlib"
+# package is a broken Python 2 backport and is omitted.
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+    tzdata
 
 # ============================================================================
 # Git-based Security Tools
 # ============================================================================
 RUN set -eux; \
     # JWT analysis tool
-    git clone https://github.com/ticarpi/jwt_tool.git /opt/jwt_tool || true && \
+    git clone --depth 1 https://github.com/ticarpi/jwt_tool.git /opt/jwt_tool || true && \
     if [ -f /opt/jwt_tool/jwt_tool.py ]; then chmod +x /opt/jwt_tool/jwt_tool.py; fi && \
     # Git repository dumper
-    git clone https://github.com/internetwache/GitTools.git /opt/gittools && \
+    git clone --depth 1 https://github.com/internetwache/GitTools.git /opt/gittools && \
     chmod +x /opt/gittools/Dumper/gitdumper.sh /opt/gittools/Extractor/extractor.sh && \
     ln -sf /opt/gittools/Dumper/gitdumper.sh /usr/local/bin/gitdumper && \
-    ln -sf /opt/gittools/Extractor/extractor.sh /usr/local/bin/gitextractor
+    ln -sf /opt/gittools/Extractor/extractor.sh /usr/local/bin/gitextractor && \
+    # enum4linux-aux (enhanced enum4linux)
+    git clone --depth 1 https://github.com/cddmp/enum4linux-ng.git /opt/enum4linux-ng || true && \
+    if [ -f /opt/enum4linux-ng/enum4linux-ng.py ]; then ln -sf /opt/enum4linux-ng/enum4linux-ng.py /usr/local/bin/enum4linux-aux && chmod +x /usr/local/bin/enum4linux-aux; fi && \
+    # MobSF (Mobile Security Framework)
+    git clone --depth 1 https://github.com/MobSF/Mobile-Security-Framework-MobSF.git /opt/MobSF || true && \
+    # drozer (Android security assessment framework)
+    git clone --depth 1 https://github.com/WithSecureLabs/drozer.git /opt/drozer || true
 
 # ============================================================================
 # Binary Downloads (Platform-aware)
@@ -203,14 +318,14 @@ RUN set -eux; \
     elif [ "$arch" = "aarch64" ] || [ "$arch" = "arm64" ]; then platform="linux_arm64"; \
     else platform="linux_amd64"; fi; \
     HTTPX_URL=$(curl -s https://api.github.com/repos/projectdiscovery/httpx/releases/latest \
-      | grep -Eo '"browser_download_url"\s*:\s*"[^"]*' | cut -d '"' -f4 \
-      | grep -E "${platform}\\.zip$" | head -n1); \
+      | grep -Eo '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]*' | cut -d '"' -f4 \
+      | grep -E "${platform}[.]zip$" | head -n1); \
     echo "Fetching httpx: $HTTPX_URL"; \
     wget -qO /tmp/httpx.zip "$HTTPX_URL" && \
     mkdir -p /tmp/httpx_extracted && \
-    unzip -q /tmp/httpx.zip -d /tmp/httpx_extracted || true && \
-    find /tmp/httpx_extracted -type f -name httpx -exec mv {} /usr/local/bin/httpx \; || true && \
-    chmod +x /usr/local/bin/httpx || true && \
+    unzip -q /tmp/httpx.zip -d /tmp/httpx_extracted || true; \
+    HTTPX_BIN=$(find /tmp/httpx_extracted -type f -name httpx | head -n1); \
+    if [ -n "$HTTPX_BIN" ]; then mv "$HTTPX_BIN" /usr/local/bin/httpx; chmod +x /usr/local/bin/httpx; fi; \
     rm -rf /tmp/httpx_extracted /tmp/httpx.zip
 
 # ============================================================================
@@ -237,15 +352,38 @@ RUN set -eux; \
 # ============================================================================
 RUN set -eux; \
     # JWT Tool wrapper
-    ([ -f /opt/jwt_tool/jwt_tool.py ] && echo '#!/bin/bash\npython3 /opt/jwt_tool/jwt_tool.py "$@"' > /usr/local/bin/jwt-tool && chmod +x /usr/local/bin/jwt-tool) || true
+    if [ -f /opt/jwt_tool/jwt_tool.py ]; then \
+      { echo '#!/bin/bash'; echo 'python3 /opt/jwt_tool/jwt_tool.py "$@"'; } > /usr/local/bin/jwt-tool; \
+      chmod +x /usr/local/bin/jwt-tool; \
+    fi
 
 # ============================================================================
-# Go-based Security Tools
+# Go-based Security Tools (installed as prebuilt release binaries)
 # ============================================================================
+# These ProjectDiscovery tools are pulled as prebuilt release binaries instead
+# of `go install`, because the Go module/build cache overflows the build disk.
+# The `go` toolchain itself remains installed for runtime use.
 RUN set -eux; \
-    go install github.com/projectdiscovery/interactsh/cmd/interactsh-client@latest && \
-    go install github.com/projectdiscovery/katana/cmd/katana@latest && \
-    go install github.com/projectdiscovery/cvemap/cmd/cvemap@latest
+    arch=$(uname -m); \
+    if [ "$arch" = "x86_64" ]; then platform="linux_amd64"; \
+    elif [ "$arch" = "aarch64" ] || [ "$arch" = "arm64" ]; then platform="linux_arm64"; \
+    else platform="linux_amd64"; fi; \
+    for spec in projectdiscovery/interactsh:interactsh-client projectdiscovery/katana:katana projectdiscovery/vulnx:vulnx; do \
+      gh_repo=${spec%%:*}; bin=${spec##*:}; \
+      url=$(curl -sL "https://api.github.com/repos/${gh_repo}/releases/latest" \
+        | grep -Eo '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]*' | cut -d '"' -f4 \
+        | grep "${bin}_" | grep -E "${platform}[.]zip$" | head -n1); \
+      if [ -z "$url" ]; then echo "ERROR: no release asset for ${bin} (${platform})"; exit 1; fi; \
+      echo "Fetching ${bin}: ${url}"; \
+      wget -qO /tmp/pd.zip "$url"; \
+      rm -rf /tmp/pd_x; mkdir -p /tmp/pd_x; \
+      unzip -q /tmp/pd.zip -d /tmp/pd_x; \
+      f=$(find /tmp/pd_x -type f -name "$bin" | head -n1); \
+      if [ -z "$f" ]; then echo "ERROR: ${bin} not found in archive"; exit 1; fi; \
+      mv "$f" /usr/local/bin/${bin}; chmod +x /usr/local/bin/${bin}; \
+      rm -rf /tmp/pd_x /tmp/pd.zip; \
+    done; \
+    ln -sf /usr/local/bin/vulnx /usr/local/bin/cvemap
 
 # ============================================================================
 # TestSSL Symlink - Allow access via both 'testssl' and 'testssl.sh'
@@ -256,9 +394,11 @@ RUN set -eux; \
     fi
 
 # ============================================================================
-# Update Nuclei Templates
+# Nuclei Templates
+# Templates are intentionally NOT downloaded at build time (saves significant
+# disk). Nuclei fetches them automatically on first run, or run
+# `nuclei -update-templates` at runtime.
 # ============================================================================
-RUN nuclei -update-templates
 
 # ============================================================================
 # Tool Validation
@@ -290,7 +430,17 @@ RUN set -eux; \
     which smbmap && echo "✓ smbmap" && \
     which nbtscan && echo "✓ nbtscan" && \
     which enum4linux && echo "✓ enum4linux" && \
+    which enum4linux-aux && echo "✓ enum4linux-aux" && \
     which arp-scan && echo "✓ arp-scan" && \
+    which crackmapexec && echo "✓ crackmapexec" && \
+    which bloodhound-python && echo "✓ bloodhound-python" && \
+    which adb && echo "✓ adb" && \
+    which apktool && echo "✓ apktool" && \
+    which aws && echo "✓ awscli" && \
+    which az && echo "✓ azure-cli" && \
+    which gcloud && echo "✓ google-cloud-sdk" && \
+    which wfuzz && echo "✓ wfuzz" && \
+    which burpsuite && echo "✓ burpsuite" && \
     which gospider && echo "✓ gospider" && \
     which interactsh-client && echo "✓ interactsh-client" && \
     which katana && echo "✓ katana" && \
@@ -315,6 +465,13 @@ RUN set -eux; \
     python3 -c "import pandas; print('✓ pandas')" && \
     python3 -c "import odf; print('✓ odfpy')" && \
     python3 -c "import requests; print('✓ requests')" && \
+    python3 -c "import ldapdomaindump; print('✓ ldapdomaindump')" && \
+    python3 -c "import impacket; print('✓ impacket')" && \
+    python3 -c "import frida; print('✓ frida-tools')" && \
+    python3 -c "import objection; print('✓ objection')" && \
+    python3 -c "import androguard; print('✓ androguard')" && \
+    python3 -c "import ScoutSuite; print('✓ ScoutSuite')" && \
+    python3 -c "import graphql; print('✓ graphql-core')" && \
     echo "=== Version Information ===" && \
     nmap --version | head -n1 && \
     python3 --version && \

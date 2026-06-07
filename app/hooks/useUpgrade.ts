@@ -5,6 +5,11 @@ import {
   captureAuthenticatedEvent,
   getPostHogRequestHeaders,
 } from "@/lib/analytics/client";
+import {
+  isMockBillingEnabled,
+  planKeyToTier,
+  setMockTier,
+} from "@/lib/billing/mock-billing";
 
 export const useUpgrade = () => {
   const { user } = useAuth();
@@ -33,6 +38,19 @@ export const useUpgrade = () => {
 
     if (!user) {
       toast.error("Please sign in to upgrade");
+      return;
+    }
+
+    // Mock billing: bypass Stripe/WorkOS entirely and persist the selected
+    // tier locally so the app reflects the upgrade immediately.
+    if (isMockBillingEnabled()) {
+      const selectedPlan = planKey || "pro-monthly-plan";
+      const tier = planKeyToTier(selectedPlan);
+      setMockTier(tier);
+      toast.success("Upgraded successfully (mock billing)");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 400);
       return;
     }
 

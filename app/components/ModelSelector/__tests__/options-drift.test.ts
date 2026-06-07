@@ -4,7 +4,7 @@ import { myProvider, resolveTierToProviderKey } from "@/lib/ai/providers";
 import type { ChatMode } from "@/types/chat";
 
 /**
- * Drift guard: every selectable HackerAI tier must resolve to a provider key
+ * Drift guard: every selectable RIFT tier must resolve to a provider key
  * registered with `myProvider` in *both* modes. Without this, picking the
  * tier from the UI would crash on `myProvider.languageModel()`.
  */
@@ -31,7 +31,7 @@ describe("ModelSelector tier ↔ provider drift", () => {
     expect([...askIds].sort()).toEqual([...agentIds].sort());
   });
 
-  it("HackerAI Standard resolves to different providers per mode", () => {
+  it("RIFT Standard resolves to different providers per mode", () => {
     expect(resolveTierToProviderKey("hackerai-standard", "ask")).toBe(
       "model-gemini-3-flash",
     );
@@ -40,7 +40,7 @@ describe("ModelSelector tier ↔ provider drift", () => {
     );
   });
 
-  it("HackerAI Pro and Max resolve to the same provider in both modes", () => {
+  it("RIFT Pro and Max resolve to the same provider in both modes", () => {
     expect(resolveTierToProviderKey("hackerai-pro", "ask")).toBe(
       "model-sonnet-4.6",
     );
@@ -60,8 +60,8 @@ describe("ModelSelector tier ↔ provider drift", () => {
     expect(resolveTierToProviderKey("auto", "agent")).toBeNull();
   });
 
-  it("hover-popup descriptions are present for every HackerAI tier", () => {
-    const tiered = allOptions.filter((o) => o.label.startsWith("HackerAI"));
+  it("hover-popup descriptions are present for every RIFT tier", () => {
+    const tiered = allOptions.filter((o) => o.label.startsWith("RIFT"));
     expect(tiered.length).toBeGreaterThan(0);
     for (const option of tiered) {
       expect(option.description).toBeTruthy();

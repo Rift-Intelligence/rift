@@ -1,30 +1,44 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { JetBrains_Mono, Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
+import "./globals-terminal.css";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalStateProvider } from "./contexts/GlobalState";
+import { InputProvider } from "./contexts/InputContext";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { TodoBlockProvider } from "./contexts/TodoBlockContext";
 import { PostHogProvider } from "./providers";
 import { DataStreamProvider } from "./components/DataStreamProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const APP_NAME = "HackerAI";
-const APP_DEFAULT_TITLE = "HackerAI - AI-Powered Penetration Testing Assistant";
-const APP_TITLE_TEMPLATE = "%s | HackerAI";
+// Elegant serif used for italic emphasis words in display headings
+// (mirrors the zauth.inc "sans roman + serif italic" headline treatment).
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-serif",
+  weight: "400",
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const APP_NAME = "RIFT";
+const APP_DEFAULT_TITLE = "RIFT - AI-Powered Security Testing Platform";
+const APP_TITLE_TEMPLATE = "%s | RIFT";
 const APP_DESCRIPTION =
-  "HackerAI is an AI pentesting assistant that helps you scan targets, exploit vulnerabilities, analyze findings, and write reports faster.";
+  "RIFT is an AI-powered security testing platform that helps penetration testers, security researchers, and developers identify vulnerabilities, analyze threats, and secure systems faster.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -35,23 +49,21 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
   manifest: "/manifest.json",
   keywords: [
-    "hackerai",
-    "pentestgpt",
-    "hacker ai",
-    "pentest ai",
-    "penetration testing tool",
-    "penetration testing ai",
-    "hacking ai",
-    "pentesting ai",
-    "pentest automation",
-    "security assessment ai",
-    "vulnerability scanner ai",
-    "offensive security ai",
-    "red team ai",
-    "cybersecurity ai assistant",
-    "bug bounty ai",
-    "pentest gpt",
-    "security ai",
+    "rift",
+    "security testing",
+    "penetration testing",
+    "vulnerability scanner",
+    "security automation",
+    "offensive security",
+    "red team",
+    "bug bounty",
+    "cybersecurity ai",
+    "security assessment",
+    "threat analysis",
+    "security platform",
+    "pentest tool",
+    "security research",
+    "vulnerability detection",
   ],
   openGraph: {
     type: "website",
@@ -63,10 +75,10 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
     images: [
       {
-        url: "https://hackerai.co/icon-512x512.png",
+        url: "/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "HackerAI",
+        alt: "RIFT",
       },
     ],
   },
@@ -79,10 +91,10 @@ export const metadata: Metadata = {
     description: APP_DESCRIPTION,
     images: [
       {
-        url: "https://hackerai.co/icon-512x512.png",
+        url: "/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "HackerAI",
+        alt: "RIFT",
       },
     ],
   },
@@ -95,21 +107,27 @@ export default function RootLayout({
 }>) {
   const content = (
     <GlobalStateProvider>
-      <PostHogProvider>
-        <DataStreamProvider>
-          <TodoBlockProvider>
-            <TooltipProvider>
-              {children}
-              <Toaster />
-            </TooltipProvider>
-          </TodoBlockProvider>
-        </DataStreamProvider>
-      </PostHogProvider>
+      <InputProvider>
+        <PostHogProvider>
+          <DataStreamProvider>
+            <TodoBlockProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </TodoBlockProvider>
+          </DataStreamProvider>
+        </PostHogProvider>
+      </InputProvider>
     </GlobalStateProvider>
   );
 
   return (
-    <html lang="en" className="dark h-full" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="dark h-full terminal-scanlines"
+      suppressHydrationWarning
+    >
       <head>
         <meta
           name="viewport"
@@ -118,7 +136,8 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+        className={`${jetbrainsMono.variable} ${inter.variable} ${instrumentSerif.variable} antialiased h-full`}
+        suppressHydrationWarning
       >
         <ConvexClientProvider>{content}</ConvexClientProvider>
       </body>

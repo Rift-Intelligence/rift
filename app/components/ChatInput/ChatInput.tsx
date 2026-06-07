@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useGlobalState } from "@/app/contexts/GlobalState";
+import { useInputValue, useInputApi } from "@/app/contexts/InputContext";
 import { TodoPanel } from "../TodoPanel";
 import type { ChatStatus } from "@/types";
 import { FileUploadPreview } from "../FileUploadPreview";
@@ -61,9 +62,9 @@ export const ChatInput = ({
   placeholder,
   autoFocus,
 }: ChatInputProps) => {
+  const input = useInputValue();
+  const { setInput } = useInputApi();
   const {
-    input,
-    setInput,
     chatMode,
     setChatMode,
     uploadedFiles,
@@ -215,31 +216,48 @@ export const ChatInput = ({
         />
 
         <div
-          className={`order-2 sm:order-1 flex flex-col gap-3 transition-colors relative bg-input-chat py-3 max-h-[300px] min-w-0 overflow-hidden shadow-[0px_12px_32px_0px_rgba(0,0,0,0.02)] border border-black/8 dark:border-border focus-within:ring-2 focus-within:ring-ring/20 ${uploadedFiles && uploadedFiles.length > 0 ? "rounded-b-[22px] border-t-0" : "rounded-[22px]"}`}
+          className={`order-2 sm:order-1 flex flex-col transition-colors relative bg-input-chat max-h-[300px] min-w-0 overflow-hidden terminal-panel terminal-border ${uploadedFiles && uploadedFiles.length > 0 ? "rounded-b-[0px] border-t-0" : "rounded-[0px]"}`}
         >
-          <ChatInputTextarea
-            draftId={draftId}
-            chatMode={chatMode}
-            onEnterSubmit={handleSubmit}
-            minRows={isCentered ? 3 : 1}
-            placeholder={placeholder}
-            autoFocus={autoFocus}
-          />
-          <ChatInputToolbar
-            onAttachClick={handleAttachClick}
-            isGenerating={isGenerating}
-            hideStop={hideStop}
-            onStop={onStop}
-            onSubmit={handleSubmit}
-            status={status}
-            isUploadingFiles={isUploadingFiles}
-            input={input}
-            uploadedFiles={uploadedFiles}
-            chatMode={chatMode}
-            contextUsage={contextUsage}
-            showContextIndicator={showContextIndicator}
-            contextUsageVariant={isMobile ? "compact-popover" : "tooltip"}
-          />
+          {/* Terminal window title bar */}
+          <div className="terminal-titlebar flex items-center gap-2 px-3 py-1.5 select-none">
+            <span className="terminal-dot terminal-dot-red" />
+            <span className="terminal-dot terminal-dot-yellow" />
+            <span className="terminal-dot terminal-dot-green" />
+            <span className="ml-2 text-xs text-terminal-green/70 truncate">
+              {chatMode === "agent"
+                ? "root@rift: ~/exploit"
+                : "operator@rift: ~"}
+            </span>
+            <span className="ml-auto text-[10px] text-terminal-green/50 uppercase tracking-wider hidden sm:inline">
+              {chatMode === "agent" ? "AGENT" : "ASK"} MODE
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-3 py-3">
+            <ChatInputTextarea
+              draftId={draftId}
+              chatMode={chatMode}
+              onEnterSubmit={handleSubmit}
+              minRows={isCentered ? 3 : 1}
+              placeholder={placeholder}
+              autoFocus={autoFocus}
+            />
+            <ChatInputToolbar
+              onAttachClick={handleAttachClick}
+              isGenerating={isGenerating}
+              hideStop={hideStop}
+              onStop={onStop}
+              onSubmit={handleSubmit}
+              status={status}
+              isUploadingFiles={isUploadingFiles}
+              input={input}
+              uploadedFiles={uploadedFiles}
+              chatMode={chatMode}
+              contextUsage={contextUsage}
+              showContextIndicator={showContextIndicator}
+              contextUsageVariant={isMobile ? "compact-popover" : "tooltip"}
+            />
+          </div>
         </div>
 
         {/* Sandbox selector below input.

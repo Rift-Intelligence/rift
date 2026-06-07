@@ -1,45 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
 
-const HACKING_QUESTIONS = [
-  (name?: string) =>
-    name ? `What should we hack, ${name}?` : "What should we hack?",
-  (name?: string) => (name ? `Got an idea, ${name}?` : "Got an idea?"),
-  (name?: string) =>
-    name ? `What are we testing today, ${name}?` : "What are we testing today?",
-  (name?: string) =>
-    name ? `Where do we start, ${name}?` : "Where do we start?",
-  (name?: string) =>
-    name ? `What's our target today, ${name}?` : "What's our target today?",
-  (name?: string) =>
-    name ? `What's on the scope today, ${name}?` : "What's on the scope today?",
-  (name?: string) =>
-    name
-      ? `What are we exploiting today, ${name}?`
-      : "What are we exploiting today?",
-  (name?: string) =>
-    name ? `Ready to find some vulns, ${name}?` : "Ready to find some vulns?",
-  (name?: string) =>
-    name ? `What's on your mind, ${name}?` : "What's on your mind?",
+// Two-part headlines: a roman (sans) lead-in + a serif-italic emphasis,
+// mirroring the zauth.inc "Security for the / agentic internet." treatment.
+const HEADLINES: { lead: string; emphasis: string }[] = [
+  { lead: "What should we", emphasis: "hack today?" },
+  { lead: "What's our", emphasis: "target today?" },
+  { lead: "Ready to find", emphasis: "some vulns?" },
+  { lead: "Where do we", emphasis: "start?" },
+  { lead: "What's on the", emphasis: "scope today?" },
+  { lead: "What are we", emphasis: "exploiting?" },
 ];
 
 export const HackingSuggestions = () => {
-  const { user } = useAuth();
-  const name = user?.firstName || undefined;
-  const [questionFn] = useState(
-    () =>
-      HACKING_QUESTIONS[Math.floor(Math.random() * HACKING_QUESTIONS.length)],
+  const [headline] = useState(
+    () => HEADLINES[Math.floor(Math.random() * HEADLINES.length)],
   );
 
   return (
-    <div className="relative mb-4 flex flex-col items-center px-4 text-center md:mb-6">
-      <h1 className="flex items-center gap-1 text-xl font-medium leading-none text-foreground sm:text-2xl md:gap-0 md:text-3xl">
-        <span className="min-h-6 pt-0.5 tracking-tight sm:min-h-7 md:min-h-8 md:pt-0">
-          {questionFn(name)}
-        </span>
+    <div className="relative mb-8 flex flex-col items-center px-4 text-center">
+      {/* Display headline: sans roman lead + serif-italic emphasis */}
+      <h1 className="text-balance text-4xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-5xl md:text-6xl">
+        <span className="block">{headline.lead}</span>
+        <span className="display-emphasis block">{headline.emphasis}</span>
       </h1>
+
+      {/* Subtitle */}
+      <p className="mt-5 max-w-xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+        Point RIFT at a target. It handles recon, exploitation, and reporting on
+        its own — every run isolated in its own sandbox.
+      </p>
     </div>
   );
 };

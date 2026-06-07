@@ -120,19 +120,20 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
   }, [isMobile, chatSidebarOpen, setChatSidebarOpen]);
 
   return (
-    <div className="flex min-h-0 flex-1 w-full overflow-hidden">
+    <div className="flex min-h-0 flex-1 w-full overflow-hidden terminal-screen">
       {/* Chat Sidebar - Desktop: only mount once isMobile is resolved to avoid flash on mobile */}
       {isMobile === false && (
         <div
           data-testid="sidebar"
-          className={`relative z-10 min-w-0 shrink-0 overflow-hidden bg-sidebar transition-all duration-300 ${
-            chatSidebarOpen ? "w-72" : "w-12"
+          className={`relative z-10 min-w-0 shrink-0 overflow-hidden bg-sidebar terminal-sidebar terminal-border transition-all duration-300 ${
+            chatSidebarOpen ? "w-80" : "w-12"
           }`}
         >
           <SidebarProvider
             open={chatSidebarOpen}
             onOpenChange={setChatSidebarOpen}
             defaultOpen={true}
+            style={{ "--sidebar-width": "20rem" } as React.CSSProperties}
           >
             <MainSidebar chatListData={chatListData} />
           </SidebarProvider>
@@ -140,14 +141,14 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main content slot - pages render here */}
-      <div className="flex min-h-0 flex-1 min-w-0 flex-col relative">
+      <div className="flex min-h-0 flex-1 min-w-0 flex-col relative terminal-scrollbar">
         {children}
       </div>
 
       {/* Overlay Chat Sidebar - Mobile: only when resolved to mobile */}
       {isMobile === true && chatSidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 flex"
+          className="fixed inset-0 z-40 bg-black/80 flex"
           onClick={() => setChatSidebarOpen(false)}
         >
           <div
@@ -155,7 +156,7 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
             role="dialog"
             aria-modal="true"
             tabIndex={-1}
-            className="w-full max-w-80 h-full bg-background shadow-lg transform transition-transform duration-300 ease-in-out"
+            className="w-full max-w-80 h-full bg-background terminal-panel shadow-lg transform transition-transform duration-300 ease-in-out terminal-border"
             onClick={(e) => e.stopPropagation()}
           >
             <MainSidebar isMobileOverlay={true} chatListData={chatListData} />

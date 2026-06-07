@@ -13,6 +13,7 @@ import ChatHeader from "@/app/components/ChatHeader";
 import MainSidebar from "@/app/components/Sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useGlobalState } from "@/app/contexts/GlobalState";
+import { useInputValue } from "@/app/contexts/InputContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChatInput } from "@/app/components/ChatInput";
@@ -75,7 +76,8 @@ const UUID_REGEX =
 export function SharedChatView({ shareId }: SharedChatViewProps) {
   const isMobile = useIsMobile();
   const { user, loading: authLoading } = useAuth();
-  const { chatSidebarOpen, setChatSidebarOpen, input } = useGlobalState();
+  const { chatSidebarOpen, setChatSidebarOpen } = useGlobalState();
+  const input = useInputValue();
   const router = useRouter();
   const forkSharedChatMutation = useMutation(api.sharedChats.forkSharedChat);
   const [isForking, setIsForking] = useState(false);

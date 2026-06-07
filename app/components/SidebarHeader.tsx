@@ -10,7 +10,7 @@ import {
   Search,
 } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { HackerAISVG } from "@/components/icons/hackerai-svg";
+import { RiftLogo } from "@/components/icons/rift-logo";
 import { useGlobalState } from "../contexts/GlobalState";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChats } from "../hooks/useChats";
@@ -109,10 +109,10 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
     return (
       <>
         <div className="flex flex-col items-center p-2">
-          {/* HackerAI Logo with hover sidebar toggle */}
+          {/* RIFT Logo with hover sidebar toggle */}
           <div
             data-testid="sidebar-toggle"
-            className="relative flex items-center justify-center mb-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+            className="relative flex items-center justify-center mb-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terminal-green focus-visible:ring-offset-2 rounded p-1"
             onClick={toggleSidebar}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -126,7 +126,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
             role="button"
             aria-label="Expand sidebar"
           >
-            <HackerAISVG theme="dark" scale={0.12} />
+            <RiftLogo size={26} className="text-terminal-green" glow />
             {/* Sidebar icon shown on hover over entire collapsed sidebar */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-sidebar/80 rounded">
               <SidebarIcon className="w-5 h-5" />

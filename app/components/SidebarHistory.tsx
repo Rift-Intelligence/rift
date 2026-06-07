@@ -66,8 +66,8 @@ const SidebarHistory: React.FC<SidebarHistoryProps> = ({
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 bg-sidebar-accent rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-sidebar-accent rounded w-1/2"></div>
+              <div className="h-4 bg-terminal-green/20 rounded w-3/4 mb-2 terminal-glow-subtle"></div>
+              <div className="h-3 bg-terminal-green/20 rounded w-1/2 terminal-glow-subtle"></div>
             </div>
           ))}
         </div>
@@ -82,12 +82,12 @@ const SidebarHistory: React.FC<SidebarHistoryProps> = ({
         className="flex flex-col items-center justify-center h-full p-6 text-center"
         data-testid="sidebar-chat-empty"
       >
-        <MessageSquare className="w-12 h-12 text-sidebar-accent-foreground mb-4" />
-        <h3 className="text-lg font-medium text-sidebar-foreground mb-2">
-          No chats yet
+        <MessageSquare className="w-12 h-12 text-terminal-green mb-4 terminal-glow" />
+        <h3 className="text-lg font-medium text-foreground mb-2 terminal-glow-subtle">
+          [NO TERMINAL SESSIONS]
         </h3>
-        <p className="text-sm text-sidebar-accent-foreground mb-4">
-          Start a conversation to see your chat history here
+        <p className="text-sm text-muted-foreground mb-4">
+          Initiate a command to begin session history
         </p>
       </div>
     );

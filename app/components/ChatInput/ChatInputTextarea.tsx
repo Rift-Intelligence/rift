@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useGlobalState } from "@/app/contexts/GlobalState";
+import { useInputValue, useInputApi } from "@/app/contexts/InputContext";
 import { useFileUpload } from "@/app/hooks/useFileUpload";
 import {
   getDraftContentById,
@@ -35,7 +36,9 @@ export function ChatInputTextarea({
   placeholder,
   autoFocus = true,
 }: ChatInputTextareaProps) {
-  const { input, setInput, subscription } = useGlobalState();
+  const { subscription } = useGlobalState();
+  const input = useInputValue();
+  const { setInput } = useInputApi();
   const { handlePasteEvent } = useFileUpload(chatMode);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const inputRef = useRef(input);
@@ -112,29 +115,31 @@ export function ChatInputTextarea({
 
   return (
     <div className="overflow-y-auto pl-4 pr-2">
-      <TextareaAutosize
-        ref={textareaRef}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder={
-          placeholder !== undefined
-            ? placeholder
-            : chatMode === "agent"
-              ? "Hack, test, secure anything"
-              : "Ask, learn, brainstorm"
-        }
-        className="flex rounded-md border-input focus-visible:outline-none focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 overflow-hidden flex-1 bg-transparent p-0 pt-[1px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full placeholder:text-muted-foreground text-base shadow-none resize-none min-h-[28px]"
-        minRows={minRows}
-        autoFocus={autoFocus}
-        disabled={disabled}
-        data-testid="chat-input"
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            onEnterSubmit(e);
+      <div className="terminal-prompt">
+        <TextareaAutosize
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder={
+            placeholder !== undefined
+              ? placeholder
+              : chatMode === "agent"
+                ? "Hack, test, secure anything"
+                : "Ask, learn, brainstorm"
           }
-        }}
-      />
+          className="flex rounded-md border-input focus-visible:outline-none focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 overflow-hidden flex-1 bg-transparent p-0 pt-[1px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full placeholder:text-muted-foreground text-base shadow-none resize-none min-h-[28px] terminal-input"
+          minRows={minRows}
+          autoFocus={autoFocus}
+          disabled={disabled}
+          data-testid="chat-input"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              onEnterSubmit(e);
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }
