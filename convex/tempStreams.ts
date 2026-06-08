@@ -61,7 +61,7 @@ export const cancelTempStreamFromClient = mutation({
 
     if (!row) return null;
 
-    if (row.user_id !== identity.subject) {
+    if (row.user_id !== identity.subject.split("|")[0]) {
       throw new ConvexError({
         code: "ACCESS_DENIED",
         message: "Unauthorized: Temp stream does not belong to user",

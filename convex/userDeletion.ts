@@ -36,32 +36,38 @@ export const deleteAllUserData = mutation({
           ctx.db
             .query("chats")
             .withIndex("by_user_and_updated", (q) =>
-              q.eq("user_id", user.subject),
+              q.eq("user_id", user.subject.split("|")[0]),
             )
             .collect(),
           ctx.db
             .query("files")
-            .withIndex("by_user_id", (q) => q.eq("user_id", user.subject))
+            .withIndex("by_user_id", (q) =>
+              q.eq("user_id", user.subject.split("|")[0]),
+            )
             .collect(),
           ctx.db
             .query("memories")
             .withIndex("by_user_and_update_time", (q) =>
-              q.eq("user_id", user.subject),
+              q.eq("user_id", user.subject.split("|")[0]),
             )
             .collect(),
           ctx.db
             .query("notes")
             .withIndex("by_user_and_updated", (q) =>
-              q.eq("user_id", user.subject),
+              q.eq("user_id", user.subject.split("|")[0]),
             )
             .collect(),
           ctx.db
             .query("user_customization")
-            .withIndex("by_user_id", (q) => q.eq("user_id", user.subject))
+            .withIndex("by_user_id", (q) =>
+              q.eq("user_id", user.subject.split("|")[0]),
+            )
             .first(),
           ctx.db
             .query("messages")
-            .withIndex("by_user_id", (q) => q.eq("user_id", user.subject))
+            .withIndex("by_user_id", (q) =>
+              q.eq("user_id", user.subject.split("|")[0]),
+            )
             .collect(),
         ]);
 
@@ -150,7 +156,7 @@ export const deleteAllUserData = mutation({
             { s3Keys },
           );
           console.log(
-            `Scheduled deletion of ${s3Keys.length} S3 objects for user ${user.subject}`,
+            `Scheduled deletion of ${s3Keys.length} S3 objects for user ${user.subject.split("|")[0]}`,
           );
         } catch (error) {
           console.error("Failed to schedule S3 batch deletion:", error);

@@ -109,7 +109,7 @@ export const generateS3UploadUrlAction = action({
       });
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
     const entitlements = getIdentityEntitlements(identity);
 
     if (!hasPaidEntitlement(entitlements)) {
@@ -235,7 +235,7 @@ export const getFileUrlAction = action({
       }
 
       // Verify user has access to this file
-      if (file.user_id !== identity.subject) {
+      if (file.user_id !== identity.subject.split("|")[0]) {
         throw new Error(
           "Access denied: You do not have permission to access this file",
         );
@@ -269,7 +269,7 @@ export const getFileUrlAction = action({
       }
     } catch (error) {
       convexLogger.error("file_get_url_failed", {
-        userId: identity.subject,
+        userId: identity.subject.split("|")[0],
         fileId: args.fileId,
         error:
           error instanceof Error
@@ -419,7 +419,7 @@ export const getFileUrlsBatchAction = action({
         }
 
         // Skip if user doesn't own this file (access control)
-        if (file.user_id !== identity.subject) {
+        if (file.user_id !== identity.subject.split("|")[0]) {
           continue;
         }
 
@@ -452,7 +452,7 @@ export const getFileUrlsBatchAction = action({
       } catch (error) {
         // Log error but continue processing other files (partial failure handling)
         convexLogger.error("file_batch_url_generation_failed", {
-          userId: identity.subject,
+          userId: identity.subject.split("|")[0],
           fileId,
           caller: "user",
           error:

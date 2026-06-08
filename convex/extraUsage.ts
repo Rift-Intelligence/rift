@@ -645,7 +645,9 @@ export const getExtraUsageSettings = query({
 
     const settings = await ctx.db
       .query("extra_usage")
-      .withIndex("by_user_id", (q) => q.eq("user_id", identity.subject))
+      .withIndex("by_user_id", (q) =>
+        q.eq("user_id", identity.subject.split("|")[0]),
+      )
       .first();
 
     if (!settings) {
@@ -725,7 +727,9 @@ export const updateExtraUsageSettings = mutation({
 
     const settings = await ctx.db
       .query("extra_usage")
-      .withIndex("by_user_id", (q) => q.eq("user_id", identity.subject))
+      .withIndex("by_user_id", (q) =>
+        q.eq("user_id", identity.subject.split("|")[0]),
+      )
       .first();
 
     const updateData: Record<string, unknown> = {
@@ -762,7 +766,7 @@ export const updateExtraUsageSettings = mutation({
       await ctx.db.patch(settings._id, updateData);
     } else {
       await ctx.db.insert("extra_usage", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         balance_points: 0,
         ...updateData,
         updated_at: Date.now(),

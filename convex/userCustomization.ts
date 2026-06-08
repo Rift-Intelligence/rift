@@ -89,7 +89,9 @@ export const saveUserCustomization = mutation({
       // Check if user already has customization data
       const existing = await ctx.db
         .query("user_customization")
-        .withIndex("by_user_id", (q) => q.eq("user_id", identity.subject))
+        .withIndex("by_user_id", (q) =>
+          q.eq("user_id", identity.subject.split("|")[0]),
+        )
         .first();
 
       if (existing) {
@@ -120,7 +122,7 @@ export const saveUserCustomization = mutation({
       } else {
         // Create new customization with defaults for unset fields
         await ctx.db.insert("user_customization", {
-          user_id: identity.subject,
+          user_id: identity.subject.split("|")[0],
           nickname: args.nickname?.trim() || undefined,
           occupation: args.occupation?.trim() || undefined,
           personality: args.personality?.trim() || undefined,
@@ -180,7 +182,9 @@ export const getUserCustomization = query({
     try {
       const customization = await ctx.db
         .query("user_customization")
-        .withIndex("by_user_id", (q) => q.eq("user_id", identity.subject))
+        .withIndex("by_user_id", (q) =>
+          q.eq("user_id", identity.subject.split("|")[0]),
+        )
         .first();
 
       if (!customization) {

@@ -703,7 +703,7 @@ export const saveFile = action({
           message: "Unauthorized: User not authenticated",
         });
       }
-      actingUserId = user.subject;
+      actingUserId = user.subject.split("|")[0];
       entitlements = parseEntitlements(user.entitlements);
 
       // Security: Only backend (service key) flows can directly set skipTokenValidation

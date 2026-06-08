@@ -318,7 +318,7 @@ export const getUnreadRewardNotifications = query({
     const rewards = await ctx.db
       .query("referral_rewards")
       .withIndex("by_referrer_user_id", (q) =>
-        q.eq("referrer_user_id", identity.subject),
+        q.eq("referrer_user_id", identity.subject.split("|")[0]),
       )
       .order("desc")
       .take(20);
@@ -358,7 +358,7 @@ export const markRewardNotificationsSeen = mutation({
       const reward = await ctx.db.get(rewardId);
       if (
         !reward ||
-        reward.referrer_user_id !== identity.subject ||
+        reward.referrer_user_id !== identity.subject.split("|")[0] ||
         reward.reward_type !== "referrer_conversion" ||
         reward.status !== "awarded" ||
         reward.notification_seen_at !== undefined

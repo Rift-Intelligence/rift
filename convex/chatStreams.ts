@@ -112,7 +112,7 @@ export const cancelStreamFromClient = mutation({
     }
 
     // Verify ownership
-    if (chat.user_id !== identity.subject) {
+    if (chat.user_id !== identity.subject.split("|")[0]) {
       throw new ConvexError({
         code: "ACCESS_DENIED",
         message: "Unauthorized: Chat does not belong to user",

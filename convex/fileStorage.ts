@@ -45,15 +45,15 @@ export const getFileDownloadUrl = query({
     // an unavailable URL instead of a Convex exception.
     if (!file) {
       convexLogger.warn("file_download_url_missing_file", {
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         storage_id: args.storageId,
       });
       return null;
     }
 
-    if (file.user_id !== user.subject) {
+    if (file.user_id !== user.subject.split("|")[0]) {
       convexLogger.warn("file_download_url_access_denied", {
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         file_id: file._id,
         storage_id: args.storageId,
       });
@@ -88,13 +88,13 @@ export const deleteFile = mutation({
 
     if (!file) {
       convexLogger.warn("file_delete_missing_file", {
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         file_id: args.fileId,
       });
       return null;
     }
 
-    if (file.user_id !== user.subject) {
+    if (file.user_id !== user.subject.split("|")[0]) {
       throw new ConvexError({
         code: "UNAUTHORIZED",
         message: "Unauthorized: File does not belong to user",

@@ -269,7 +269,9 @@ export const getPaymentStatus = action({
     }
 
     try {
-      const stripeCustomerId = await getStripeCustomerId(identity.subject);
+      const stripeCustomerId = await getStripeCustomerId(
+        identity.subject.split("|")[0],
+      );
       if (!stripeCustomerId) {
         return {
           hasPaymentMethod: false,
@@ -338,7 +340,9 @@ export const createPurchaseSession = action({
     }
 
     try {
-      const stripeCustomerId = await getStripeCustomerId(identity.subject);
+      const stripeCustomerId = await getStripeCustomerId(
+        identity.subject.split("|")[0],
+      );
       if (!stripeCustomerId) {
         return {
           url: null,
@@ -374,7 +378,7 @@ export const createPurchaseSession = action({
         },
         metadata: {
           type: "extra_usage_purchase",
-          userId: identity.subject,
+          userId: identity.subject.split("|")[0],
           amountDollars: String(args.amountDollars),
         },
         success_url: `${args.baseUrl}/api/extra-usage/confirm?session_id={CHECKOUT_SESSION_ID}`,
@@ -382,7 +386,7 @@ export const createPurchaseSession = action({
       });
 
       convexLogger.info("purchase_session_created", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         amount_dollars: args.amountDollars,
         session_id: session.id,
       });
@@ -390,7 +394,7 @@ export const createPurchaseSession = action({
       return { url: session.url };
     } catch (error) {
       convexLogger.error("purchase_session_failed", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         amount_dollars: args.amountDollars,
         error: error instanceof Error ? error.message : "Unknown error",
       });
@@ -433,7 +437,9 @@ export const createBillingPortalSession = action({
     }
 
     try {
-      const stripeCustomerId = await getStripeCustomerId(identity.subject);
+      const stripeCustomerId = await getStripeCustomerId(
+        identity.subject.split("|")[0],
+      );
       if (!stripeCustomerId) {
         return { url: null, error: "No billing account found" };
       }
