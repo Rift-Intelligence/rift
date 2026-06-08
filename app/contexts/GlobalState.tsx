@@ -191,39 +191,8 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     }
   }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-
-    fetch("/api/referrals/attribution", {
-      method: "POST",
-      credentials: "include",
-    })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const body = (await response.json().catch(() => null)) as {
-          status?: string;
-          starterBonusUnitsAwarded?: boolean;
-          starterBonusUnits?: number;
-        } | null;
-        const bonusUnits =
-          typeof body?.starterBonusUnits === "number"
-            ? body.starterBonusUnits
-            : 0;
-
-        if (
-          body?.status === "attributed" &&
-          body.starterBonusUnitsAwarded &&
-          bonusUnits > 0
-        ) {
-          toast.success("Referral bonus added", {
-            description: `You got ${bonusUnits} extra free request${bonusUnits === 1 ? "" : "s"}.`,
-          });
-        }
-      })
-      .catch(() => {
-        // Referral attribution is best-effort and must never block app startup.
-      });
-  }, [user]);
+  // Referral attribution ran through a WorkOS-era endpoint that has been
+  // removed; referral rewards are deferred with the billing/teams rework.
 
   const unreadReferralRewardNotifications = useQuery(
     api.referrals.getUnreadRewardNotifications,

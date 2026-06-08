@@ -4,7 +4,6 @@ import { action } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import Stripe from "stripe";
-import { WorkOS } from "@workos-inc/node";
 import { convexLogger } from "./lib/logger";
 
 // =============================================================================
@@ -12,7 +11,6 @@ import { convexLogger } from "./lib/logger";
 // =============================================================================
 
 let stripeInstance: Stripe | null = null;
-let workosInstance: WorkOS | null = null;
 
 function getStripe(): Stripe {
   if (!stripeInstance) {
@@ -23,62 +21,15 @@ function getStripe(): Stripe {
   return stripeInstance;
 }
 
-function getWorkOS(): WorkOS {
-  if (!workosInstance) {
-    const key = process.env.WORKOS_API_KEY;
-    if (!key) throw new Error("WORKOS_API_KEY not configured");
-    workosInstance = new WorkOS(key, {
-      clientId: process.env.WORKOS_CLIENT_ID,
-    });
-  }
-  return workosInstance;
-}
-
 // =============================================================================
 // Helper Functions
 // =============================================================================
 
-type BillingMembership = {
-  organizationId: string;
-  status?: string;
-  role?: { slug?: string } | null;
-  roles?: Array<{ slug?: string } | null> | null;
-};
-
-function canManageOrganizationBilling(membership: BillingMembership): boolean {
-  const status = membership.status;
-  const roleSlug = membership.role?.slug;
-  const roles = membership.roles;
-  const hasBillingRole =
-    roleSlug === "admin" ||
-    roleSlug === "owner" ||
-    roles?.some((role) => role?.slug === "admin" || role?.slug === "owner");
-
-  return (status === undefined || status === "active") && !!hasBillingRole;
-}
-
-async function getStripeCustomerId(userId: string): Promise<string | null> {
-  const workos = getWorkOS();
-
-  const memberships = await workos.userManagement.listOrganizationMemberships({
-    userId,
-    statuses: ["active"],
-  });
-
-  if (!memberships.data || memberships.data.length === 0) {
-    return null;
-  }
-
-  const billingMembership = memberships.data.find(canManageOrganizationBilling);
-  if (!billingMembership) {
-    return null;
-  }
-
-  const organization = await workos.organizations.getOrganization(
-    billingMembership.organizationId,
-  );
-
-  return organization.stripeCustomerId || null;
+// The Stripe customer used to be resolved from the user's WorkOS organization.
+// WorkOS has been removed and per-user billing is deferred, so there is no
+// customer to resolve yet; callers treat null as "no billing configured".
+async function getStripeCustomerId(_userId: string): Promise<string | null> {
+  return null;
 }
 
 async function getStripePaymentMethod(customerId: string): Promise<{

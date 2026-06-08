@@ -1,9 +1,7 @@
 import * as dotenv from "dotenv";
 import * as path from "path";
-import { WorkOS } from "@workos-inc/node";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
-import { getTestUsersRecord } from "../../scripts/test-users-config";
 
 function loadEnv(): void {
   dotenv.config({ path: path.join(process.cwd(), ".env.e2e") });
@@ -19,23 +17,12 @@ function getConvexEnv(): { convexUrl: string; serviceKey: string } | null {
 }
 
 /**
- * Get the WorkOS user ID for the pro test user.
+ * Previously resolved the pro test user's id from WorkOS. Auth now runs on
+ * Convex Auth; this returns null until the e2e suite is reworked to seed/resolve
+ * users via Convex.
  */
 export async function getProUserId(): Promise<string | null> {
-  loadEnv();
-  const workosKey = process.env.WORKOS_API_KEY;
-  const workosClientId = process.env.WORKOS_CLIENT_ID;
-  if (!workosKey || !workosClientId) return null;
-  try {
-    const workos = new WorkOS(workosKey, { clientId: workosClientId });
-    const proEmail = getTestUsersRecord().pro.email;
-    const { data } = await workos.userManagement.listUsers({
-      email: proEmail,
-    });
-    return data[0]?.id ?? null;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 /**

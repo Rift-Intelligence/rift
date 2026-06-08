@@ -4,7 +4,6 @@ import { action } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import Stripe from "stripe";
-import { WorkOS } from "@workos-inc/node";
 import { convexLogger } from "./lib/logger";
 
 // =============================================================================
@@ -12,7 +11,6 @@ import { convexLogger } from "./lib/logger";
 // =============================================================================
 
 let stripeInstance: Stripe | null = null;
-let workosInstance: WorkOS | null = null;
 const POINTS_PER_DOLLAR = 10_000;
 
 function getStripe(): Stripe {
@@ -24,28 +22,16 @@ function getStripe(): Stripe {
   return stripeInstance;
 }
 
-function getWorkOS(): WorkOS {
-  if (!workosInstance) {
-    const key = process.env.WORKOS_API_KEY;
-    if (!key) throw new Error("WORKOS_API_KEY not configured");
-    workosInstance = new WorkOS(key, {
-      clientId: process.env.WORKOS_CLIENT_ID,
-    });
-  }
-  return workosInstance;
-}
-
 // =============================================================================
 // Helpers (org-scoped variants of the per-user helpers in extraUsageActions.ts)
 // =============================================================================
 
+// Org Stripe customers were resolved through WorkOS organizations, which have
+// been removed. Team billing is deferred, so there is no customer to resolve.
 async function getOrgStripeCustomerId(
-  organizationId: string,
+  _organizationId: string,
 ): Promise<string | null> {
-  const workos = getWorkOS();
-  const organization =
-    await workos.organizations.getOrganization(organizationId);
-  return organization.stripeCustomerId || null;
+  return null;
 }
 
 async function getDefaultPaymentMethodId(
