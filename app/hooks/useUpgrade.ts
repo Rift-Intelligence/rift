@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import { toast } from "sonner";
 import {
   captureAuthenticatedEvent,

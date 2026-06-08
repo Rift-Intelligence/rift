@@ -7,7 +7,7 @@ import { Loader2, AlertCircle } from "lucide-react";
 import { SharedChatProvider, useSharedChatContext } from "./SharedChatContext";
 import { ComputerSidebarBase } from "@/app/components/ComputerSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import Header from "@/app/components/Header";
 import ChatHeader from "@/app/components/ChatHeader";
 import MainSidebar from "@/app/components/Sidebar";

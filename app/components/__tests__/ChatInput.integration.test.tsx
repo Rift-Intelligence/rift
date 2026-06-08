@@ -21,10 +21,20 @@ jest.mock("@/lib/utils/client-storage", () => ({
 
 // Mock Convex hooks used by useFileUpload
 jest.mock("convex/react", () => ({
-  useAuth: () => ({ user: null, entitlements: [] }),
+  useConvexAuth: () => ({ isLoading: false, isAuthenticated: false }),
   useMutation: () => jest.fn(),
   useAction: () => jest.fn(),
   useQuery: () => undefined,
+}));
+
+jest.mock("@/app/hooks/useAuth", () => ({
+  __esModule: true,
+  useAuth: () => ({
+    user: null,
+    loading: false,
+    isAuthenticated: false,
+    entitlements: [],
+  }),
 }));
 
 jest.mock("../../hooks/useFileUpload", () => ({

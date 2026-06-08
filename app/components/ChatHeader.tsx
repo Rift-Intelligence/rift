@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import {
   PanelLeft,
   Sparkle,

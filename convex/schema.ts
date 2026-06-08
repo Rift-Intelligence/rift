@@ -1,7 +1,10 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
+  // Convex Auth tables (users, authAccounts, authSessions, ...)
+  ...authTables,
   chats: defineTable({
     id: v.string(),
     title: v.string(),

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { ModeSelectorTrigger, ModeSelectorContent } from "./ModeSelectorMenu";
 import { useGlobalState } from "@/app/contexts/GlobalState";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import { toast } from "sonner";
 import { AgentUpgradeDialog } from "./AgentUpgradeDialog";
 import { navigateToAuth } from "@/app/hooks/useTauri";

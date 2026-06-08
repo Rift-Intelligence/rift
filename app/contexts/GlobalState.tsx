@@ -10,7 +10,7 @@ import React, {
   useRef,
   ReactNode,
 } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import {
   type ChatMode,
   type SelectedModel,

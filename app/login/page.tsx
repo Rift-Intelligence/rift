@@ -3,14 +3,14 @@ import ZauthPageShell from "@/app/components/ZauthPageShell";
 import AuthForm from "@/app/components/AuthForm";
 
 export const metadata: Metadata = {
-  title: "Sign up | RIFT",
-  description: "Create your RIFT account.",
+  title: "Log in | RIFT",
+  description: "Sign in to RIFT.",
 };
 
-export default function SignupPage() {
+export default function LoginPage() {
   return (
     <ZauthPageShell header={false} center>
-      <AuthForm flow="signUp" />
+      <AuthForm flow="signIn" />
     </ZauthPageShell>
   );
 }

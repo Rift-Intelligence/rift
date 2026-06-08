@@ -5,6 +5,17 @@ import { render, screen } from "@testing-library/react";
 // ===== IMPORTANT: Mock all dependencies BEFORE importing Chat =====
 // These mocks are hoisted by Jest
 
+// Auth shim (Convex Auth) — keep the chat tree free of a real Convex provider
+jest.mock("@/app/hooks/useAuth", () => ({
+  __esModule: true,
+  useAuth: () => ({
+    user: null,
+    loading: false,
+    isAuthenticated: false,
+    entitlements: [],
+  }),
+}));
+
 // Mock @ai-sdk/react
 const mockSendMessage = jest.fn();
 const mockSetMessages = jest.fn();

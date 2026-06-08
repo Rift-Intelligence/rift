@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUpgrade } from "../hooks/useUpgrade";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import { useGlobalState } from "../contexts/GlobalState";
 import UpgradeConfirmationDialog from "./UpgradeConfirmationDialog";
 import { PRICING } from "@/lib/pricing/features";

@@ -54,9 +54,11 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.66",
     "@ai-sdk/react": "3.0.193",
+    "@auth/core": "^0.37.0",
     "@aws-sdk/client-s3": "3.1055.0",
     "@aws-sdk/s3-request-presigner": "3.1055.0",
     "@convex-dev/aggregate": "^0.2.1",
+    "@convex-dev/auth": "^0.0.93",
     "@convex-dev/workos": "^0.0.3",
     "@e2b/code-interpreter": "2.5.0",
     "@langchain/community": "^1.1.29",

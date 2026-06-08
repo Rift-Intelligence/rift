@@ -1,133 +1,88 @@
 import type { NextRequest } from "next/server";
+import { decodeJwt } from "jose";
+import { convexAuthNextjsToken } from "@convex-dev/auth/nextjs/server";
 import { ChatSDKError } from "@/lib/errors";
 import type { SubscriptionTier } from "@/types";
-import {
-  parseEntitlements,
-  resolveSubscriptionTier,
-} from "@/lib/auth/entitlements";
 import {
   MOCK_TIER_STORAGE_KEY,
   resolveMockTierFromCookie,
 } from "@/lib/billing/mock-billing";
 
 /**
- * Get the current user ID from the authenticated session
- * Throws ChatSDKError if user is not authenticated
+ * Server-side identity, backed by Convex Auth.
  *
- * @param req - NextRequest object (server-side only)
- * @returns Promise<string> - User ID
- * @throws ChatSDKError - When user is not authenticated
+ * The Convex Auth session JWT carries a `sub` claim of the form
+ * `<userId>|<sessionId>`; the stable user id is the part before the pipe
+ * (matching `getAuthUserId` on the Convex side).
  */
-export const getUserID = async (req: NextRequest): Promise<string> => {
+async function resolveUserId(): Promise<string | null> {
+  const token = await convexAuthNextjsToken();
+  if (!token) return null;
   try {
-    const { authkit } = await import("@workos-inc/authkit-nextjs");
-    const { session } = await authkit(req);
+    const sub = decodeJwt(token).sub;
+    if (!sub) return null;
+    return sub.split("|")[0] || null;
+  } catch {
+    return null;
+  }
+}
 
-    if (!session?.user?.id) {
-      throw new ChatSDKError("unauthorized:auth");
-    }
-
-    return session.user.id;
-  } catch (error) {
-    if (error instanceof ChatSDKError) {
-      throw error;
-    }
-
-    console.error("Failed to get user session:", error);
+/**
+ * Get the current user ID from the authenticated session.
+ * @throws ChatSDKError when the user is not authenticated.
+ */
+export const getUserID = async (_req?: NextRequest): Promise<string> => {
+  const userId = await resolveUserId();
+  if (!userId) {
     throw new ChatSDKError("unauthorized:auth");
   }
+  return userId;
 };
 
 /**
- * Get the current user ID and pro status from the authenticated session
- * Throws ChatSDKError if user is not authenticated
+ * Get the current user ID plus subscription tier.
  *
- * @param req - NextRequest object (server-side only)
- * @returns Promise<{ userId: string; isPro: boolean; subscription: SubscriptionTier }> - Object with userId, isPro, and subscription
- * @throws ChatSDKError - When user is not authenticated
+ * NOTE: paid entitlements were a WorkOS construct; billing/teams migration is
+ * deferred, so the tier defaults to `"free"` unless a local mock-billing cookie
+ * overrides it (used for exercising paid features in development).
  */
 export const getUserIDAndPro = async (
-  req: NextRequest,
+  req?: NextRequest,
 ): Promise<{
   userId: string;
   subscription: SubscriptionTier;
   organizationId?: string;
 }> => {
-  try {
-    const { authkit } = await import("@workos-inc/authkit-nextjs");
-    const { session } = await authkit(req);
-
-    if (!session?.user?.id) {
-      throw new ChatSDKError("unauthorized:auth");
-    }
-
-    const entitlements = parseEntitlements(session.entitlements);
-    // Mock billing: honor a locally-set tier cookie so agent mode and other
-    // paid features can be exercised end-to-end during local testing. This is
-    // a no-op unless the MOCK_BILLING server env is explicitly enabled.
-    const mockTier = resolveMockTierFromCookie(
-      req.cookies.get(MOCK_TIER_STORAGE_KEY)?.value,
-    );
-    const subscription = mockTier ?? resolveSubscriptionTier(entitlements);
-
-    return {
-      userId: session.user.id,
-      subscription,
-      organizationId: (session as any).organizationId as string | undefined,
-    };
-  } catch (error) {
-    if (error instanceof ChatSDKError) {
-      throw error;
-    }
-
-    console.error("Failed to get user session:", error);
+  const userId = await resolveUserId();
+  if (!userId) {
     throw new ChatSDKError("unauthorized:auth");
   }
+
+  const mockTier = resolveMockTierFromCookie(
+    req?.cookies.get(MOCK_TIER_STORAGE_KEY)?.value,
+  );
+
+  return {
+    userId,
+    subscription: mockTier ?? "free",
+    organizationId: undefined,
+  };
 };
 
 /**
- * Get the current user ID only if the user has signed in recently.
- * Enforces a freshness window (default 10 minutes) using session.user.lastSignInAt.
- * Throws ChatSDKError if unauthenticated or if the last sign-in is stale.
+ * Get the current user ID only for recently-authenticated sessions.
  *
- * @param req - NextRequest object (server-side only)
- * @param windowMs - Freshness window in milliseconds (default 10 minutes)
- * @returns Promise<string> - User ID
- * @throws ChatSDKError - When user is not authenticated or login is stale
+ * The freshness window was enforced via WorkOS `lastSignInAt`, which Convex
+ * Auth does not expose; for now this is equivalent to {@link getUserID}. A
+ * step-up re-auth check can be layered back on with the teams/MFA migration.
  */
 export const getUserIDWithFreshLogin = async (
-  req: NextRequest,
-  windowMs: number = 10 * 60 * 1000,
+  _req?: NextRequest,
+  _windowMs: number = 10 * 60 * 1000,
 ): Promise<string> => {
-  try {
-    const { authkit } = await import("@workos-inc/authkit-nextjs");
-    const { session } = await authkit(req);
-
-    if (!session?.user?.id) {
-      throw new ChatSDKError("unauthorized:auth", "missing_session_user");
-    }
-
-    const lastSignInAt: unknown = (session as any)?.user?.lastSignInAt;
-    const lastSignInMs =
-      typeof lastSignInAt === "string" ? Date.parse(lastSignInAt) : NaN;
-
-    if (!Number.isFinite(lastSignInMs)) {
-      throw new ChatSDKError("unauthorized:auth", "missing_last_sign_in");
-    }
-
-    const now = Date.now();
-    const isFresh = now - lastSignInMs <= windowMs;
-    if (!isFresh) {
-      throw new ChatSDKError("unauthorized:auth", "recent_login_required");
-    }
-
-    return session.user.id;
-  } catch (error) {
-    if (error instanceof ChatSDKError) {
-      throw error;
-    }
-
-    console.error("Failed to verify fresh login:", error);
+  const userId = await resolveUserId();
+  if (!userId) {
     throw new ChatSDKError("unauthorized:auth", "recent_login_required");
   }
+  return userId;
 };

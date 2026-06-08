@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { GlobalStateProvider } from "./contexts/GlobalState";
 import { InputProvider } from "./contexts/InputContext";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { TodoBlockProvider } from "./contexts/TodoBlockContext";
 import { PostHogProvider } from "./providers";
 import { DataStreamProvider } from "./components/DataStreamProvider";
@@ -123,24 +124,26 @@ export default function RootLayout({
   );
 
   return (
-    <html
-      lang="en"
-      className="dark h-full terminal-scanlines"
-      suppressHydrationWarning
-    >
-      <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover"
-        />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-      </head>
-      <body
-        className={`${jetbrainsMono.variable} ${inter.variable} ${instrumentSerif.variable} antialiased h-full`}
+    <ConvexAuthNextjsServerProvider>
+      <html
+        lang="en"
+        className="dark h-full terminal-scanlines"
         suppressHydrationWarning
       >
-        <ConvexClientProvider>{content}</ConvexClientProvider>
-      </body>
-    </html>
+        <head>
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, viewport-fit=cover"
+          />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        </head>
+        <body
+          className={`${jetbrainsMono.variable} ${inter.variable} ${instrumentSerif.variable} antialiased h-full`}
+          suppressHydrationWarning
+        >
+          <ConvexClientProvider>{content}</ConvexClientProvider>
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
   );
 }
