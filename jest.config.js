@@ -17,6 +17,7 @@ const customJestConfig = {
     "^stripe$": "<rootDir>/__mocks__/stripe.ts",
     "^@/(.*)$": "<rootDir>/$1",
     "^convex/react$": "<rootDir>/__mocks__/convex-react.ts",
+    "^@convex-dev/auth/react$": "<rootDir>/__mocks__/convex-dev-auth-react.ts",
     "^uuid$": "<rootDir>/__mocks__/uuid.ts",
     "^react-hotkeys-hook$": "<rootDir>/__mocks__/react-hotkeys-hook.ts",
     "^react-markdown$": "<rootDir>/__mocks__/react-markdown.tsx",

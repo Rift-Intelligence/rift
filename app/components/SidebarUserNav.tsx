@@ -41,6 +41,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { clientLogout } from "@/lib/utils/logout";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
 
@@ -201,6 +202,7 @@ const UpgradeBanner = ({ isCollapsed }: { isCollapsed: boolean }) => {
 
 const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const { user } = useAuth();
+  const { signOut } = useAuthActions();
   const { isCheckingProPlan, subscription } = useGlobalState();
   const [rateLimitsExpanded, setRateLimitsExpanded] = useState(false);
   const [referralDialogOpen, setReferralDialogOpen] = useState(false);
@@ -279,8 +281,15 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   // Determine if user has pro subscription
   const isProUser = subscription !== "free";
 
-  const handleLogOut = () => {
-    clientLogout();
+  const handleLogOut = async () => {
+    try {
+      // Clear the Convex Auth session (cookie + server state) first.
+      await signOut();
+    } catch {
+      // ignore — still clear local state and redirect below
+    }
+    // Clear local drafts/model selection and land on the public home.
+    clientLogout("/");
   };
 
   const handleHelpCenter = () => {
