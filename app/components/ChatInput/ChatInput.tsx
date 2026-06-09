@@ -78,7 +78,6 @@ export const ChatInput = ({
     selectedModel,
     setSelectedModel,
     subscription,
-    isCheckingProPlan,
     temporaryChatsEnabled,
     hasLocalSandbox,
     defaultLocalSandboxPreference,
@@ -102,8 +101,11 @@ export const ChatInput = ({
   // 1. Requires local sandbox — fall back to ask mode if disconnected
   // 2. Force local sandbox preference (not e2b)
   // 3. Force auto model selection
-  const isFreeAgent =
-    !isCheckingProPlan && subscription === "free" && isAgentMode(chatMode);
+  //
+  // Subscription tiers were removed, so every signed-in user can run cloud
+  // (E2B) Agent mode. The old "free Agent requires a local sandbox, else fall
+  // back to Ask" downgrade no longer applies.
+  const isFreeAgent = false;
 
   const prevHasLocalSandboxRef = useRef(hasLocalSandbox);
   useEffect(() => {

@@ -888,29 +888,14 @@ export async function applyPrepareStepReminders(
  * Free-tier agent mode is restricted to the local sandbox + auto model.
  * Throws ChatSDKError("forbidden:chat") if either gate fails.
  */
-export function assertFreeAgentGates(args: {
+export function assertFreeAgentGates(_args: {
   mode: ChatMode;
   subscription: SubscriptionTier;
   sandboxPreference: SandboxPreference | undefined;
   rawSelectedModel: string | undefined;
 }): void {
-  const { mode, subscription, sandboxPreference, rawSelectedModel } = args;
-  if (!isAgentMode(mode) || subscription !== "free") return;
-
-  const isLocalSandbox = sandboxPreference && sandboxPreference !== "e2b";
-  if (!isLocalSandbox) {
-    throw new ChatSDKError(
-      "forbidden:chat",
-      "Agent mode on the free plan requires a local sandbox. Install the desktop app or upgrade to Pro for cloud access.",
-    );
-  }
-
-  if (rawSelectedModel && rawSelectedModel !== "auto") {
-    throw new ChatSDKError(
-      "forbidden:chat",
-      "Custom model selection in agent mode requires a Pro plan. Free agent mode uses the default model.",
-    );
-  }
+  // Subscription tiers were removed: every signed-in user can run cloud (E2B)
+  // Agent mode with any model, so there are no free-tier agent gates anymore.
 }
 
 /**
