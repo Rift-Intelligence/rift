@@ -35,7 +35,7 @@ export const upsertActive = mutation({
     sourceReason: v.optional(v.string()),
     stripeCustomerId: v.string(),
     stripeChargeId: v.optional(v.string()),
-    workosOrganizationId: v.optional(v.string()),
+    organizationId: v.optional(v.string()),
     sourceCreatedAt: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -57,7 +57,7 @@ export const upsertActive = mutation({
       source_reason: args.sourceReason,
       stripe_customer_id: args.stripeCustomerId,
       stripe_charge_id: args.stripeChargeId,
-      workos_organization_id: args.workosOrganizationId,
+      organization_id: args.organizationId,
       updated_at: now,
       source_created_at: args.sourceCreatedAt ?? now,
       resolved_at: undefined,

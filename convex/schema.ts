@@ -317,7 +317,7 @@ export default defineSchema({
     source_reason: v.optional(v.string()),
     stripe_customer_id: v.string(),
     stripe_charge_id: v.optional(v.string()),
-    workos_organization_id: v.optional(v.string()),
+    organization_id: v.optional(v.string()),
     created_at: v.number(),
     updated_at: v.number(),
     source_created_at: v.optional(v.number()),

@@ -191,7 +191,7 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     }
   }, [user]);
 
-  // Referral attribution ran through a WorkOS-era endpoint that has been
+  // Referral attribution ran through a a removed endpoint that has been
   // removed; referral rewards are deferred with the billing/teams rework.
 
   const unreadReferralRewardNotifications = useQuery(
@@ -381,7 +381,7 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
       return;
     }
 
-    // Mock billing: a locally-persisted tier takes precedence over WorkOS
+    // Mock billing: a locally-persisted tier takes precedence over server
     // entitlements so upgrades reflect immediately during local testing.
     if (isMockBillingEnabled()) {
       const mockTier = getMockTier();
@@ -397,7 +397,7 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
   }, [user, entitlements, setSubscriptionWithNormalize]);
 
   // Desktop sessions are created through a separate OAuth transfer flow. Older
-  // desktop sessions may be unscoped, so refresh once to pull WorkOS
+  // desktop sessions may be unscoped, so refresh once to pull server
   // entitlements from the user's organization before showing them as free.
   useEffect(() => {
     const refreshDesktopEntitlements = async () => {

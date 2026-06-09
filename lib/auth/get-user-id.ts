@@ -42,7 +42,7 @@ export const getUserID = async (_req?: NextRequest): Promise<string> => {
 /**
  * Get the current user ID plus subscription tier.
  *
- * NOTE: paid entitlements were a WorkOS construct; billing/teams migration is
+ * NOTE: paid entitlements were a billing construct; billing/teams migration is
  * deferred, so the tier defaults to `"free"` unless a local mock-billing cookie
  * overrides it (used for exercising paid features in development).
  */
@@ -72,7 +72,7 @@ export const getUserIDAndPro = async (
 /**
  * Get the current user ID only for recently-authenticated sessions.
  *
- * The freshness window was enforced via WorkOS `lastSignInAt`, which Convex
+ * The freshness window was enforced via a last-sign-in timestamp, which Convex
  * Auth does not expose; for now this is equivalent to {@link getUserID}. A
  * step-up re-auth check can be layered back on with the teams/MFA migration.
  */

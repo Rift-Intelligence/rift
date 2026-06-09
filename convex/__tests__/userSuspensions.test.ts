@@ -41,7 +41,7 @@ type SuspensionRow = {
   source_reason?: string;
   stripe_customer_id: string;
   stripe_charge_id?: string;
-  workos_organization_id?: string;
+  organization_id?: string;
   created_at: number;
   updated_at: number;
   source_created_at?: number;
@@ -119,7 +119,7 @@ const baseArgs = {
   sourceReason: "fraudulent",
   stripeCustomerId: "cus_123",
   stripeChargeId: "ch_123",
-  workosOrganizationId: "org_123",
+  organizationId: "org_123",
   sourceCreatedAt: 1_000,
 };
 

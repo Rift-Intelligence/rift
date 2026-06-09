@@ -545,7 +545,7 @@ export const getTeamExtraUsageStateForBackend = query({
 /**
  * Admin dashboard: read team pool settings + the org's member usage list.
  * Member names/emails are NOT included here — the caller (admin API route)
- * already fetched those from WorkOS and merges them in.
+ * already fetched those from the provider and merges them in.
  */
 export const getTeamExtraUsageAdminView = query({
   args: {

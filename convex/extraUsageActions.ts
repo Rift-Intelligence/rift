@@ -25,8 +25,8 @@ function getStripe(): Stripe {
 // Helper Functions
 // =============================================================================
 
-// The Stripe customer used to be resolved from the user's WorkOS organization.
-// WorkOS has been removed and per-user billing is deferred, so there is no
+// The Stripe customer used to be resolved from the user's organization.
+// it has been removed and per-user billing is deferred, so there is no
 // customer to resolve yet; callers treat null as "no billing configured".
 async function getStripeCustomerId(_userId: string): Promise<string | null> {
   return null;

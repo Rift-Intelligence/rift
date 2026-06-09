@@ -4,7 +4,7 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 /**
- * Drop-in replacement for the previous WorkOS `useAuth()` hook, backed by
+ * Drop-in replacement for the previous auth hook, backed by
  * Convex Auth. Returns the same `{ user, loading, entitlements }` shape the
  * app's components already consume.
  *
@@ -45,7 +45,7 @@ export function useAuth(): {
     };
   }
 
-  // Entitlements were a WorkOS construct; billing/teams migration is deferred,
+  // Entitlements were a billing construct; billing/teams migration is deferred,
   // so expose an empty set for now (consumers treat this as "free tier").
   return { user, loading, isAuthenticated, entitlements: [] };
 }

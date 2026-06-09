@@ -6,8 +6,8 @@ import { ChatSDKError } from "@/lib/errors";
 /**
  * Account deletion. The user's Convex data is removed client-side (via the
  * deleteAllUserData mutation) before this route runs; here we purge server-side
- * rate-limit state. WorkOS org/Stripe-customer teardown was removed with the
- * WorkOS migration; billing teardown will return with the billing rework.
+ * rate-limit state. org/Stripe-customer teardown was removed with the
+ * auth migration; billing teardown will return with the billing rework.
  */
 export const POST = async (req: NextRequest) => {
   try {

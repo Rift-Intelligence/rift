@@ -29,7 +29,7 @@ export const isUnauthorizedError = (err: unknown): boolean => {
 
 export const isRateLimitError = (err: unknown): boolean => {
   const normalized = extractErrorMessage(err).toLowerCase();
-  // Detect common 429 shapes, WorkOS SDK message, and nested cause (TokenRefreshError wraps RateLimitExceededException)
+  // Detect common 429 shapes, auth SDK message, and nested cause (TokenRefreshError wraps RateLimitExceededException)
 
   const statusCode = (err as any)?.status;
   const causeStatusCode = (err as any)?.cause?.status;

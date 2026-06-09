@@ -26,7 +26,7 @@ function getStripe(): Stripe {
 // Helpers (org-scoped variants of the per-user helpers in extraUsageActions.ts)
 // =============================================================================
 
-// Org Stripe customers were resolved through WorkOS organizations, which have
+// Org Stripe customers were resolved through organizations, which have
 // been removed. Team billing is deferred, so there is no customer to resolve.
 async function getOrgStripeCustomerId(
   _organizationId: string,
