@@ -442,11 +442,9 @@ export class HybridSandboxManager implements SandboxManager {
   }
 
   async getSandbox(): Promise<{ sandbox: SandboxInstance }> {
-    // If preference is E2B, always use E2B (but block for free users)
+    // If preference is E2B, always use E2B. Subscription tiers were removed, so
+    // cloud E2B is available to every signed-in user (no paid-plan gate).
     if (this.sandboxPreference === "e2b") {
-      if (this.subscription === "free") {
-        throw new Error("Cloud sandbox requires a paid plan.");
-      }
       return this.getE2BSandbox();
     }
 

@@ -4,8 +4,8 @@
     {
       "name": "rift",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
-      "port": 3000
+      "runtimeArgs": ["exec", "next", "dev", "--turbopack", "-p", "3010"],
+      "port": 3010
     }
   ]
 }
