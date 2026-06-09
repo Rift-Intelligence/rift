@@ -7,8 +7,10 @@ import type { ChatMode } from "@/types/chat";
 
 const MODE_VARIANT_CLASSES: Record<ChatMode, string> = {
   ask: "bg-muted hover:bg-muted/50",
+  // Agent = weapon-hot offensive mode → primary cyan signal (not red; red is
+  // reserved strictly for alarm/stop states in the EYE system).
   agent:
-    "bg-red-500/10 text-red-700 hover:bg-red-500/20 dark:bg-red-400/10 dark:text-red-400 dark:hover:bg-red-400/20",
+    "bg-primary/10 text-primary hover:bg-primary/20 ring-1 ring-primary/30",
 };
 
 const baseClasses =

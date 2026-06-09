@@ -61,7 +61,7 @@ const UnauthenticatedContent = () => {
   }, []);
 
   return (
-    <div className="relative h-full flex flex-col overflow-hidden bg-[#1d1d1d]">
+    <div className="relative h-full flex flex-col overflow-hidden bg-background">
       {/* zauth-grade atmosphere: conic glow + dot-matrix field + bottom fade */}
       <ZauthBackdrop className="z-0" />
 
@@ -74,18 +74,19 @@ const UnauthenticatedContent = () => {
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-[15vh] pb-[18vh] min-h-0">
           {/* Title */}
           <div className="mb-10 flex flex-col items-center px-4 text-center">
-            <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-[#f4f4f5] sm:text-6xl md:text-7xl">
-              <span className="block">Find vulnerabilities</span>
+            <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl">
+              <span className="block">See everything.</span>
               <span className="display-emphasis animate-hero-highlight block">
-                before they&apos;re exploited.
+                Miss nothing.
               </span>
             </h1>
             <p
-              className="animate-fade-in-up mt-6 max-w-xl text-pretty text-base leading-relaxed text-[#a1a1aa] sm:text-lg"
+              className="animate-fade-in-up mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
               style={{ animationDelay: "1s" }}
             >
-              Point RIFT at any target. It handles recon, exploitation, and
-              reporting on its own — every run isolated in its own sandbox.
+              Point EYE at any target. It runs recon, exploitation, and
+              reporting on its own — every operation isolated in its own
+              sandbox.
             </p>
           </div>
 

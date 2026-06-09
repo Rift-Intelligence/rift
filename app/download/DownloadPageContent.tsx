@@ -19,7 +19,7 @@ function AuthenticatedHeader() {
         <div className="flex items-center gap-2">
           <RiftLogo size={24} className="text-terminal-green" />
           <DottedWordmark
-            word="RIFT"
+            word="EYE"
             animate={false}
             fill="#f4f4f5"
             className="h-[14px] w-auto"

@@ -21,10 +21,9 @@ function getStopButtonVariantClasses(mode: ChatMode): string {
   return STOP_BUTTON_VARIANT_CLASSES[mode] ?? STOP_BUTTON_VARIANT_CLASSES.ask;
 }
 
-function getSubmitButtonVariantClasses(mode: ChatMode): string {
-  if (mode === "agent") {
-    return "bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:bg-red-400/10 dark:hover:bg-red-400/20 dark:text-red-400 focus-visible:ring-red-500";
-  }
+function getSubmitButtonVariantClasses(_mode: ChatMode): string {
+  // Send is always the primary cyan action (default Button variant). Red is
+  // reserved for the Stop/alarm state only.
   return "";
 }
 

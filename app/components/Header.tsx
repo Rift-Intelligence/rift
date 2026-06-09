@@ -41,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
         <div className="flex items-center gap-2">
           <RiftLogo size={26} className="text-terminal-green" />
           <DottedWordmark
-            word="RIFT"
+            word="EYE"
             animate={false}
             fill="#f4f4f5"
             className="h-[15px] w-auto"
@@ -120,7 +120,7 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
         <div className="flex items-center gap-2">
           <RiftLogo size={22} className="text-terminal-green" />
           <DottedWordmark
-            word="RIFT"
+            word="EYE"
             animate={false}
             fill="#f4f4f5"
             className="h-[13px] w-auto"

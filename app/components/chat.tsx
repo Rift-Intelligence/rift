@@ -1248,7 +1248,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                   branchedFromChatTitle={branchedFromChatTitle}
                 />
               ) : (
-                <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-[#1d1d1d]">
+                <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
                   {/* Animated waves background (zauth-style) */}
                   <Waves
                     className="pointer-events-none z-0"

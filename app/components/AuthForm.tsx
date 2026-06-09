@@ -46,7 +46,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
       <div className="mb-10 flex items-center gap-2.5">
         <RiftLogo size={28} className="text-terminal-green" />
         <DottedWordmark
-          word="RIFT"
+          word="EYE"
           animate={false}
           fill="#f4f4f5"
           className="h-[18px] w-auto"
@@ -57,12 +57,12 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
         {isSignUp ? (
           <>
             Create your{" "}
-            <span className="display-emphasis text-[#34d399]">account</span>.
+            <span className="display-emphasis text-[#6df4ff]">account</span>.
           </>
         ) : (
           <>
             Welcome{" "}
-            <span className="display-emphasis text-[#34d399]">back</span>.
+            <span className="display-emphasis text-[#6df4ff]">back</span>.
           </>
         )}
       </h1>
@@ -85,7 +85,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
             type="email"
             autoComplete="email"
             required
-            placeholder="operator@rift.sh"
+            placeholder="operator@eye.sh"
             className="mt-1.5 w-full rounded-[10px] border border-white/10 bg-black/30 px-3 py-2.5 text-[#f4f4f5] outline-none transition-colors placeholder:text-[#52525b] focus:border-terminal-green/60"
           />
         </label>
@@ -137,7 +137,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
           </>
         ) : (
           <>
-            New to RIFT?{" "}
+            New to EYE?{" "}
             <Link
               href="/signup"
               className="text-[#f4f4f5] underline underline-offset-4"

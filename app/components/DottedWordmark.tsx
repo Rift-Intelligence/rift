@@ -53,6 +53,24 @@ const GLYPHS: Record<string, number[][]> = {
     [0, 0, 1, 0, 0],
     [0, 0, 1, 0, 0],
   ],
+  E: [
+    [1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 0],
+    [1, 0, 0, 0, 0],
+    [1, 0, 0, 0, 0],
+    [1, 1, 1, 1, 1],
+  ],
+  Y: [
+    [1, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1],
+    [0, 1, 0, 1, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0],
+    [0, 0, 1, 0, 0],
+  ],
 };
 
 const GLYPH_W = 5;
@@ -70,11 +88,11 @@ interface DottedWordmarkProps {
 }
 
 export default function DottedWordmark({
-  word = "RIFT",
+  word = "EYE",
   className,
-  fill = "#f4f4f5",
+  fill = "#e8edeb",
   animate = true,
-  title = "RIFT",
+  title = "EYE",
 }: DottedWordmarkProps) {
   const letters = word.toUpperCase().split("");
   const cols = letters.length * GLYPH_W + (letters.length - 1) * GAP;

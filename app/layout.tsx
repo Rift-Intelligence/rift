@@ -35,11 +35,11 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 });
 
-const APP_NAME = "RIFT";
-const APP_DEFAULT_TITLE = "RIFT - AI-Powered Security Testing Platform";
-const APP_TITLE_TEMPLATE = "%s | RIFT";
+const APP_NAME = "EYE";
+const APP_DEFAULT_TITLE = "EYE — Autonomous Offensive Intelligence";
+const APP_TITLE_TEMPLATE = "%s | EYE";
 const APP_DESCRIPTION =
-  "RIFT is an AI-powered security testing platform that helps penetration testers, security researchers, and developers identify vulnerabilities, analyze threats, and secure systems faster.";
+  "EYE is an autonomous offensive-security agent. Point it at a target and it runs recon, exploitation, and reporting on its own — every operation isolated in its own sandbox.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,

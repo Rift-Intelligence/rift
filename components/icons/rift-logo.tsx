@@ -9,14 +9,14 @@ interface RiftLogoProps {
 }
 
 /**
- * RIFT logo mark.
+ * EYE logo mark.
  *
- * Concept: a solid geometric monolith cleanly cleaved by a diagonal "rift".
- * Two offset facets in a light/dark tone create depth and read as the letter
- * "R" / a fault line. Minimal, flat, premium — Anthropic / Cursor / Devin style.
+ * Concept: an almond eye drawn as a HUD optic — outer lid, iris ring, and a
+ * solid pupil void at center, with two registration ticks. Reads as a watching
+ * eye / surveillance scope at any size. Inherits `currentColor`; pass `glow`
+ * for the cyan signal halo.
  *
- * Uses `currentColor` so it inherits the surrounding text color by default;
- * pass `glow` for an optional neon halo.
+ * (Component name kept as `RiftLogo` to avoid churn across import sites.)
  */
 export const RiftLogo: FC<RiftLogoProps> = ({
   size = 32,
@@ -32,20 +32,31 @@ export const RiftLogo: FC<RiftLogoProps> = ({
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
-      aria-label="RIFT"
+      aria-label="EYE"
       style={
         glow
-          ? { filter: "drop-shadow(0 0 5px rgba(34,197,94,0.55))" }
+          ? { filter: "drop-shadow(0 0 5px rgba(34,224,255,0.6))" }
           : undefined
       }
     >
-      {/* Left facet — full strength */}
-      <path d="M5 4 H16.5 L12 16 L17 28 H5 Z" fill="currentColor" />
-      {/* Right facet — lighter tone for depth across the rift */}
+      {/* Eyelid / almond outline */}
       <path
-        d="M19.5 4 H27 V28 H21 L15.5 16 Z"
-        fill="currentColor"
-        fillOpacity="0.45"
+        d="M2 16 C7 8.5 12 6 16 6 C20 6 25 8.5 30 16 C25 23.5 20 26 16 26 C12 26 7 23.5 2 16 Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      {/* Iris ring */}
+      <circle cx="16" cy="16" r="6" stroke="currentColor" strokeWidth="2" />
+      {/* Pupil void */}
+      <circle cx="16" cy="16" r="2.6" fill="currentColor" />
+      {/* Registration ticks (left/right) */}
+      <path
+        d="M0.5 16 H2.5 M29.5 16 H31.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity="0.7"
       />
     </svg>
   );

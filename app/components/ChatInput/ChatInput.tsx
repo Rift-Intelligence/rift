@@ -226,9 +226,7 @@ export const ChatInput = ({
             <span className="terminal-dot terminal-dot-yellow" />
             <span className="terminal-dot terminal-dot-green" />
             <span className="ml-2 text-xs text-terminal-green/70 truncate">
-              {chatMode === "agent"
-                ? "root@rift: ~/exploit"
-                : "operator@rift: ~"}
+              {chatMode === "agent" ? "root@eye: ~/exploit" : "operator@eye: ~"}
             </span>
             <span className="ml-auto text-[10px] text-terminal-green/50 uppercase tracking-wider hidden sm:inline">
               {chatMode === "agent" ? "AGENT" : "ASK"} MODE

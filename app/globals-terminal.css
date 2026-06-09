@@ -1,48 +1,48 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
-  /* === zauth-inspired palette: neutral near-black + emerald/sky accents === */
-  --terminal-bg: #0a0a0b;
-  --terminal-primary: #131316;
-  --terminal-secondary: #1b1b1f;
-  --terminal-sidebar-bg: #0a0a0b;
-  --terminal-green: #10b981;
-  --terminal-green-dim: #059669;
-  --terminal-green-glow: #10b981;
-  --terminal-sky: #0ea5e9;
-  --terminal-text: #fafafa;
-  --terminal-text-dim: #a1a1aa;
-  --terminal-border: #27272a;
+  /* === EYE "Surveillance Brutalism": true-black void + cold cyan signal === */
+  --terminal-bg: #000000;
+  --terminal-primary: #070707;
+  --terminal-secondary: #0a0b0c;
+  --terminal-sidebar-bg: #040404;
+  --terminal-green: #22e0ff; /* legacy name → cyan signal */
+  --terminal-green-dim: #0e9fc4;
+  --terminal-green-glow: #22e0ff;
+  --terminal-sky: #6df4ff;
+  --terminal-text: #e8edeb;
+  --terminal-text-dim: #6b7572;
+  --terminal-border: #18211f;
   --terminal-scanline: transparent;
   --terminal-crt-flicker: transparent;
 
-  /* CRT effects disabled for a refined, modern look. */
+  /* CRT effects kept subtle by default. */
   --terminal-scanline-opacity: 0;
   --terminal-glow-intensity: 0;
 
-  /* === Accent system → emerald === */
-  --primary: #10b981;
-  --primary-foreground: #04130a;
-  --secondary: #18181b;
-  --secondary-foreground: #fafafa;
-  --accent: #10b981;
-  --accent-foreground: #04130a;
-  --ring: #10b981;
-  --chart-1: #10b981;
-  --chart-2: #059669;
-  --chart-3: #0ea5e9;
-  --chart-4: #34d399;
-  --chart-5: #6366f1;
-  --link-color: #10b981;
+  /* === Accent system → cyan signal === */
+  --primary: #22e0ff;
+  --primary-foreground: #001a1f;
+  --secondary: #0d0f10;
+  --secondary-foreground: #e8edeb;
+  --accent: #0e1416;
+  --accent-foreground: #6df4ff;
+  --ring: #22e0ff;
+  --chart-1: #22e0ff;
+  --chart-2: #6df4ff;
+  --chart-3: #0e9fc4;
+  --chart-4: #06384a;
+  --chart-5: #ff3b1d;
+  --link-color: #6df4ff;
 
-  --sidebar-primary: #10b981;
-  --sidebar-primary-foreground: #04130a;
-  --sidebar-ring: #10b981;
+  --sidebar-primary: #22e0ff;
+  --sidebar-primary-foreground: #001a1f;
+  --sidebar-ring: #22e0ff;
 
-  /* Premium / Upgrade buttons → emerald */
-  --premium-bg: #0f2a20;
-  --premium-text: #10b981;
-  --premium-hover: #059669;
+  /* Premium / Upgrade buttons → cyan */
+  --premium-bg: #06222b;
+  --premium-text: #6df4ff;
+  --premium-hover: #22e0ff;
 }
 
 /* Typography: clean sans-serif for reading/UI text, monospace reserved for
@@ -278,7 +278,7 @@ samp,
   --sidebar-foreground: var(--terminal-text);
   --sidebar-primary: var(--terminal-green);
   --sidebar-primary-foreground: var(--terminal-bg);
-  --sidebar-accent: rgba(34, 197, 94, 0.1);
+  --sidebar-accent: rgba(34, 224, 255, 0.1);
   --sidebar-accent-foreground: var(--terminal-green);
   --sidebar-border: var(--terminal-border);
   --sidebar-ring: var(--terminal-green);
@@ -291,14 +291,14 @@ samp,
 /* User avatar fallback → green terminal style */
 [data-slot="avatar-fallback"] {
   background-color: var(--terminal-green-dim) !important;
-  color: #04130a !important;
+  color: #001a1f !important;
   font-weight: 700;
 }
 
 /* Primary buttons → emerald */
 .bg-primary {
   background-color: var(--terminal-green) !important;
-  color: #04130a !important;
+  color: #001a1f !important;
 }
 
 /* Terminal Message */
@@ -306,12 +306,12 @@ samp,
   padding: 8px 12px;
   margin: 4px 0;
   border-left: 2px solid var(--terminal-green);
-  background: rgba(34, 197, 94, 0.05);
+  background: rgba(34, 224, 255, 0.05);
 }
 
 .terminal-message-user {
   border-left-color: var(--terminal-green-dim);
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(34, 224, 255, 0.1);
 }
 
 /* Terminal Code Block */
