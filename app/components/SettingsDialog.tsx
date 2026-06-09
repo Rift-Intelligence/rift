@@ -1,31 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Settings,
   X,
-  Shield,
   CircleUserRound,
   Database,
-  Users,
   Infinity,
   Server,
-  ChartNoAxesCombined,
-  Gauge,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ManageNotesDialog } from "@/app/components/ManageNotesDialog";
 import { CustomizeHackerAIDialog } from "@/app/components/CustomizeHackerAIDialog";
-import { SecurityTab } from "@/app/components/SecurityTab";
 import { PersonalizationTab } from "@/app/components/PersonalizationTab";
 import { AccountTab } from "@/app/components/AccountTab";
 import { DataControlsTab } from "@/app/components/DataControlsTab";
-import { TeamTab } from "@/app/components/TeamTab";
 import { AgentsTab } from "@/app/components/AgentsTab";
 import { RemoteControlTab } from "@/app/components/RemoteControlTab";
-import { UsageTab } from "@/app/components/UsageTab";
-import { ExtraUsageSection } from "@/app/components/ExtraUsageSection";
-import { TeamExtraUsageSection } from "@/app/components/TeamExtraUsageSection";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGlobalState } from "@/app/contexts/GlobalState";
 
@@ -46,64 +37,14 @@ const SettingsDialog = ({
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const isMobile = useIsMobile();
   const { subscription } = useGlobalState();
-  const [isTeamAdmin, setIsTeamAdmin] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    // Only consulted when subscription === "team"; tabs() condition gates
-    // any other read, so a stale value after switching tier is harmless and
-    // will be overwritten the next time the user becomes a team member.
-    if (subscription !== "team") return;
-    fetch("/api/team/members")
-      .then((res) => res.json())
-      .then((data) => setIsTeamAdmin(data.isAdmin ?? false))
-      .catch(() => setIsTeamAdmin(false));
-  }, [subscription]);
-
-  // Base tabs visible to all users
-  const baseTabs = [
+  const tabs = [
     { id: "Personalization", label: "Personalization", icon: Settings },
-    { id: "Security", label: "Security", icon: Shield },
     { id: "Data controls", label: "Data controls", icon: Database },
+    { id: "Agents", label: "Agents", icon: Infinity },
+    { id: "Remote Control", label: "Remote Control", icon: Server },
+    { id: "Account", label: "Account", icon: CircleUserRound },
   ];
-
-  // Shared tabs for all users with agent mode access
-  const agentsTab = { id: "Agents", label: "Agents", icon: Infinity };
-  const localSandboxTab = {
-    id: "Remote Control",
-    label: "Remote Control",
-    icon: Server,
-  };
-  // Tabs only for paid users
-  const usageTab = { id: "Usage", label: "Usage", icon: ChartNoAxesCombined };
-  const extraUsageTab = {
-    id: "Extra Usage",
-    label: "Extra Usage",
-    icon: Gauge,
-  };
-  const membersTab = { id: "Members", label: "Members", icon: Users };
-  const accountTab = { id: "Account", label: "Account", icon: CircleUserRound };
-
-  const tabs =
-    subscription === "team"
-      ? [
-          ...baseTabs,
-          agentsTab,
-          localSandboxTab,
-          usageTab,
-          ...(isTeamAdmin ? [extraUsageTab] : []),
-          membersTab,
-          accountTab,
-        ]
-      : subscription !== "free"
-        ? [
-            ...baseTabs,
-            agentsTab,
-            localSandboxTab,
-            usageTab,
-            extraUsageTab,
-            accountTab,
-          ]
-        : [...baseTabs, agentsTab, localSandboxTab, accountTab];
 
   const canShowInitialTab = initialTab
     ? tabs.some((t) => t.id === initialTab)
@@ -234,27 +175,11 @@ const SettingsDialog = ({
                   />
                 )}
 
-                {activeTab === "Security" && <SecurityTab />}
-
                 {activeTab === "Data controls" && <DataControlsTab />}
 
                 {activeTab === "Agents" && <AgentsTab />}
 
                 {activeTab === "Remote Control" && <RemoteControlTab />}
-
-                {activeTab === "Usage" && <UsageTab />}
-
-                {activeTab === "Extra Usage" && (
-                  <div className="space-y-2">
-                    {subscription === "team" ? (
-                      <TeamExtraUsageSection />
-                    ) : (
-                      <ExtraUsageSection />
-                    )}
-                  </div>
-                )}
-
-                {activeTab === "Members" && <TeamTab />}
 
                 {activeTab === "Account" && <AccountTab />}
               </div>
