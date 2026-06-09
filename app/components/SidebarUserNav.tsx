@@ -6,7 +6,6 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
   LogOut,
-  Sparkle,
   LifeBuoy,
   ChevronRight,
   ChevronDown,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useGlobalState } from "@/app/contexts/GlobalState";
-import { redirectToPricing } from "../hooks/usePricingDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useIsStandalone } from "@/hooks/use-is-standalone";
 import {
@@ -156,50 +154,6 @@ const XIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// Upgrade banner component
-const UpgradeBanner = ({ isCollapsed }: { isCollapsed: boolean }) => {
-  const { isCheckingProPlan, subscription } = useGlobalState();
-  const isProUser = subscription !== "free";
-
-  // Don't show for pro users or while checking
-  if (isCheckingProPlan || isProUser) {
-    return null;
-  }
-
-  const handleUpgrade = () => {
-    redirectToPricing();
-  };
-
-  return (
-    <div className="relative">
-      {!isCollapsed && (
-        <div className="relative rounded-t-2xl bg-premium-bg backdrop-blur-sm transition-all duration-200">
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={handleUpgrade}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleUpgrade();
-              }
-            }}
-            className="group relative z-10 flex w-full items-center rounded-t-2xl py-2.5 px-4 text-xs border border-sidebar-border hover:bg-premium-hover transition-all duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:outline-none cursor-pointer"
-            aria-label="Upgrade your plan"
-          >
-            <span className="flex items-center gap-2.5">
-              <Sparkle className="h-4 w-4 text-premium-text fill-current" />
-              <span className="text-xs font-medium text-premium-text">
-                Upgrade your plan
-              </span>
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const { user } = useAuth();
   const { signOut } = useAuthActions();
@@ -279,7 +233,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   if (!user) return null;
 
   // Determine if user has pro subscription
-  const isProUser = subscription !== "free";
 
   const handleLogOut = async () => {
     try {
@@ -360,33 +313,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
           isCollapsed={isCollapsed}
           onOpen={() => setReferralDialogOpen(true)}
         />
-      )}
-
-      {/* Upgrade banner above user nav */}
-      <UpgradeBanner isCollapsed={isCollapsed} />
-
-      {/* Upgrade button for collapsed state */}
-      {isCollapsed && !isCheckingProPlan && !isProUser && (
-        <div className="mb-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  data-testid="upgrade-button-collapsed"
-                  variant="secondary"
-                  size="sm"
-                  className="w-full h-8 px-2 bg-premium-bg text-premium-text hover:bg-premium-hover border-0"
-                  onClick={redirectToPricing}
-                >
-                  <Sparkle className="h-4 w-4 fill-current" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p>Upgrade Plan</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
       )}
 
       <DropdownMenu>
@@ -472,17 +398,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
           </DropdownMenuLabel>
 
           <DropdownMenuSeparator />
-
-          {(subscription === "pro" || subscription === "pro-plus") && (
-            <DropdownMenuItem
-              data-testid="upgrade-menu-item"
-              onClick={redirectToPricing}
-              className="py-1.5"
-            >
-              <Sparkle className="mr-2 h-4 w-4 text-foreground" />
-              <span>Upgrade Plan</span>
-            </DropdownMenuItem>
-          )}
 
           {isPaidUser && (
             <div>
