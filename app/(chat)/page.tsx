@@ -4,10 +4,8 @@ import React from "react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { ChatInput } from "../components/ChatInput";
 import Header from "../components/Header";
-import ZauthBackdrop from "../components/ZauthBackdrop";
 import Footer from "../components/Footer";
 import { Chat } from "../components/chat";
-import { AsciiEye } from "../components/eye/AsciiEye";
 import { useInputValue } from "../contexts/InputContext";
 import { navigateToAuth } from "../hooks/useTauri";
 import { useTypingAnimation } from "../hooks/useTypingAnimation";
@@ -62,9 +60,8 @@ const UnauthenticatedContent = () => {
   }, []);
 
   return (
-    <div className="relative h-full flex flex-col overflow-hidden bg-background">
-      {/* zauth-grade atmosphere: conic glow + dot-matrix field + bottom fade */}
-      <ZauthBackdrop className="z-0" />
+    <div className="relative h-full flex flex-col overflow-hidden bg-transparent">
+      {/* Background is the global EyeBackdrop (mounted in layout) */}
 
       <div className="relative z-10 flex-shrink-0">
         <Header />
@@ -73,22 +70,7 @@ const UnauthenticatedContent = () => {
       <div className="relative z-10 flex-1 flex flex-col min-h-0">
         {/* Centered content area */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto px-6 py-10 min-h-0">
-          {/* The EYE — blinking optic inside a HUD scope frame */}
-          <div className="hud scanlines relative mb-8 w-full max-w-[560px] overflow-hidden bg-transparent">
-            <span className="hud-corners" aria-hidden />
-            <div className="flex items-center justify-between px-3 py-1">
-              <span className="hud-label">EYE // OPTICAL CORE</span>
-              <span className="hud-label flex items-center gap-1.5">
-                <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
-                WATCHING
-              </span>
-            </div>
-            <AsciiEye className="eye-glitch-in block h-[22vh] max-h-[200px] min-h-[140px] w-full" />
-            <div className="flex items-center justify-between px-3 py-1">
-              <span className="hud-label">LAT —— LON ——</span>
-              <span className="hud-label text-primary">● ONLINE</span>
-            </div>
-          </div>
+          {/* The watching EYE is the global backdrop (mounted in layout). */}
 
           {/* Title */}
           <div className="mb-10 flex flex-col items-center px-4 text-center">

@@ -58,7 +58,6 @@ import { parseRateLimitWarning } from "@/lib/utils/parse-rate-limit-warning";
 import Loading from "@/components/ui/loading";
 
 import { HackingSuggestions } from "./HackingSuggestions";
-import Waves from "./Waves";
 import { PentestQuickStart } from "./PentestQuickStart";
 
 // --- Streaming ephemeral state reducer ---
@@ -1186,7 +1185,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             : !!chatData?.active_stream_id || !!chatData?.active_trigger_run_id
         }
       />
-      <div className="flex min-h-0 flex-1 w-full flex-col bg-background overflow-hidden">
+      <div className="flex min-h-0 flex-1 w-full flex-col bg-transparent overflow-hidden">
         <div className="flex min-h-0 flex-1 min-w-0 relative">
           {/* Left side - Chat content */}
           <div className="flex min-h-0 flex-col flex-1 min-w-0">
@@ -1204,7 +1203,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             />
 
             {/* Chat interface */}
-            <div className="bg-background flex flex-col flex-1 relative min-h-0">
+            <div className="bg-transparent flex flex-col flex-1 relative min-h-0">
               {/* Messages area */}
               {isChatNotFound ? (
                 <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 min-h-0">
@@ -1248,23 +1247,8 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                   branchedFromChatTitle={branchedFromChatTitle}
                 />
               ) : (
-                <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-background">
-                  {/* Animated waves background (zauth-style) */}
-                  <Waves
-                    className="pointer-events-none z-0"
-                    lineColor="rgba(63, 63, 70, 0.4)"
-                    backgroundColor="transparent"
-                    waveSpeedX={0.02}
-                    waveSpeedY={0.01}
-                    waveAmpX={40}
-                    waveAmpY={20}
-                    xGap={12}
-                    yGap={36}
-                    friction={0.9}
-                    tension={0.01}
-                    maxCursorMove={120}
-                  />
-                  <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(70%_55%_at_50%_-5%,rgba(255,255,255,0.06),transparent_72%)]" />
+                <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent">
+                  {/* Background is the global EyeBackdrop (mounted in layout) */}
                   <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 min-h-0">
                     <div className="w-full max-w-full sm:max-w-[768px] sm:min-w-[390px] flex flex-col items-center">
                       <div className="text-center">

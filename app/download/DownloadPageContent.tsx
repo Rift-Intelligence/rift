@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Header from "@/app/components/Header";
-import ZauthBackdrop from "@/app/components/ZauthBackdrop";
 import DottedWordmark from "@/app/components/DottedWordmark";
 import { RiftLogo } from "@/components/icons/rift-logo";
 import { DownloadSection, useDetectedPlatform } from "./DownloadSection";
@@ -51,7 +50,7 @@ function DownloadContent() {
       <div className="container mx-auto max-w-3xl space-y-8">
         <div className="text-center">
           <h1 className="mb-4 text-4xl font-bold text-card-foreground">
-            {isMobile ? "Install Rift" : "Download Rift"}
+            {isMobile ? "Install EYE" : "Download EYE"}
           </h1>
           <p className="text-lg text-muted-foreground">
             {isMobile
@@ -114,8 +113,7 @@ function DownloadContent() {
 
 export function DownloadPageContent() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#1d1d1d]">
-      <ZauthBackdrop className="z-0" />
+    <div className="relative min-h-screen overflow-hidden bg-transparent">
       <div className="relative z-10">
         <Authenticated>
           <AuthenticatedHeader />

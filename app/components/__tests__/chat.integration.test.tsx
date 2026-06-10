@@ -226,7 +226,7 @@ describe("Chat Component Integration", () => {
       );
 
       expect(
-        container.querySelector(".flex.bg-background"),
+        container.querySelector(".flex.bg-transparent"),
       ).toBeInTheDocument();
     });
   });
@@ -254,7 +254,7 @@ describe("Chat Component Integration", () => {
       );
 
       expect(
-        container.querySelector(".flex.bg-background"),
+        container.querySelector(".flex.bg-transparent"),
       ).toBeInTheDocument();
     });
   });
@@ -279,7 +279,7 @@ describe("Chat Component Integration", () => {
       );
 
       expect(
-        container.querySelector(".flex.bg-background"),
+        container.querySelector(".flex.bg-transparent"),
       ).toBeInTheDocument();
     });
   });

@@ -1,12 +1,10 @@
 import React from "react";
-import ZauthBackdrop from "./ZauthBackdrop";
 import Header from "./Header";
 import Footer from "./Footer";
 
 /**
- * Shared public-page shell that drops any page onto the zauth-grade canvas:
- * `#1d1d1d` background, the atmospheric backdrop (conic glow + dot matrix +
- * trace dots + bottom fade), and optional header/footer chrome.
+ * Shared public-page shell. Transparent so the global EyeBackdrop (mounted in
+ * the root layout) shows through, with optional header/footer chrome.
  */
 export default function ZauthPageShell({
   children,
@@ -23,9 +21,7 @@ export default function ZauthPageShell({
   className?: string;
 }) {
   return (
-    <div className="relative flex min-h-full flex-col overflow-hidden bg-[#1d1d1d]">
-      <ZauthBackdrop className="z-0" />
-
+    <div className="relative flex min-h-full flex-col overflow-hidden bg-transparent">
       {header && (
         <div className="relative z-10 flex-shrink-0">
           <Header />

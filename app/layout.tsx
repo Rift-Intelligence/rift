@@ -12,6 +12,7 @@ import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { TodoBlockProvider } from "./contexts/TodoBlockContext";
 import { PostHogProvider } from "./providers";
 import { DataStreamProvider } from "./components/DataStreamProvider";
+import { EyeBackdrop } from "./components/eye/EyeBackdrop";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
@@ -141,6 +142,8 @@ export default function RootLayout({
           className={`${jetbrainsMono.variable} ${inter.variable} ${instrumentSerif.variable} antialiased h-full`}
           suppressHydrationWarning
         >
+          {/* Global ambient watching-eye backdrop (behind everything) */}
+          <EyeBackdrop />
           <ConvexClientProvider>{content}</ConvexClientProvider>
         </body>
       </html>
