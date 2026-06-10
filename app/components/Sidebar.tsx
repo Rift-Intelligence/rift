@@ -68,6 +68,33 @@ const DesktopSidebarContent: FC<{
 
       <SidebarContent>
         {!isCollapsed && (
+          <SidebarGroup className="border-b border-sidebar-border/60 pb-2">
+            <SidebarGroupContent>
+              <div className="px-2 pb-1.5 pt-1 font-mono">
+                <pre className="select-none text-[9px] leading-[1.15] text-primary/90 text-eye-glow">
+                  {String.raw`   ▄████████▄
+ ██  ◉◉◉◉  ██   E Y E
+   ▀████████▀`}
+                </pre>
+                <div className="mt-1.5 space-y-0.5 text-[10px] leading-tight text-muted-foreground">
+                  <div>
+                    <span className="text-primary">▸</span> SYS{" "}
+                    <span className="text-primary">ONLINE</span>
+                  </div>
+                  <div>
+                    <span className="text-primary">▸</span> SANDBOX{" "}
+                    <span className="text-primary">READY</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-primary">▸</span> LINK SECURE
+                    <span className="terminal-cursor ml-0.5 inline-block !h-2.5 !w-1.5" />
+                  </div>
+                </div>
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        {!isCollapsed && (
           <SidebarGroup className="border-b border-sidebar-border/60 pb-1">
             <SidebarGroupContent>
               <PentestArsenal />

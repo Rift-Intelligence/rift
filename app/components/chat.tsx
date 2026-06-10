@@ -18,6 +18,7 @@ import { ChatInput } from "./ChatInput";
 import type { RateLimitWarningData } from "./RateLimitWarning";
 import { ComputerSidebar } from "./ComputerSidebar";
 import ChatHeader from "./ChatHeader";
+import { AsciiEye } from "./eye/AsciiEye";
 import Footer from "./Footer";
 import { useMessageScroll } from "../hooks/useMessageScroll";
 import { useChatHandlers } from "../hooks/useChatHandlers";
@@ -1204,6 +1205,21 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
 
             {/* Chat interface */}
             <div className="bg-transparent flex flex-col flex-1 relative min-h-0">
+              {/* Sticky watching-eye strip — pinned to the top of the terminal,
+                  messages scroll beneath it; never overlaps text. */}
+              {showChatLayout && !isChatNotFound && (
+                <div className="hud relative z-20 mx-auto mt-2 mb-1 flex h-12 w-full max-w-full items-center gap-3 overflow-hidden bg-surface/70 px-3 sm:max-w-[768px]">
+                  <span className="hud-corners" aria-hidden />
+                  <AsciiEye className="h-9 w-24 flex-shrink-0" />
+                  <span className="hud-label hidden sm:inline">
+                    root@eye // OPTICAL CORE
+                  </span>
+                  <span className="hud-label ml-auto flex items-center gap-1.5 text-primary">
+                    <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
+                    WATCHING
+                  </span>
+                </div>
+              )}
               {/* Messages area */}
               {isChatNotFound ? (
                 <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 min-h-0">
