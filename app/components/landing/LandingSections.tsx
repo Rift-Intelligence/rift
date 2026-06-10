@@ -106,10 +106,10 @@ export function LandingSections({ onLaunch }: { onLaunch: () => void }) {
           </Panel>
           <Panel className="flex-1">
             <div className="text-xs font-semibold tracking-widest text-primary">
-              AGENT MODE
+              EXECUTOR MODE
             </div>
             <p className="mt-2 text-[12px] leading-snug text-muted-foreground">
-              Hand EYE a goal and it executes end-to-end in the sandbox.
+              Hand EYE a target and it autonomously executes end-to-end.
             </p>
           </Panel>
         </div>

@@ -201,8 +201,8 @@ const ModelOptionList = ({
           onClick={() => onClose()}
           className="flex items-center justify-between rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-2 transition-colors hover:bg-primary/20 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
-          <span className="text-sm font-semibold text-foreground">
-            Get access to the top AI models
+          <span className="text-sm font-mono text-primary">
+            ▸ unlock full arsenal
           </span>
           <ChevronRight className="h-4 w-4 text-primary shrink-0" />
         </a>
@@ -276,12 +276,12 @@ const ModelOptionList = ({
               <a
                 href="#pricing"
                 onClick={() => onClose()}
-                className="text-foreground underline underline-offset-2 hover:text-foreground/80"
+                className="text-primary underline underline-offset-2 hover:text-primary/80 font-mono"
                 tabIndex={0}
               >
-                Upgrade your plan
+                {"// clearance required"}
               </a>{" "}
-              to unlock.
+              — upgrade to proceed.
             </p>
           </TooltipContent>
         </Tooltip>

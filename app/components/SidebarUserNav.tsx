@@ -362,7 +362,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                   data-testid="subscription-badge"
                   className="truncate text-[11px] text-primary"
                 >
-                  {chatMode === "agent" ? "AGENT" : "ASK"} ·{" "}
+                  {chatMode === "agent" ? "EXECUTOR" : "ASK"} ·{" "}
                   {subscription === "ultra"
                     ? "Ultra"
                     : subscription === "team"

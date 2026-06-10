@@ -236,7 +236,7 @@ export const ChatInput = ({
                 className={`inline-block size-1.5 rounded-full ${chatMode === "agent" ? "bg-primary eye-live" : "bg-muted-foreground"}`}
               />
               <span className="text-terminal-green/60">
-                {chatMode === "agent" ? "AGENT" : "ASK"} MODE
+                {chatMode === "agent" ? "EXECUTOR" : "ASK"} MODE
               </span>
             </span>
           </div>

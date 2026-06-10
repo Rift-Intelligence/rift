@@ -21,14 +21,14 @@ export function ModeSelectorContent({
       <ModeOptionItem
         icon={MessageSquare}
         title="Ask"
-        description="Ask your hacking questions"
+        description="Intel, recon, analysis"
         onClick={() => setChatMode("ask")}
         data-testid="mode-ask"
       />
       <ModeOptionItem
         icon={Infinity}
         title="Agent"
-        description="Hack, test, secure anything"
+        description="Autonomous exploit & audit"
         onClick={onAgentModeClick}
         data-testid="mode-agent"
         showLock={temporaryChatsEnabled}

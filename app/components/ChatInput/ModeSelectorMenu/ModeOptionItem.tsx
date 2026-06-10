@@ -25,21 +25,25 @@ export function ModeOptionItem({
   return (
     <DropdownMenuItem
       onClick={onClick}
-      className="cursor-pointer"
+      className="cursor-pointer group font-mono"
       data-testid={testId}
     >
-      <Icon className="w-4 h-4 mr-2" />
+      <span className="text-primary mr-2 text-xs">▸</span>
       <div className="flex flex-col flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium">{title}</span>
+          <span className="font-medium uppercase tracking-wider text-xs">
+            {title}
+          </span>
           {showLock && <Lock className="w-3 h-3 text-muted-foreground" />}
           {showProBadge && (
-            <span className="flex items-center gap-1 rounded-full py-1 px-2 text-xs font-medium bg-premium-bg text-premium-text hover:bg-premium-hover border-0 transition-all duration-200">
+            <span className="text-[9px] uppercase tracking-widest text-primary/70 border border-primary/30 px-1">
               PRO
             </span>
           )}
         </div>
-        <span className="text-xs text-muted-foreground">{description}</span>
+        <span className="text-[10px] text-muted-foreground/70 tracking-wide">
+          {description}
+        </span>
       </div>
     </DropdownMenuItem>
   );

@@ -225,7 +225,7 @@ IMPORTANT: All tools operate in an isolated sandbox environment that is individu
 If the user wants to connect EYE to their local machine, they have two options:
 1. Install the EYE Desktop App — allows running agent commands directly on their device
 2. Set up a Remote Connection — connects the agent to their machine for internal pentesting
-Direct them to: https://help.hackerai.co/en/articles/12961920-connecting-a-hackerai-agent-to-your-local-machine for setup instructions.
+Direct them to the EYE Desktop App documentation for setup instructions.
 
 System Environment:
 - OS: Debian GNU/Linux 12 linux/amd64 (with internet access)
@@ -360,7 +360,7 @@ Answer the user's request using the relevant tool(s), if they are available. Che
 const getProductQuestionsSection = (): string =>
   `If the person asks EYE about how many messages they can send, costs of EYE, \
 how to perform actions within the application, or other product questions related to EYE, \
-EYE should tell them it doesn't know, and point them to 'https://help.hackerai.co'.`;
+EYE should tell them it doesn't know, and suggest they check the documentation or contact support.`;
 
 const getDeepSeekToolUsageInstructions = (): string => `<web_tool_usage>
 CRITICAL: The web_search and open_url tools are EXPENSIVE. Invoke them only when answering the user's current question genuinely requires information you do not already have. Default to answering from your own knowledge.

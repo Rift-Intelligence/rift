@@ -34,13 +34,14 @@ describe("ModelSelector", () => {
         "Balanced quality and speed, recommended for most tasks",
       ),
     ).toBeVisible();
-    expect(screen.getByText("EYE Standard")).toBeVisible();
-    expect(screen.getByText("EYE Pro")).toBeVisible();
-    expect(screen.getByText("EYE Max")).toBeVisible();
+    expect(screen.getByText("EYE Recon")).toBeVisible();
+    expect(screen.getByText("EYE Strike")).toBeVisible();
+    expect(screen.getByText("EYE Dominate")).toBeVisible();
 
-    expect(
-      screen.getByRole("button", { name: /EYE Standard/i }),
-    ).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: /EYE Recon/i })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 
   it("selects Auto as a first-class option", () => {
@@ -49,7 +50,7 @@ describe("ModelSelector", () => {
       <ModelSelector value="hackerai-pro" onChange={onChange} mode="ask" />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /EYE Pro/i }));
+    fireEvent.click(screen.getByRole("button", { name: /EYE Strike/i }));
     fireEvent.click(
       screen.getByRole("button", {
         name: /Auto Balanced quality and speed/i,
