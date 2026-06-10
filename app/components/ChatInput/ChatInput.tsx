@@ -222,10 +222,8 @@ export const ChatInput = ({
         >
           {/* Terminal window title bar */}
           <div className="terminal-titlebar flex items-center gap-2 px-3 py-1.5 select-none">
-            <span className="terminal-dot terminal-dot-red" />
-            <span className="terminal-dot terminal-dot-yellow" />
-            <span className="terminal-dot terminal-dot-green" />
-            <span className="ml-2 text-xs text-terminal-green/70 truncate">
+            <span className="text-xs text-primary">▸</span>
+            <span className="text-xs text-terminal-green/70 truncate">
               {chatMode === "agent" ? "root@eye: ~/exploit" : "operator@eye: ~"}
             </span>
             <span className="ml-auto text-[10px] text-terminal-green/50 uppercase tracking-wider hidden sm:inline">

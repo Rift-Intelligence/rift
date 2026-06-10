@@ -1208,10 +1208,8 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                   the terminal; messages scroll beneath it and never overlap. */}
               {!isChatNotFound && (
                 <div className="terminal-titlebar terminal-border relative z-20 mx-auto mt-2 flex h-10 w-full max-w-full items-center gap-2.5 overflow-hidden px-3 sm:max-w-[768px]">
-                  <span className="terminal-dot terminal-dot-red" />
-                  <span className="terminal-dot terminal-dot-yellow" />
-                  <span className="terminal-dot terminal-dot-green" />
-                  <span className="ml-1 truncate text-xs text-terminal-green/80">
+                  <span className="text-xs text-primary">▸</span>
+                  <span className="truncate text-xs text-terminal-green/80">
                     root@eye: ~/session
                   </span>
                   {/* session mode: normal vs incognito (new chats only) */}
