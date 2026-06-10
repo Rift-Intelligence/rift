@@ -100,12 +100,10 @@ const DesktopSidebarContent: FC<{
             </SidebarGroupContent>
           </SidebarGroup>
         )}
-        <SidebarGroup className="min-h-0 flex-1">
-          <SidebarGroupContent>
-            {/* Subscription stays active in MainSidebar; only render list when expanded */}
-            {!isCollapsed && <ChatListContent chatListData={chatListData} />}
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Chat history is intentionally hidden from the sidebar; it is
+            reachable via the "Search chats" dialog in the header. This group is
+            just a flexible spacer so the footer sits at the bottom. */}
+        <SidebarGroup className="min-h-0 flex-1" />
       </SidebarContent>
 
       <SidebarFooter>
@@ -148,10 +146,8 @@ const MainSidebar: FC<{
             <PentestArsenal />
           </div>
 
-          {/* Chat List */}
-          <div className="flex-1 overflow-hidden">
-            <ChatListContent chatListData={chatListData} />
-          </div>
+          {/* Chat history hidden — reachable via the "Search chats" dialog. */}
+          <div className="flex-1 overflow-hidden" />
 
           {/* Footer */}
           <div className="p-2">

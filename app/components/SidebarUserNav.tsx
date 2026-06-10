@@ -42,6 +42,7 @@ import { clientLogout } from "@/lib/utils/logout";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
+import { ToyEye } from "./eye/ToyEye";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
   process.env.NEXT_PUBLIC_HELP_CENTER_URL || "https://help.hackerai.co/en/";
@@ -157,7 +158,7 @@ const XIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
 const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const { user } = useAuth();
   const { signOut } = useAuthActions();
-  const { isCheckingProPlan, subscription } = useGlobalState();
+  const { isCheckingProPlan, subscription, chatMode } = useGlobalState();
   const [rateLimitsExpanded, setRateLimitsExpanded] = useState(false);
   const [referralDialogOpen, setReferralDialogOpen] = useState(false);
   const [tokenUsage, setTokenUsage] = useState<{
@@ -339,31 +340,29 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
               </button>
             </div>
           ) : (
-            /* Expanded state - show full user info */
+            /* Expanded state — Claude-Code-style live status banner */
             <button
               data-testid="user-menu-button"
               type="button"
-              className="flex items-center gap-3 p-3 cursor-pointer hover:bg-sidebar-accent/50 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full text-left"
+              className="group flex w-full cursor-pointer items-center gap-3 rounded-md border border-sidebar-border/70 bg-background/40 p-3 text-left font-mono transition-colors hover:border-primary/50 hover:bg-sidebar-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-haspopup="menu"
               aria-label={`Open user menu for ${getDisplayName()}`}
             >
-              <Avatar data-testid="user-avatar" className="h-7 w-7">
-                <AvatarImage
-                  src={user.profilePictureUrl || undefined}
-                  alt={getDisplayName()}
-                />
-                <AvatarFallback className="text-xs">
-                  {getUserInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-sidebar-foreground truncate">
-                  {getDisplayName()}
+              <ToyEye size={34} />
+              <div className="min-w-0 flex-1 leading-tight">
+                <div className="flex items-baseline gap-1.5 truncate">
+                  <span className="text-sm font-semibold tracking-wide text-foreground">
+                    EYE
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    v1.0
+                  </span>
                 </div>
                 <div
                   data-testid="subscription-badge"
-                  className="text-xs text-sidebar-accent-foreground truncate"
+                  className="truncate text-[11px] text-primary"
                 >
+                  {chatMode === "agent" ? "AGENT" : "ASK"} ·{" "}
                   {subscription === "ultra"
                     ? "Ultra"
                     : subscription === "team"
@@ -374,7 +373,11 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                           ? "Pro"
                           : "Free"}
                 </div>
+                <div className="truncate text-[10px] text-muted-foreground">
+                  ~/session
+                </div>
               </div>
+              <span className="inline-block size-1.5 shrink-0 rounded-full bg-primary eye-live" />
             </button>
           )}
         </DropdownMenuTrigger>
