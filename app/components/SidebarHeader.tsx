@@ -49,9 +49,6 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
   // Search dialog state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  // Hover state for search button
-  const [isSearchHovered, setIsSearchHovered] = useState(false);
-
   // Fetch chats when search dialog is opened to ensure data is available
   // This handles the case where user opens search without opening sidebar first
   useChats(isSearchOpen);
@@ -156,8 +153,6 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
                 className="h-8 w-8 p-0 hover:bg-sidebar-accent/50"
                 onClick={handleSearchOpen}
                 aria-label="Search chats"
-                onMouseEnter={() => setIsSearchHovered(true)}
-                onMouseLeave={() => setIsSearchHovered(false)}
               >
                 <Search className="w-4 h-4" />
               </Button>
@@ -176,62 +171,67 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between p-2">
-        <div className="flex items-center gap-2">
-          {/* Show close button on mobile or desktop when expanded */}
-          <Button
-            data-testid="sidebar-toggle"
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={handleCloseSidebar}
-          >
-            <PanelLeft className="size-5" />
-          </Button>
-        </div>
+      {/* Brand row + collapse */}
+      <div className="flex items-center justify-between px-3 pb-2 pt-3">
+        <button
+          type="button"
+          onClick={handleNewChat}
+          className="group flex items-center gap-2 focus-visible:outline-none"
+          aria-label="EYE home"
+        >
+          <RiftLogo
+            size={20}
+            className="text-primary transition-transform group-hover:scale-110"
+            glow
+          />
+          <span className="font-mono text-sm font-semibold tracking-[0.2em] text-foreground">
+            EYE
+          </span>
+          <span className="font-mono text-[10px] text-muted-foreground">
+            v1.0
+          </span>
+        </button>
+        <Button
+          data-testid="sidebar-toggle"
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+          onClick={handleCloseSidebar}
+          aria-label="Collapse sidebar"
+        >
+          <PanelLeft className="size-4" />
+        </Button>
       </div>
 
-      {/* Sidebar Actions - Expanded */}
-      <div className="flex flex-col">
-        {/* New Chat Button styled like a chat item */}
-        <div className="px-2 py-1">
-          <Button
-            variant="ghost"
-            className="group relative flex w-full justify-start items-center rounded-lg p-2 h-auto hover:bg-sidebar-accent/50 text-left"
-            onClick={handleNewChat}
-            aria-label="Start new chat"
-          >
-            <SquarePen className="w-4 h-4" />
-            <div className="mr-2 flex-1 overflow-hidden text-clip whitespace-nowrap text-sm font-medium text-left">
-              New chat
-            </div>
-          </Button>
-        </div>
+      {/* Terminal command actions */}
+      <div className="px-2 pb-1 font-mono text-[13px]">
+        <button
+          type="button"
+          onClick={handleNewChat}
+          aria-label="Start new chat"
+          className="group flex w-full items-center gap-2 border border-transparent px-2 py-1.5 text-left text-foreground/85 transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+        >
+          <span className="text-primary/70 group-hover:text-primary">▸</span>
+          <SquarePen className="size-3.5 opacity-70" />
+          <span className="flex-1">new session</span>
+          <kbd className="rounded-[2px] border border-sidebar-border px-1 text-[10px] text-muted-foreground">
+            ⏎
+          </kbd>
+        </button>
 
-        {/* Search Button styled like a chat item */}
-        <div className="px-2 py-1">
-          <Button
-            variant="ghost"
-            className="relative flex w-full justify-start items-center rounded-lg p-2 h-auto hover:bg-sidebar-accent/50 text-left"
-            onClick={handleSearchOpen}
-            aria-label="Search chats"
-            onMouseEnter={() => setIsSearchHovered(true)}
-            onMouseLeave={() => setIsSearchHovered(false)}
-          >
-            <Search className="w-4 h-4" />
-            <div className="mr-2 flex-1 overflow-hidden text-clip whitespace-nowrap text-sm font-medium text-left">
-              Search chats
-            </div>
-            {/* Only show shortcut when hovering directly on the search button */}
-            <div
-              className={`text-xs transition-opacity ${
-                isSearchHovered ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {modifierKey}K
-            </div>
-          </Button>
-        </div>
+        <button
+          type="button"
+          onClick={handleSearchOpen}
+          aria-label="Search chats"
+          className="group flex w-full items-center gap-2 border border-transparent px-2 py-1.5 text-left text-foreground/85 transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+        >
+          <span className="text-primary/70 group-hover:text-primary">▸</span>
+          <Search className="size-3.5 opacity-70" />
+          <span className="flex-1">search logs</span>
+          <kbd className="rounded-[2px] border border-sidebar-border px-1 text-[10px] text-muted-foreground">
+            {modifierKey}K
+          </kbd>
+        </button>
       </div>
 
       {/* Search Dialog */}
