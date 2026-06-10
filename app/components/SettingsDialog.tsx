@@ -193,7 +193,7 @@ const SettingsDialog = ({
         onOpenChange={setShowNotesDialog}
       />
 
-      {/* Customize HackerAI Dialog */}
+      {/* Customize EYE Dialog */}
       <CustomizeHackerAIDialog
         open={showCustomizeDialog}
         onOpenChange={setShowCustomizeDialog}

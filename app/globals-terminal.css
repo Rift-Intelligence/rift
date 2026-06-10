@@ -458,3 +458,65 @@ samp,
   pointer-events: none;
   z-index: 1;
 }
+
+/* ============================================================
+   EYE terminal chrome — square off every "modern SaaS" surface
+   (dialogs, dropdowns, popovers, command palette) and frame them
+   like terminal windows. Kills the ChatGPT/HackerAI-clone feel.
+   ============================================================ */
+
+/* Content surfaces: zero radius + cyan hairline frame + dark fill */
+[data-slot="dialog-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="popover-content"],
+[data-slot="select-content"],
+[data-slot="command"],
+[data-slot="command-dialog"] [data-slot="dialog-content"],
+[cmdk-root] {
+  border-radius: 0 !important;
+  border: 1px solid var(--terminal-green) !important;
+  background: var(--terminal-primary) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.7),
+    0 0 28px rgba(34, 224, 255, 0.14) !important;
+}
+
+/* Items inside menus/commands: square, sharp hover */
+[data-slot="dropdown-menu-item"],
+[data-slot="dropdown-menu-checkbox-item"],
+[data-slot="dropdown-menu-radio-item"],
+[data-slot="dropdown-menu-sub-trigger"],
+[data-slot="select-item"],
+[data-slot="command-item"],
+[cmdk-item] {
+  border-radius: 0 !important;
+}
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="command-item"][data-selected="true"],
+[cmdk-item][data-selected="true"] {
+  background: rgba(34, 224, 255, 0.12) !important;
+  color: var(--terminal-green) !important;
+}
+
+/* Square off rounded chrome buttons/badges/inputs inside these surfaces and
+   the settings/account panels, but keep avatars + the eye SVGs round. */
+[data-slot="dialog-content"] .rounded-2xl,
+[data-slot="dialog-content"] .rounded-xl,
+[data-slot="dialog-content"] .rounded-lg,
+[data-slot="dialog-content"] .rounded-md,
+[data-slot="dropdown-menu-content"] .rounded-2xl,
+[data-slot="dropdown-menu-content"] .rounded-xl,
+[data-slot="dropdown-menu-content"] .rounded-lg,
+[data-slot="dropdown-menu-content"] .rounded-md,
+[data-slot="popover-content"] .rounded-2xl,
+[data-slot="popover-content"] .rounded-xl,
+[data-slot="popover-content"] .rounded-lg,
+[data-slot="popover-content"] .rounded-md {
+  border-radius: 0 !important;
+}
+
+/* Dialog close button → square terminal control */
+[data-slot="dialog-content"] [data-slot="dialog-close"],
+[data-slot="dialog-content"] button[aria-label="Close"] {
+  border-radius: 0 !important;
+}

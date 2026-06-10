@@ -384,8 +384,8 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Higher usage</AlertDialogTitle>
           <AlertDialogDescription className="text-left">
-            HackerAI Max uses quota much faster than Standard or Pro. One long
-            task can use much of what&apos;s included on Pro.
+            EYE Max uses quota much faster than Standard or Pro. One long task
+            can use much of what&apos;s included on Pro.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

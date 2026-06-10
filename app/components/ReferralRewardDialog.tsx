@@ -138,8 +138,8 @@ export function ReferralRewardDialog({
                 General referral guidelines
               </DialogTitle>
               <DialogDescription className="sr-only">
-                How the HackerAI referral program works and what activity is
-                eligible for rewards.
+                How the EYE referral program works and what activity is eligible
+                for rewards.
               </DialogDescription>
             </DialogHeader>
 
@@ -147,16 +147,16 @@ export function ReferralRewardDialog({
               <ul className="flex list-disc flex-col gap-2 px-5">
                 <li>
                   <span className="text-muted-foreground text-sm">
-                    This promotion is available to new HackerAI users who sign
-                    up through your link only — we want to share HackerAI with
-                    fresh eyes and grow our community.
+                    This promotion is available to new EYE users who sign up
+                    through your link only — we want to share EYE with fresh
+                    eyes and grow our community.
                   </span>
                 </li>
                 <li>
                   <span className="text-muted-foreground text-sm">
                     Rewards are earned once your invitee creates a new account
-                    and subscribes to any paid HackerAI plan. No credit is
-                    granted for inactive or incomplete referrals.
+                    and subscribes to any paid EYE plan. No credit is granted
+                    for inactive or incomplete referrals.
                   </span>
                 </li>
                 <li>
@@ -202,7 +202,7 @@ export function ReferralRewardDialog({
                   rel="noreferrer"
                   className="text-foreground hover:text-foreground/80 underline"
                 >
-                  HackerAI Terms
+                  EYE Terms
                 </a>
                 .
               </p>
