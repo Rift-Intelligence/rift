@@ -20,7 +20,7 @@ import type { ChatStatus, ChatMessage } from "@/types";
 import type { FileDetails } from "@/types/file";
 import { toast } from "sonner";
 import { WandSparkles } from "lucide-react";
-import DotsSpinner from "@/components/ui/dots-spinner";
+import { EyeThinkingConsole } from "./eye/EyeThinkingConsole";
 import { hasTextContent } from "@/lib/utils/message-utils";
 import { useDataStreamState } from "./DataStreamProvider";
 
@@ -361,11 +361,7 @@ export const Messages = ({
               {uploadStatus?.isUploading && (
                 <Shimmer className="text-sm">{`${uploadStatus.message}...`}</Shimmer>
               )}
-              {shouldShowLoadingDots && (
-                <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 inline-flex items-center">
-                  <DotsSpinner size="sm" variant="primary" />
-                </div>
-              )}
+              {shouldShowLoadingDots && <EyeThinkingConsole />}
             </div>
           )}
 

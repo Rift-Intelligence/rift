@@ -9,7 +9,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* EYE is a full-terminal aesthetic: sans utilities resolve to mono too. */
+  --font-sans: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -241,11 +242,15 @@
   opacity: 0;
 }
 
-/* Display heading emphasis: elegant serif italic (zauth headline treatment) */
+/* Display heading emphasis: terminal glitch highlight (EYE). Mono, cyan,
+   tracked + faint signal glow — replaces the old serif-italic zauth treatment. */
 .display-emphasis {
-  font-family: var(--font-serif), ui-serif, Georgia, "Times New Roman", serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: -0.01em;
+  text-shadow: 0 0 18px rgba(34, 224, 255, 0.35);
 }
 
 /* Glitch effect for hover */

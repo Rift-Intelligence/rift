@@ -45,23 +45,40 @@
   --premium-hover: #22e0ff;
 }
 
-/* Typography: clean sans-serif for reading/UI text, monospace reserved for
-   code, terminal output and hacker-flavored accents. Previously every element
-   was forced to monospace via `* { ... !important }`, which made prose cramped
-   and hard to read. */
+/* EYE typography: FULL terminal — everything is monospace. JetBrains Mono is
+   the single system face. Readability is preserved via tuned line-height and
+   letter-spacing rather than by switching to a sans face. */
 body {
   background-color: var(--terminal-bg) !important;
   color: var(--terminal-text) !important;
   overflow: hidden;
   font-family:
-    var(--font-inter),
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    sans-serif;
+    "JetBrains Mono", var(--font-jetbrains-mono), ui-monospace,
+    "SFMono-Regular", Menlo, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
+}
+
+/* Make every UI surface inherit the mono face (kills residual sans rendering
+   from component-level font utilities that pointed at the old sans var). */
+button,
+input,
+textarea,
+select,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+a,
+li,
+label {
+  font-family: inherit;
 }
 
 /* Monospace where the terminal aesthetic matters. */
