@@ -59,7 +59,6 @@ import { parseRateLimitWarning } from "@/lib/utils/parse-rate-limit-warning";
 import Loading from "@/components/ui/loading";
 
 import { HackingSuggestions } from "./HackingSuggestions";
-import { PentestQuickStart } from "./PentestQuickStart";
 
 // --- Streaming ephemeral state reducer ---
 // Consolidates high-frequency streaming state updates into a single dispatch
@@ -1307,13 +1306,6 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                             }
                             contextUsage={contextUsage}
                           />
-                        </div>
-                      )}
-
-                      {/* Pentest quick-start launcher (desktop, persistent chats) */}
-                      {!isMobile && !temporaryChatsEnabled && (
-                        <div className="w-full max-w-2xl">
-                          <PentestQuickStart />
                         </div>
                       )}
                     </div>

@@ -21,12 +21,23 @@ interface HeaderProps {
   hideDownload?: boolean;
 }
 
-const NAV_ITEMS: { label: string; icon: LucideIcon }[] = [
-  { label: "Product", icon: Terminal },
-  { label: "Security", icon: ShieldCheck },
-  { label: "Docs", icon: FileText },
-  { label: "Pricing", icon: Tag },
+const NAV_ITEMS: { label: string; icon: LucideIcon; target: string }[] = [
+  { label: "Product", icon: Terminal, target: "top" },
+  { label: "Security", icon: ShieldCheck, target: "security" },
+  { label: "Docs", icon: FileText, target: "docs" },
+  { label: "Pricing", icon: Tag, target: "pricing" },
 ];
+
+function scrollToSection(target: string) {
+  if (target === "top") {
+    const scroller = document.querySelector(".flex-1.overflow-y-auto");
+    scroller?.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+  document
+    .getElementById(target)
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
   const { user, loading } = useAuth();
@@ -58,10 +69,10 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
           !loading &&
           !user && (
             <nav className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-7">
-              {NAV_ITEMS.map(({ label, icon: Icon }) => (
+              {NAV_ITEMS.map(({ label, icon: Icon, target }) => (
                 <button
                   key={label}
-                  onClick={goToSignup}
+                  onClick={() => scrollToSection(target)}
                   className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <Icon className="h-3.5 w-3.5" />

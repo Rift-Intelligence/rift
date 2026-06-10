@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Chat } from "../components/chat";
 import { EyeBackdrop } from "../components/eye/EyeBackdrop";
+import { LandingSections } from "../components/landing/LandingSections";
 import { navigateToAuth } from "../hooks/useTauri";
 
 const CAPABILITIES = [
@@ -46,77 +47,82 @@ const UnauthenticatedContent = () => {
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col min-h-0">
-        <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto px-6 py-10 min-h-0">
-          <div className="relative flex w-full max-w-2xl flex-col items-center text-center">
-            {/* readability scrim: darkens just behind the copy so the eye stays
+        <div className="flex-1 overflow-y-auto">
+          <section className="flex min-h-[86vh] flex-col items-center justify-center px-6 py-12">
+            <div className="relative flex w-full max-w-2xl flex-col items-center text-center">
+              {/* readability scrim: darkens just behind the copy so the eye stays
                 visible around it without washing out the text */}
-            <div
-              className="pointer-events-none absolute inset-x-[-12%] inset-y-[-8%] -z-[1]"
-              style={{
-                background:
-                  "radial-gradient(60% 55% at 50% 50%, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.6) 55%, transparent 100%)",
-              }}
-            />
-            {/* status line */}
-            <div className="hud-label mb-5 text-primary/80">
-              {"// EYE v1.0 — AUTONOMOUS OFFENSIVE INTELLIGENCE"}
-            </div>
+              <div
+                className="pointer-events-none absolute inset-x-[-12%] inset-y-[-8%] -z-[1]"
+                style={{
+                  background:
+                    "radial-gradient(60% 55% at 50% 50%, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.6) 55%, transparent 100%)",
+                }}
+              />
+              {/* status line */}
+              <div className="hud-label mb-5 text-primary/80">
+                {"// EYE v1.0 — AUTONOMOUS OFFENSIVE INTELLIGENCE"}
+              </div>
 
-            {/* headline */}
-            <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl text-eye-glow">
-              <span className="block">See everything.</span>
-              <span className="display-emphasis animate-hero-highlight block">
-                Miss nothing.
-              </span>
-            </h1>
+              {/* headline */}
+              <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl text-eye-glow">
+                <span className="block">See everything.</span>
+                <span className="display-emphasis animate-hero-highlight block">
+                  Miss nothing.
+                </span>
+              </h1>
 
-            {/* what it does */}
-            <p
-              className="animate-fade-in-up mt-6 max-w-xl text-pretty text-sm leading-relaxed text-foreground/80 sm:text-base"
-              style={{ animationDelay: "0.6s" }}
-            >
-              Point EYE at a target and walk away. It runs reconnaissance, finds
-              and exploits vulnerabilities, and writes the report — on its own,
-              inside its own isolated sandbox. You watch. It works.
-            </p>
+              {/* what it does */}
+              <p
+                className="animate-fade-in-up mt-6 max-w-xl text-pretty text-sm leading-relaxed text-foreground/80 sm:text-base"
+                style={{ animationDelay: "0.6s" }}
+              >
+                Point EYE at a target and walk away. It runs reconnaissance,
+                finds and exploits vulnerabilities, and writes the report — on
+                its own, inside its own isolated sandbox. You watch. It works.
+              </p>
 
-            {/* capability chips (ASCII) */}
-            <div className="mt-7 grid w-full max-w-xl gap-2 sm:grid-cols-3">
-              {CAPABILITIES.map((c) => (
-                <div
-                  key={c.tag}
-                  className="hud bg-surface/60 px-3 py-2.5 text-left"
-                >
-                  <span className="hud-corners" aria-hidden />
-                  <div className="text-xs font-semibold tracking-widest text-primary">
-                    {c.tag}
+              {/* capability chips (ASCII) */}
+              <div className="mt-7 grid w-full max-w-xl gap-2 sm:grid-cols-3">
+                {CAPABILITIES.map((c) => (
+                  <div
+                    key={c.tag}
+                    className="hud bg-surface/60 px-3 py-2.5 text-left"
+                  >
+                    <span className="hud-corners" aria-hidden />
+                    <div className="text-xs font-semibold tracking-widest text-primary">
+                      {c.tag}
+                    </div>
+                    <div className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                      {c.desc}
+                    </div>
                   </div>
-                  <div className="mt-1 text-[11px] leading-snug text-muted-foreground">
-                    {c.desc}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            {/* Launch App */}
-            <button
-              type="button"
-              onClick={launch}
-              className="group mt-9 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-7 py-3 font-semibold uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground eye-live"
-            >
-              <span className="text-primary/70 group-hover:text-primary-foreground">
-                $
-              </span>
-              Launch App
-              <span aria-hidden>▸</span>
-            </button>
-            <div className="hud-label mt-3 text-muted-foreground">
-              no setup · runs in the cloud
+              {/* Launch App */}
+              <button
+                type="button"
+                onClick={launch}
+                className="group mt-9 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-7 py-3 font-semibold uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground eye-live"
+              >
+                <span className="text-primary/70 group-hover:text-primary-foreground">
+                  $
+                </span>
+                Launch App
+                <span aria-hidden>▸</span>
+              </button>
+              <div className="hud-label mt-3 text-muted-foreground">
+                no setup · runs in the cloud
+              </div>
+              <div className="hud-label mt-10 animate-pulse text-muted-foreground/60">
+                ▾ scroll
+              </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <div className="flex-shrink-0">
+          <LandingSections onLaunch={launch} />
+
           <Footer />
         </div>
       </div>
