@@ -18,7 +18,6 @@ import { ChatInput } from "./ChatInput";
 import type { RateLimitWarningData } from "./RateLimitWarning";
 import { ComputerSidebar } from "./ComputerSidebar";
 import ChatHeader from "./ChatHeader";
-import { ToyEye } from "./eye/ToyEye";
 import Footer from "./Footer";
 import { useMessageScroll } from "../hooks/useMessageScroll";
 import { useChatHandlers } from "../hooks/useChatHandlers";
@@ -1211,7 +1210,6 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                   <span className="terminal-dot terminal-dot-red" />
                   <span className="terminal-dot terminal-dot-yellow" />
                   <span className="terminal-dot terminal-dot-green" />
-                  <ToyEye size={22} />
                   <span className="ml-1 truncate text-xs text-terminal-green/80">
                     root@eye: ~/session
                   </span>

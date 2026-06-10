@@ -14,20 +14,20 @@ export interface ModelOption {
 export const ASK_MODEL_OPTIONS: ModelOption[] = [
   {
     id: "hackerai-standard",
-    label: "RIFT Standard",
+    label: "EYE Standard",
     description: "Reliable performance for everyday tasks",
     poweredBy:
       "DeepSeek V4 Flash · switches to Gemini 3 Flash for images & PDFs",
   },
   {
     id: "hackerai-pro",
-    label: "RIFT Pro",
+    label: "EYE Pro",
     description: "Superior performance for most assignments",
     poweredBy: "Claude Sonnet 4.6",
   },
   {
     id: "hackerai-max",
-    label: "RIFT Max",
+    label: "EYE Max",
     description: "Maximum intelligence for complex work",
     poweredBy: "Claude Opus 4.6",
   },
@@ -36,21 +36,21 @@ export const ASK_MODEL_OPTIONS: ModelOption[] = [
 export const AGENT_MODEL_OPTIONS: ModelOption[] = [
   {
     id: "hackerai-standard",
-    label: "RIFT Standard",
+    label: "EYE Standard",
     description: "Reliable agent for everyday automation",
     poweredBy: "Moonshot Kimi K2.6",
     thinking: true,
   },
   {
     id: "hackerai-pro",
-    label: "RIFT Pro",
+    label: "EYE Pro",
     description: "Superior performance for most assignments",
     poweredBy: "Claude Sonnet 4.6",
     thinking: true,
   },
   {
     id: "hackerai-max",
-    label: "RIFT Max",
+    label: "EYE Max",
     description: "Maximum intelligence for complex work",
     poweredBy: "Claude Opus 4.6",
     thinking: true,

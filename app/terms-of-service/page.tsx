@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import ZauthPageShell from "@/app/components/ZauthPageShell";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Rift",
-  description: "Terms of Service and conditions for Rift services.",
+  title: "Terms of Service | EYE",
+  description: "Terms of Service and conditions for EYE services.",
   openGraph: {
-    title: "Terms of Service | Rift",
-    description: "Terms of Service and conditions for Rift services.",
+    title: "Terms of Service | EYE",
+    description: "Terms of Service and conditions for EYE services.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Terms of Service | Rift",
-    description: "Terms of Service and conditions for Rift services.",
+    title: "Terms of Service | EYE",
+    description: "Terms of Service and conditions for EYE services.",
   },
 };
 
@@ -24,20 +24,20 @@ export default function TermsOfServicePage() {
       <div className="px-4 py-12 pb-20 md:px-0">
         <div className="container mx-auto max-w-2xl space-y-6 rounded-[14px] border border-white/10 bg-white/[0.03] px-4 py-8 backdrop-blur-sm sm:px-8">
           <h1 className="mb-5 text-center text-3xl font-semibold text-[#f4f4f5]">
-            Rift Terms of Service
+            EYE Terms of Service
           </h1>
 
           <div className="mt-4 text-lg leading-relaxed text-card-foreground">
             <ol className="list-inside list-decimal">
               <li className="mb-3">
                 <strong>Lawful Use:</strong> Users of products, services, or
-                software (&quot;Products&quot;) provided by Rift LLC (&quot;the
+                software (&quot;Products&quot;) provided by EYE LLC (&quot;the
                 Company&quot;) agree to use the Products only for lawful
                 purposes and in accordance with all applicable laws,
                 regulations, and guidelines.
               </li>
               <li className="mb-3">
-                <strong>Limitation of Liability:</strong> Neither Rift LLC, nor
+                <strong>Limitation of Liability:</strong> Neither EYE LLC, nor
                 its parent companies, affiliates, directors, officers,
                 employees, agents, partners, or licensors shall be held
                 responsible or liable, directly or indirectly, for any damages,
@@ -58,7 +58,7 @@ export default function TermsOfServicePage() {
                 <strong>User Responsibility and Indemnity:</strong> The user
                 assumes full responsibility for any risks associated with their
                 use of the Products. The user agrees to indemnify and hold
-                harmless Rift LLC, its parent companies, and their respective
+                harmless EYE LLC, its parent companies, and their respective
                 officers, directors, employees, and agents from and against any
                 claims, actions, or demands, including without limitation
                 reasonable legal and accounting fees, arising or resulting from
@@ -68,7 +68,7 @@ export default function TermsOfServicePage() {
                 litigation costs, and legal fees.
               </li>
               <li className="mb-3">
-                <strong>Changes to Terms of Service:</strong> Rift LLC reserves
+                <strong>Changes to Terms of Service:</strong> EYE LLC reserves
                 the right to update or modify these Terms of Service at any time
                 without prior notice. Your use of the Products after any such
                 changes constitutes your acceptance of the new terms. It is your
@@ -86,7 +86,7 @@ export default function TermsOfServicePage() {
             </ol>
 
             <p className="mt-4">
-              By using the Products provided by Rift LLC, you indicate your
+              By using the Products provided by EYE LLC, you indicate your
               understanding and agreement to abide by the terms and conditions
               set forth in these Terms of Service. If you do not agree with
               these terms, please refrain from using the Products.

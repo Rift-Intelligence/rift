@@ -34,12 +34,12 @@ describe("ModelSelector", () => {
         "Balanced quality and speed, recommended for most tasks",
       ),
     ).toBeVisible();
-    expect(screen.getByText("RIFT Standard")).toBeVisible();
-    expect(screen.getByText("RIFT Pro")).toBeVisible();
-    expect(screen.getByText("RIFT Max")).toBeVisible();
+    expect(screen.getByText("EYE Standard")).toBeVisible();
+    expect(screen.getByText("EYE Pro")).toBeVisible();
+    expect(screen.getByText("EYE Max")).toBeVisible();
 
     expect(
-      screen.getByRole("button", { name: /RIFT Standard/i }),
+      screen.getByRole("button", { name: /EYE Standard/i }),
     ).toHaveAttribute("aria-pressed", "false");
   });
 
@@ -49,7 +49,7 @@ describe("ModelSelector", () => {
       <ModelSelector value="hackerai-pro" onChange={onChange} mode="ask" />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /RIFT Pro/i }));
+    fireEvent.click(screen.getByRole("button", { name: /EYE Pro/i }));
     fireEvent.click(
       screen.getByRole("button", {
         name: /Auto Balanced quality and speed/i,

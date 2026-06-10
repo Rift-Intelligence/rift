@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EyeMascot } from "./eye/EyeMascot";
 
 // Surveillance-cold two-part headlines: roman lead-in + terminal emphasis.
 const HEADLINES: { lead: string; emphasis: string }[] = [
@@ -19,10 +20,12 @@ export const HackingSuggestions = () => {
 
   return (
     <div className="relative mb-8 flex flex-col items-center px-4 text-center">
-      {/* The mascot EYE now lives in the terminal titlebar above; here we keep
-          just the prompt + a terminal-style boot line. */}
-      <div className="hud-label mb-4 text-primary/70">
-        {"eye@root:~$ session --new"}
+      {/* 8-bit EYE mascot — the big living eye, inside the terminal */}
+      <div className="mb-5 flex flex-col items-center">
+        <EyeMascot cell={13} />
+        <div className="hud-label mt-3 text-primary/70">
+          {"eye@root:~$ session --new"}
+        </div>
       </div>
 
       {/* Display headline */}
