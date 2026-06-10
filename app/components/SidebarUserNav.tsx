@@ -502,54 +502,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
             </div>
           )}
 
-          <DropdownMenuItem
-            data-testid="settings-button"
-            onClick={() => openSettingsDialog()}
-            className="py-1.5"
-          >
-            <Settings className="mr-2 h-4 w-4 text-foreground" />
-            <span>Settings</span>
-          </DropdownMenuItem>
-
-          {!isStandalone && (
-            <DropdownMenuItem asChild className="py-1.5">
-              <Link href="/download">
-                <Download className="mr-2 h-4 w-4 text-foreground" />
-                <span>{isMobile ? "Install App" : "Download App"}</span>
-              </Link>
-            </DropdownMenuItem>
-          )}
-
           <DropdownMenuSeparator />
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <DropdownMenuItem className="gap-4 cursor-pointer py-1.5">
-                <LifeBuoy className="h-4 w-4 text-foreground" />
-                <span>Help</span>
-                <ChevronRight className="ml-auto h-4 w-4" />
-              </DropdownMenuItem>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              side={isMobile ? "top" : "right"}
-              align={isMobile ? "center" : "start"}
-              sideOffset={isMobile ? 8 : 4}
-              className="rounded-2xl"
-            >
-              <DropdownMenuItem onClick={handleHelpCenter} className="py-1.5">
-                <LifeBuoy className="mr-2 h-4 w-4 text-foreground" />
-                <span>Help Center</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleGitHub} className="py-1.5">
-                <GithubIcon className="mr-2 h-4 w-4 text-foreground" />
-                <span>Source Code</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleXCom} className="py-1.5">
-                <XIcon className="mr-2 h-4 w-4 text-foreground" />
-                <span>Social</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
           <DropdownMenuItem
             data-testid="logout-button"

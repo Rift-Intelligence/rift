@@ -213,6 +213,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     setTodos,
     replaceAssistantTodos,
     temporaryChatsEnabled,
+    setTemporaryChatsEnabled,
     setChatReset,
     hasUserDismissedRateLimitWarning,
     setHasUserDismissedRateLimitWarning,
@@ -1213,7 +1214,32 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                   <span className="ml-1 truncate text-xs text-terminal-green/80">
                     root@eye: ~/session
                   </span>
-                  <span className="ml-auto flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary">
+                  {/* session mode: normal vs incognito (new chats only) */}
+                  {!isExistingChat && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTemporaryChatsEnabled(!temporaryChatsEnabled)
+                      }
+                      className="ml-auto flex items-center gap-1.5 border border-sidebar-border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                      aria-pressed={temporaryChatsEnabled}
+                      title="Toggle incognito (temporary) session"
+                    >
+                      <span
+                        className={`inline-block size-1.5 rounded-full ${
+                          temporaryChatsEnabled
+                            ? "bg-muted-foreground"
+                            : "bg-primary eye-live"
+                        }`}
+                      />
+                      {temporaryChatsEnabled ? "incognito" : "normal"}
+                    </button>
+                  )}
+                  <span
+                    className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary ${
+                      isExistingChat ? "ml-auto" : ""
+                    }`}
+                  >
                     <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
                     watching
                   </span>

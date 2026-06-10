@@ -97,34 +97,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <div className="flex flex-1 gap-2 justify-between items-center">
               <div className="flex gap-[40px]"></div>
               <div className="flex gap-2 items-center">
-                {/* Temporary Chat Toggle - Desktop */}
-                {!loading && user && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={temporaryChatsEnabled ? "default" : "ghost"}
-                          size="sm"
-                          aria-label="Toggle temporary chats for new chats"
-                          aria-pressed={temporaryChatsEnabled}
-                          onClick={() =>
-                            setTemporaryChatsEnabled(!temporaryChatsEnabled)
-                          }
-                          className="flex items-center gap-2 rounded-full px-3"
-                        >
-                          <HatGlasses className="size-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {temporaryChatsEnabled
-                            ? "Turn off temporary chat"
-                            : "Turn on temporary chat"}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
                 {/* Show sign in/up buttons for non-logged-in users */}
                 {!loading && !user && (
                   <>
@@ -166,34 +138,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
               )}
             </div>
             <div className="flex items-center gap-2">
-              {/* Temporary Chat Toggle - Mobile */}
-              {!loading && user && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant={temporaryChatsEnabled ? "default" : "ghost"}
-                        size="icon"
-                        aria-label="Toggle temporary chats for new chats"
-                        aria-pressed={temporaryChatsEnabled}
-                        onClick={() =>
-                          setTemporaryChatsEnabled(!temporaryChatsEnabled)
-                        }
-                        className="h-7 w-7 rounded-full"
-                      >
-                        <HatGlasses className="size-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {temporaryChatsEnabled
-                          ? "Turn off temporary chat"
-                          : "Turn on temporary chat"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
               {/* Show sign in/up buttons for non-logged-in users */}
               {!loading && !user && (
                 <>
