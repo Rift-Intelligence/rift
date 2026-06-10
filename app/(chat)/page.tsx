@@ -2,46 +2,23 @@
 
 import React from "react";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { ChatInput } from "../components/ChatInput";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Chat } from "../components/chat";
-import { useInputValue } from "../contexts/InputContext";
+import { EyeBackdrop } from "../components/eye/EyeBackdrop";
 import { navigateToAuth } from "../hooks/useTauri";
-import { useTypingAnimation } from "../hooks/useTypingAnimation";
-import { upsertDraft } from "@/lib/utils/client-storage";
 
-const LOGIN_TYPING_PREFIX = "Ask EYE to ";
-const LOGIN_TYPING_TAILS = [
-  "identify vulnerabilities in...",
-  "assess the security posture of...",
-  "penetration test...",
-  "analyze the attack surface of...",
-  "generate a security report for...",
-  "hunt for threats in...",
+const CAPABILITIES = [
+  { tag: "RECON", desc: "footprint, subdomains, open ports, tech stack" },
+  { tag: "EXPLOIT", desc: "find & weaponize vulnerabilities autonomously" },
+  { tag: "REPORT", desc: "write up findings with proof and remediation" },
 ];
 
-// Simple unauthenticated content that redirects to signup on message send
+// Marketing landing for unauthenticated visitors. A huge watching eye fills the
+// background; the only call to action is "Launch App" (→ signup/chat).
 const UnauthenticatedContent = () => {
-  const input = useInputValue();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (input.trim()) {
-      upsertDraft("new", input);
-    }
+  const launch = () =>
     navigateToAuth("/signup", { preferSignInForReturningUser: true });
-  };
-
-  const animatedTail = useTypingAnimation({
-    phrases: LOGIN_TYPING_TAILS,
-    enabled: true,
-  });
-  const animatedPlaceholder = `${LOGIN_TYPING_PREFIX}${animatedTail}`;
-
-  const handleStop = () => {
-    // No-op for unauthenticated users
-  };
 
   React.useEffect(() => {
     const checkHash = () => {
@@ -61,52 +38,84 @@ const UnauthenticatedContent = () => {
 
   return (
     <div className="relative h-full flex flex-col overflow-hidden bg-transparent">
-      {/* Background is the global EyeBackdrop (mounted in layout) */}
+      {/* The huge watching EYE — landing background only */}
+      <EyeBackdrop />
 
       <div className="relative z-10 flex-shrink-0">
         <Header />
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col min-h-0">
-        {/* Centered content area */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-y-auto px-6 py-10 min-h-0">
-          {/* The watching EYE is the global backdrop (mounted in layout). */}
+          <div className="relative flex w-full max-w-2xl flex-col items-center text-center">
+            {/* readability scrim: darkens just behind the copy so the eye stays
+                visible around it without washing out the text */}
+            <div
+              className="pointer-events-none absolute inset-x-[-12%] inset-y-[-8%] -z-[1]"
+              style={{
+                background:
+                  "radial-gradient(60% 55% at 50% 50%, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.6) 55%, transparent 100%)",
+              }}
+            />
+            {/* status line */}
+            <div className="hud-label mb-5 text-primary/80">
+              {"// EYE v1.0 — AUTONOMOUS OFFENSIVE INTELLIGENCE"}
+            </div>
 
-          {/* Title */}
-          <div className="mb-10 flex flex-col items-center px-4 text-center">
-            <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl">
+            {/* headline */}
+            <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl text-eye-glow">
               <span className="block">See everything.</span>
               <span className="display-emphasis animate-hero-highlight block">
                 Miss nothing.
               </span>
             </h1>
-            <p
-              className="animate-fade-in-up mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg"
-              style={{ animationDelay: "1s" }}
-            >
-              Point EYE at any target. It runs recon, exploitation, and
-              reporting on its own — every operation isolated in its own
-              sandbox.
-            </p>
-          </div>
 
-          {/* Input */}
-          <div className="w-full max-w-3xl">
-            <ChatInput
-              onSubmit={handleSubmit}
-              onStop={handleStop}
-              onSendNow={() => {}}
-              status="ready"
-              isCentered={true}
-              isNewChat={true}
-              clearDraftOnSubmit={false}
-              placeholder={animatedPlaceholder}
-              autoFocus={false}
-            />
+            {/* what it does */}
+            <p
+              className="animate-fade-in-up mt-6 max-w-xl text-pretty text-sm leading-relaxed text-foreground/80 sm:text-base"
+              style={{ animationDelay: "0.6s" }}
+            >
+              Point EYE at a target and walk away. It runs reconnaissance, finds
+              and exploits vulnerabilities, and writes the report — on its own,
+              inside its own isolated sandbox. You watch. It works.
+            </p>
+
+            {/* capability chips (ASCII) */}
+            <div className="mt-7 grid w-full max-w-xl gap-2 sm:grid-cols-3">
+              {CAPABILITIES.map((c) => (
+                <div
+                  key={c.tag}
+                  className="hud bg-surface/60 px-3 py-2.5 text-left"
+                >
+                  <span className="hud-corners" aria-hidden />
+                  <div className="text-xs font-semibold tracking-widest text-primary">
+                    {c.tag}
+                  </div>
+                  <div className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                    {c.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Launch App */}
+            <button
+              type="button"
+              onClick={launch}
+              className="group mt-9 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-7 py-3 font-semibold uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground eye-live"
+            >
+              <span className="text-primary/70 group-hover:text-primary-foreground">
+                $
+              </span>
+              Launch App
+              <span aria-hidden>▸</span>
+            </button>
+            <div className="hud-label mt-3 text-muted-foreground">
+              no setup · runs in the cloud
+            </div>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex-shrink-0">
           <Footer />
         </div>
