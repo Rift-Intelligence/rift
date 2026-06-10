@@ -27,7 +27,7 @@ export function ModeSelectorContent({
       />
       <ModeOptionItem
         icon={Infinity}
-        title="Agent"
+        title="EXECUTOR"
         description="Autonomous exploit & audit"
         onClick={onAgentModeClick}
         data-testid="mode-agent"

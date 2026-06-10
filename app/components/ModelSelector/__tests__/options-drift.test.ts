@@ -61,7 +61,7 @@ describe("ModelSelector tier ↔ provider drift", () => {
   });
 
   it("hover-popup descriptions are present for every EYE tier", () => {
-    const tiered = allOptions.filter((o) => o.label.startsWith("EYE"));
+    const tiered = allOptions.filter((o) => o.id.startsWith("hackerai-"));
     expect(tiered.length).toBeGreaterThan(0);
     for (const option of tiered) {
       expect(option.description).toBeTruthy();

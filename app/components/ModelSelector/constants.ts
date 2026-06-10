@@ -14,20 +14,20 @@ export interface ModelOption {
 export const ASK_MODEL_OPTIONS: ModelOption[] = [
   {
     id: "hackerai-standard",
-    label: "EYE Recon",
+    label: "⬡ Recon",
     description: "Baseline intelligence for reconnaissance",
     poweredBy:
       "DeepSeek V4 Flash · switches to Gemini 3 Flash for images & PDFs",
   },
   {
     id: "hackerai-pro",
-    label: "EYE Strike",
+    label: "⬢ Strike",
     description: "Advanced capability for complex operations",
     poweredBy: "Claude Sonnet 4.6",
   },
   {
     id: "hackerai-max",
-    label: "EYE Dominate",
+    label: "⬥ Dominate",
     description: "Maximum power for unrestricted analysis",
     poweredBy: "Claude Opus 4.6",
   },
@@ -36,21 +36,21 @@ export const ASK_MODEL_OPTIONS: ModelOption[] = [
 export const AGENT_MODEL_OPTIONS: ModelOption[] = [
   {
     id: "hackerai-standard",
-    label: "EYE Recon",
+    label: "⬡ Recon",
     description: "Autonomous reconnaissance & enumeration",
     poweredBy: "Moonshot Kimi K2.6",
     thinking: true,
   },
   {
     id: "hackerai-pro",
-    label: "EYE Strike",
+    label: "⬢ Strike",
     description: "Advanced autonomous exploitation & testing",
     poweredBy: "Claude Sonnet 4.6",
     thinking: true,
   },
   {
     id: "hackerai-max",
-    label: "EYE Dominate",
+    label: "⬥ Dominate",
     description: "Maximum autonomous penetration power",
     poweredBy: "Claude Opus 4.6",
     thinking: true,
