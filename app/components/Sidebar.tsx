@@ -68,25 +68,33 @@ const DesktopSidebarContent: FC<{
 
       <SidebarContent>
         {!isCollapsed && (
-          <SidebarGroup className="border-b border-sidebar-border/60 pb-2">
+          <SidebarGroup className="pb-1">
             <SidebarGroupContent>
-              <div className="px-2 pb-1 pt-1 font-mono">
-                <div className="space-y-0.5 text-[10px] leading-tight text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
-                    <span className="tracking-wider text-foreground/80">
-                      SYS
-                    </span>
-                    <span className="ml-auto text-primary">ONLINE</span>
+              <div className="mx-2 mb-1 font-mono">
+                {/* framed system-status readout */}
+                <div className="hud scanlines bg-black/40 px-2.5 py-2">
+                  <span className="hud-corners" aria-hidden />
+                  <div className="mb-1.5 flex items-center justify-between text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                    <span>{"// status"}</span>
+                    <span className="text-primary/70">0x1F</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-primary/60">▸</span> SANDBOX
-                    <span className="ml-auto text-primary">READY</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-primary/60">▸</span> LINK
-                    <span className="ml-auto text-primary">SECURE</span>
-                    <span className="terminal-cursor inline-block !h-2.5 !w-1.5" />
+                  <div className="space-y-0.5 text-[10px] leading-tight text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
+                      <span className="tracking-wider text-foreground/80">
+                        SYS
+                      </span>
+                      <span className="ml-auto text-primary">ONLINE</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-primary/60">▸</span> SANDBOX
+                      <span className="ml-auto text-primary">READY</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-primary/60">▸</span> LINK
+                      <span className="ml-auto text-primary">SECURE</span>
+                      <span className="terminal-cursor inline-block !h-2.5 !w-1.5" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -94,7 +102,7 @@ const DesktopSidebarContent: FC<{
           </SidebarGroup>
         )}
         {!isCollapsed && (
-          <SidebarGroup className="border-b border-sidebar-border/60 pb-1">
+          <SidebarGroup className="pb-1">
             <SidebarGroupContent>
               <PentestArsenal />
             </SidebarGroupContent>

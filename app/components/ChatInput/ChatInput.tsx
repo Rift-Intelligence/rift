@@ -218,16 +218,26 @@ export const ChatInput = ({
         />
 
         <div
-          className={`order-2 sm:order-1 flex flex-col transition-colors relative bg-input-chat max-h-[300px] min-w-0 overflow-hidden terminal-panel terminal-border ${uploadedFiles && uploadedFiles.length > 0 ? "rounded-b-[0px] border-t-0" : "rounded-[0px]"}`}
+          className={`order-2 sm:order-1 flex flex-col transition-[box-shadow,border-color] duration-200 relative bg-input-chat max-h-[300px] min-w-0 overflow-hidden terminal-panel terminal-border rounded-[0px] focus-within:border-primary/60 focus-within:shadow-[0_0_0_1px_rgba(34,224,255,0.25),0_0_26px_rgba(34,224,255,0.12)] ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
         >
+          {/* cyan top accent */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+          />
           {/* Terminal window title bar */}
           <div className="terminal-titlebar flex items-center gap-2 px-3 py-1.5 select-none">
             <span className="text-xs text-primary">▸</span>
             <span className="text-xs text-terminal-green/70 truncate">
               {chatMode === "agent" ? "root@eye: ~/exploit" : "operator@eye: ~"}
             </span>
-            <span className="ml-auto text-[10px] text-terminal-green/50 uppercase tracking-wider hidden sm:inline">
-              {chatMode === "agent" ? "AGENT" : "ASK"} MODE
+            <span className="ml-auto text-[10px] uppercase tracking-wider hidden sm:flex items-center gap-1.5">
+              <span
+                className={`inline-block size-1.5 rounded-full ${chatMode === "agent" ? "bg-primary eye-live" : "bg-muted-foreground"}`}
+              />
+              <span className="text-terminal-green/60">
+                {chatMode === "agent" ? "AGENT" : "ASK"} MODE
+              </span>
             </span>
           </div>
 
