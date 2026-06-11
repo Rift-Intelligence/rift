@@ -8,42 +8,6 @@ import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 
 describe("extra-usage", () => {
   // ==========================================================================
-  // pointsToDollars - Pure function
-  // ==========================================================================
-  describe("pointsToDollars", () => {
-    // Import directly for pure function tests
-    const { pointsToDollars, EXTRA_USAGE_MULTIPLIER } =
-      require("../extra-usage") as typeof import("../extra-usage");
-
-    it("should convert points to dollars with 1.05x multiplier", () => {
-      // 10000 points = $1.00 base, * 1.05 = $1.05
-      expect(pointsToDollars(10000)).toBe(1.05);
-    });
-
-    it("should round up to nearest cent", () => {
-      // 1 point = $0.0001 base, * 1.05 = $0.000105 → rounds up to $0.01
-      expect(pointsToDollars(1)).toBe(0.01);
-      // 100 points = $0.01 base, * 1.05 = $0.0105 → rounds up to $0.02
-      expect(pointsToDollars(100)).toBe(0.02);
-    });
-
-    it("should return 0 for 0 points", () => {
-      expect(pointsToDollars(0)).toBe(0);
-    });
-
-    it("should handle large point values", () => {
-      // 1M points = $100 base, * 1.05 = $105
-      expect(pointsToDollars(1_000_000)).toBe(105);
-    });
-
-    it("should apply EXTRA_USAGE_MULTIPLIER correctly", () => {
-      expect(EXTRA_USAGE_MULTIPLIER).toBe(1.05);
-      // 50000 points = $5.00 base, * 1.05 = $5.25
-      expect(pointsToDollars(50000)).toBe(5.25);
-    });
-  });
-
-  // ==========================================================================
   // Async functions with mocked Convex
   // ==========================================================================
   describe("async functions", () => {

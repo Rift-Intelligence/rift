@@ -50,12 +50,6 @@ export const POINTS_PER_DOLLAR = 10_000;
  */
 export const RETAIL_MARGIN = 2.5;
 
-/**
- * @deprecated Legacy alias kept so existing importers (team path, tests) keep
- * compiling. Equals RETAIL_MARGIN; remove in the Phase 5 cleanup.
- */
-export const NORMAL_USAGE_MULTIPLIER = RETAIL_MARGIN;
-
 /** 30 days in seconds — used for Redis TTLs aligned with billing cycles. */
 const THIRTY_DAYS_SECONDS = 30 * 24 * 60 * 60;
 const RATE_LIMIT_SERVICE_NOT_CONFIGURED =
