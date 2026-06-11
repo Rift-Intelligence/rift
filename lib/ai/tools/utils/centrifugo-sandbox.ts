@@ -790,7 +790,7 @@ Commands run directly on the host OS "${hostname}" without Docker isolation. Be 
         if (isBinary) {
           command = `printf '%s' "${contentStr}" | base64 -d > ${escapedPath}`;
         } else {
-          const delimiter = `HACKERAI_EOF_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+          const delimiter = `RIFT_EOF_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
           command = `cat > ${escapedPath} <<'${delimiter}'\n${contentStr}\n${delimiter}`;
         }
 

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 
 /**
- * AsciiEye — the EYE motif.
+ * AsciiRift — the RIFT motif.
  *
  * A live <canvas> ASCII renderer. Nothing is "animated" directly: every frame
  * we compute a per-cell intensity field (almond sclera → iris ring → pupil
@@ -20,7 +20,7 @@ const RAMP = " .·:-=co0O@";
 const COLS = 116;
 const ROWS = 52;
 
-export function AsciiEye({ className }: { className?: string }) {
+export function AsciiRift({ className }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const mouse = useRef({ x: 0.5, y: 0.5 });
   const pupil = useRef({ x: 0.5, y: 0.5 });

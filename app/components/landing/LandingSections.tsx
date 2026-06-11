@@ -78,7 +78,7 @@ export function LandingSections({ onLaunch }: { onLaunch: () => void }) {
         </p>
         <Panel className="font-mono text-[13px] leading-relaxed">
           <div className="text-muted-foreground">
-            <span className="text-primary">$</span> eye target{" "}
+            <span className="text-primary">$</span> rift target{" "}
             <span className="text-foreground">acme.example.com</span>
           </div>
           <div className="mt-1 text-muted-foreground">

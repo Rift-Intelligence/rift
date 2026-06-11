@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * ToyEye — a small, friendly "mascot" eye (à la Claude's eye).
+ * ToyRift — a small, friendly "mascot" eye (à la Claude's eye).
  *
  * A clean SVG eye: cyan iris + dark pupil that smoothly tracks the cursor,
  * with an eyelid that blinks on a natural, randomized cadence. Lives at the top
  * of the terminal chat. Respects prefers-reduced-motion (no blink, no tracking).
  */
-export function ToyEye({ size = 26 }: { size?: number }) {
+export function ToyRift({ size = 26 }: { size?: number }) {
   const ref = useRef<SVGSVGElement>(null);
   const [pupil, setPupil] = useState({ x: 0, y: 0 });
   const [closed, setClosed] = useState(false);

@@ -235,7 +235,7 @@ export const ChatInput = ({
             </span>
             <span className="ml-auto text-[10px] uppercase tracking-wider hidden sm:flex items-center gap-1.5">
               <span
-                className={`inline-block size-1.5 rounded-full ${chatMode === "agent" ? "bg-primary eye-live" : "bg-muted-foreground"}`}
+                className={`inline-block size-1.5 rounded-full ${chatMode === "agent" ? "bg-primary rift-live" : "bg-muted-foreground"}`}
               />
               <span className="text-terminal-green/60">
                 {chatMode === "agent" ? "EXECUTOR" : "ASK"} MODE

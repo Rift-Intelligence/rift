@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { EyeMascot } from "./eye/EyeMascot";
+import { RiftMascot } from "./rift/RiftMascot";
 
 // Boot lines that type out when a session opens — terminal cold-start feel.
 const BOOT = [
-  { t: "eye --init", cmd: true },
+  { t: "rift --init", cmd: true },
   { t: "[ok] optical core .......... online" },
   { t: "[ok] cloud sandbox ......... provisioned" },
   { t: "[ok] secure link .......... established" },
@@ -45,7 +45,7 @@ export const HackingSuggestions = () => {
       <h1 className="sr-only">New RIFT session</h1>
       <div className="flex items-center gap-5">
         {/* 8-bit living eye */}
-        <EyeMascot cell={11} />
+        <RiftMascot cell={11} />
 
         {/* boot log */}
         <div className="text-left font-mono text-[12.5px] leading-relaxed">

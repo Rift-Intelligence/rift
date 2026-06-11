@@ -20,7 +20,7 @@ import type { ChatStatus, ChatMessage } from "@/types";
 import type { FileDetails } from "@/types/file";
 import { toast } from "sonner";
 import { WandSparkles } from "lucide-react";
-import { EyeThinkingConsole } from "./eye/EyeThinkingConsole";
+import { RiftThinkingConsole } from "./rift/RiftThinkingConsole";
 import { hasTextContent } from "@/lib/utils/message-utils";
 import { useDataStreamState } from "./DataStreamProvider";
 
@@ -361,7 +361,7 @@ export const Messages = ({
               {uploadStatus?.isUploading && (
                 <Shimmer className="text-sm">{`${uploadStatus.message}...`}</Shimmer>
               )}
-              {shouldShowLoadingDots && <EyeThinkingConsole />}
+              {shouldShowLoadingDots && <RiftThinkingConsole />}
             </div>
           )}
 

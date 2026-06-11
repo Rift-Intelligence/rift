@@ -202,7 +202,7 @@ describe("uploadSandboxFileToConvex", () => {
         }
         if (command.includes("curl -fsSL -X PUT")) {
           return {
-            stdout: "\n__HACKERAI_UPLOAD_EXIT_CODE__:56\n",
+            stdout: "\n__RIFT_UPLOAD_EXIT_CODE__:56\n",
             stderr: "curl: (56) response ended early",
             exitCode: 0,
           };

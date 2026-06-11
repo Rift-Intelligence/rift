@@ -80,7 +80,7 @@ const DesktopSidebarContent: FC<{
                   </div>
                   <div className="space-y-0.5 text-[10px] leading-tight text-muted-foreground">
                     <div className="flex items-center gap-1.5">
-                      <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
+                      <span className="inline-block size-1.5 rounded-full bg-primary rift-live" />
                       <span className="tracking-wider text-foreground/80">
                         SYS
                       </span>

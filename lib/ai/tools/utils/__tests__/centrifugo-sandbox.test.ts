@@ -534,7 +534,7 @@ describe("CentrifugoSandbox", () => {
         expect(writeCmd).toBeDefined();
 
         expect(writeCmd.command).toContain("cat >");
-        expect(writeCmd.command).toContain("<<'HACKERAI_EOF_");
+        expect(writeCmd.command).toContain("<<'RIFT_EOF_");
         expect(writeCmd.command).toContain("hello world");
       } finally {
         jest.useFakeTimers();
@@ -622,7 +622,7 @@ describe("CentrifugoSandbox", () => {
       // First call is the ensureDirectory mkdir -p, second is the write itself.
       expect(runs[0]).toBe("mkdir -p '/c/temp/foo'");
       expect(runs[1]).toContain("cat > '/c/temp/foo/bar.txt'");
-      expect(runs[1]).toContain("<<'HACKERAI_EOF_");
+      expect(runs[1]).toContain("<<'RIFT_EOF_");
       expect(runs[1]).toContain("hello");
       // No certutil / cmd.exe artifacts.
       expect(runs[1]).not.toContain("certutil");

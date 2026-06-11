@@ -3,7 +3,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 
 /**
- * Shared public-page shell. Transparent so the global EyeBackdrop (mounted in
+ * Shared public-page shell. Transparent so the global RiftBackdrop (mounted in
  * the root layout) shows through, with optional header/footer chrome.
  */
 export default function ZauthPageShell({

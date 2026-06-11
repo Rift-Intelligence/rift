@@ -269,7 +269,7 @@ export async function saveFileToLocal(
 
   const escaped = filename.replace(/'/g, "'\\''");
 
-  const delimiter = `HACKERAI_EOF_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+  const delimiter = `RIFT_EOF_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 
   const writeToDir = async (dir: string) => {
     const targetPath = `${dir}/${escaped}`;

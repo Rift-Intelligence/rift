@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  APP_URL: https://hackerai.co
+  APP_URL: https://rift.co
 
 jobs:
   prepare:
@@ -380,9 +380,9 @@ jobs:
           cp -R "$ARM64_APP" universal/
 
           UNIVERSAL_APP="universal/$(basename "$ARM64_APP")"
-          ARM64_BIN="$ARM64_APP/Contents/MacOS/hackerai-desktop"
-          X64_BIN="$X64_APP/Contents/MacOS/hackerai-desktop"
-          UNIVERSAL_BIN="$UNIVERSAL_APP/Contents/MacOS/hackerai-desktop"
+          ARM64_BIN="$ARM64_APP/Contents/MacOS/rift-desktop"
+          X64_BIN="$X64_APP/Contents/MacOS/rift-desktop"
+          UNIVERSAL_BIN="$UNIVERSAL_APP/Contents/MacOS/rift-desktop"
 
           lipo -create -output "$UNIVERSAL_BIN" "$ARM64_BIN" "$X64_BIN"
           chmod +x "$UNIVERSAL_BIN"
@@ -458,7 +458,7 @@ jobs:
         run: |
           ln -s /Applications universal/Applications
 
-          hdiutil create -volname "HackerAI" -srcfolder universal -ov -format UDZO HackerAI-universal.dmg
+          hdiutil create -volname "RIFT" -srcfolder universal -ov -format UDZO RIFT-universal.dmg
 
       - name: Notarize universal DMG
         env:
@@ -472,7 +472,7 @@ jobs:
           fi
 
           echo "Notarizing universal DMG..."
-          SUBMIT_OUTPUT=$(xcrun notarytool submit HackerAI-universal.dmg \
+          SUBMIT_OUTPUT=$(xcrun notarytool submit RIFT-universal.dmg \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
@@ -493,16 +493,16 @@ jobs:
 
           echo "$SUBMIT_OUTPUT"
           echo "Stapling notarization ticket to DMG..."
-          xcrun stapler staple HackerAI-universal.dmg
+          xcrun stapler staple RIFT-universal.dmg
 
           echo "Verifying notarization..."
-          spctl --assess --type open --context context:primary-signature -v HackerAI-universal.dmg || true
+          spctl --assess --type open --context context:primary-signature -v RIFT-universal.dmg || true
 
       - name: Upload universal artifact
         uses: actions/upload-artifact@v7
         with:
           name: desktop-macOS-universal
-          path: HackerAI-universal.dmg
+          path: RIFT-universal.dmg
           if-no-files-found: error
 
   create-release:
@@ -551,8 +551,8 @@ jobs:
           echo "Looking for Linux x64 AppImage: pattern '*_amd64.AppImage'"
           echo "Found: $LINUX_X64_APPIMAGE"
           if [ -n "$LINUX_X64_APPIMAGE" ] && [ -f "$LINUX_X64_APPIMAGE" ]; then
-            cp "$LINUX_X64_APPIMAGE" release-files/HackerAI-linux-x64.AppImage
-            echo "Created alias: HackerAI-linux-x64.AppImage from $(basename "$LINUX_X64_APPIMAGE")"
+            cp "$LINUX_X64_APPIMAGE" release-files/RIFT-linux-x64.AppImage
+            echo "Created alias: RIFT-linux-x64.AppImage from $(basename "$LINUX_X64_APPIMAGE")"
           else
             echo "WARNING: Linux x64 AppImage not found for alias creation"
           fi
@@ -562,8 +562,8 @@ jobs:
           echo "Looking for Linux ARM64 AppImage: pattern '*_aarch64.AppImage'"
           echo "Found: $LINUX_ARM64_APPIMAGE"
           if [ -n "$LINUX_ARM64_APPIMAGE" ] && [ -f "$LINUX_ARM64_APPIMAGE" ]; then
-            cp "$LINUX_ARM64_APPIMAGE" release-files/HackerAI-linux-arm64.AppImage
-            echo "Created alias: HackerAI-linux-arm64.AppImage from $(basename "$LINUX_ARM64_APPIMAGE")"
+            cp "$LINUX_ARM64_APPIMAGE" release-files/RIFT-linux-arm64.AppImage
+            echo "Created alias: RIFT-linux-arm64.AppImage from $(basename "$LINUX_ARM64_APPIMAGE")"
           else
             echo "WARNING: Linux ARM64 AppImage not found for alias creation"
           fi
@@ -573,8 +573,8 @@ jobs:
           echo "Looking for Linux x64 deb: pattern '*_amd64.deb'"
           echo "Found: $LINUX_X64_DEB"
           if [ -n "$LINUX_X64_DEB" ] && [ -f "$LINUX_X64_DEB" ]; then
-            cp "$LINUX_X64_DEB" release-files/HackerAI-linux-x64.deb
-            echo "Created alias: HackerAI-linux-x64.deb from $(basename "$LINUX_X64_DEB")"
+            cp "$LINUX_X64_DEB" release-files/RIFT-linux-x64.deb
+            echo "Created alias: RIFT-linux-x64.deb from $(basename "$LINUX_X64_DEB")"
           else
             echo "WARNING: Linux x64 deb not found for alias creation"
           fi
@@ -584,8 +584,8 @@ jobs:
           echo "Looking for Linux ARM64 deb: pattern '*_arm64.deb'"
           echo "Found: $LINUX_ARM64_DEB"
           if [ -n "$LINUX_ARM64_DEB" ] && [ -f "$LINUX_ARM64_DEB" ]; then
-            cp "$LINUX_ARM64_DEB" release-files/HackerAI-linux-arm64.deb
-            echo "Created alias: HackerAI-linux-arm64.deb from $(basename "$LINUX_ARM64_DEB")"
+            cp "$LINUX_ARM64_DEB" release-files/RIFT-linux-arm64.deb
+            echo "Created alias: RIFT-linux-arm64.deb from $(basename "$LINUX_ARM64_DEB")"
           else
             echo "WARNING: Linux ARM64 deb not found for alias creation"
           fi
@@ -595,8 +595,8 @@ jobs:
           echo "Looking for Windows exe: pattern '*_x64-setup.exe'"
           echo "Found: $WIN_EXE"
           if [ -n "$WIN_EXE" ] && [ -f "$WIN_EXE" ]; then
-            cp "$WIN_EXE" release-files/HackerAI-windows-x64.exe
-            echo "Created alias: HackerAI-windows-x64.exe from $(basename "$WIN_EXE")"
+            cp "$WIN_EXE" release-files/RIFT-windows-x64.exe
+            echo "Created alias: RIFT-windows-x64.exe from $(basename "$WIN_EXE")"
           else
             echo "WARNING: Windows exe not found for alias creation"
           fi
@@ -606,24 +606,24 @@ jobs:
           
           # Verify fixed-name aliases exist
           echo "Verifying fixed-name aliases..."
-          if [ ! -f "release-files/HackerAI-linux-x64.AppImage" ]; then
-            echo "ERROR: HackerAI-linux-x64.AppImage alias not created!"
+          if [ ! -f "release-files/RIFT-linux-x64.AppImage" ]; then
+            echo "ERROR: RIFT-linux-x64.AppImage alias not created!"
             exit 1
           fi
-          if [ ! -f "release-files/HackerAI-linux-arm64.AppImage" ]; then
-            echo "ERROR: HackerAI-linux-arm64.AppImage alias not created!"
+          if [ ! -f "release-files/RIFT-linux-arm64.AppImage" ]; then
+            echo "ERROR: RIFT-linux-arm64.AppImage alias not created!"
             exit 1
           fi
-          if [ ! -f "release-files/HackerAI-windows-x64.exe" ]; then
-            echo "ERROR: HackerAI-windows-x64.exe alias not created!"
+          if [ ! -f "release-files/RIFT-windows-x64.exe" ]; then
+            echo "ERROR: RIFT-windows-x64.exe alias not created!"
             exit 1
           fi
-          if [ ! -f "release-files/HackerAI-linux-x64.deb" ]; then
-            echo "ERROR: HackerAI-linux-x64.deb alias not created!"
+          if [ ! -f "release-files/RIFT-linux-x64.deb" ]; then
+            echo "ERROR: RIFT-linux-x64.deb alias not created!"
             exit 1
           fi
-          if [ ! -f "release-files/HackerAI-linux-arm64.deb" ]; then
-            echo "ERROR: HackerAI-linux-arm64.deb alias not created!"
+          if [ ! -f "release-files/RIFT-linux-arm64.deb" ]; then
+            echo "ERROR: RIFT-linux-arm64.deb alias not created!"
             exit 1
           fi
           echo "All fixed-name aliases verified successfully!"
@@ -716,22 +716,22 @@ jobs:
           
           # Verify fixed-name aliases exist before uploading
           echo "Verifying fixed-name aliases before upload..."
-          if [ ! -f "release-files/HackerAI-linux-x64.AppImage" ]; then
-            echo "ERROR: HackerAI-linux-x64.AppImage not found!"
+          if [ ! -f "release-files/RIFT-linux-x64.AppImage" ]; then
+            echo "ERROR: RIFT-linux-x64.AppImage not found!"
             exit 1
           fi
-          if [ ! -f "release-files/HackerAI-linux-arm64.AppImage" ]; then
-            echo "ERROR: HackerAI-linux-arm64.AppImage not found!"
+          if [ ! -f "release-files/RIFT-linux-arm64.AppImage" ]; then
+            echo "ERROR: RIFT-linux-arm64.AppImage not found!"
             exit 1
           fi
-          if [ ! -f "release-files/HackerAI-windows-x64.exe" ]; then
-            echo "ERROR: HackerAI-windows-x64.exe not found!"
+          if [ ! -f "release-files/RIFT-windows-x64.exe" ]; then
+            echo "ERROR: RIFT-windows-x64.exe not found!"
             exit 1
           fi
           
           echo "All fixed-name aliases verified. Uploading release files..."
           gh release create "$TAG_NAME" \
-            --title "HackerAI Desktop $TAG_NAME" \
+            --title "RIFT Desktop $TAG_NAME" \
             --draft \
             --generate-notes \
             release-files/*

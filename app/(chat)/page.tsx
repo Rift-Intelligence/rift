@@ -5,7 +5,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Chat } from "../components/chat";
-import { EyeBackdrop } from "../components/eye/EyeBackdrop";
+import { RiftBackdrop } from "../components/rift/RiftBackdrop";
 import { LandingSections } from "../components/landing/LandingSections";
 import { navigateToAuth } from "../hooks/useTauri";
 
@@ -40,7 +40,7 @@ const UnauthenticatedContent = () => {
   return (
     <div className="relative h-full flex flex-col overflow-hidden bg-transparent">
       {/* The huge watching RIFT — landing background only */}
-      <EyeBackdrop />
+      <RiftBackdrop />
 
       <div className="relative z-10 flex-shrink-0">
         <Header />
@@ -65,7 +65,7 @@ const UnauthenticatedContent = () => {
               </div>
 
               {/* headline */}
-              <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl text-eye-glow">
+              <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl text-rift-glow">
                 <span className="block">See everything.</span>
                 <span className="display-emphasis animate-hero-highlight block">
                   Miss nothing.
@@ -104,7 +104,7 @@ const UnauthenticatedContent = () => {
               <button
                 type="button"
                 onClick={launch}
-                className="group mt-9 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-7 py-3 font-semibold uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground eye-live"
+                className="group mt-9 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-7 py-3 font-semibold uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground rift-live"
               >
                 <span className="text-primary/70 group-hover:text-primary-foreground">
                   $

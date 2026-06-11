@@ -1227,7 +1227,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                         className={`inline-block size-1.5 rounded-full ${
                           temporaryChatsEnabled
                             ? "bg-muted-foreground"
-                            : "bg-primary eye-live"
+                            : "bg-primary rift-live"
                         }`}
                       />
                       {temporaryChatsEnabled ? "incognito" : "normal"}
@@ -1238,7 +1238,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                       isExistingChat ? "ml-auto" : ""
                     }`}
                   >
-                    <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
+                    <span className="inline-block size-1.5 rounded-full bg-primary rift-live" />
                     watching
                   </span>
                 </div>
@@ -1287,7 +1287,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                 />
               ) : (
                 <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent">
-                  {/* Background is the global EyeBackdrop (mounted in layout) */}
+                  {/* Background is the global RiftBackdrop (mounted in layout) */}
                   <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 min-h-0">
                     <div className="w-full max-w-full sm:max-w-[768px] sm:min-w-[390px] flex flex-col items-center">
                       <div className="text-center">

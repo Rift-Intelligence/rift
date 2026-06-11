@@ -3,9 +3,9 @@
 import { useEffect, useRef } from "react";
 
 /**
- * EyeBackdrop — the ambient "something is watching" background for the whole app.
+ * RiftBackdrop — the ambient "something is watching" background for the whole app.
  *
- * A fixed, full-viewport canvas that renders a giant surveillance EYE behind all
+ * A fixed, full-viewport canvas that renders a giant surveillance RIFT behind all
  * content:
  *   - a genuine 3D iris: a rotating point-sphere (fibonacci distribution),
  *     perspective-projected, depth-shaded cyan — no Three.js dependency.
@@ -32,7 +32,7 @@ const SPHERE: Array<[number, number, number]> = (() => {
   return pts;
 })();
 
-export function EyeBackdrop() {
+export function RiftBackdrop() {
   const ref = useRef<HTMLCanvasElement>(null);
   const mouse = useRef({ x: 0.5, y: 0.5 });
   const rot = useRef({ x: 0, y: 0 });

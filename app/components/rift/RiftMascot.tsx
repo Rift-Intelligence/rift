@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * EyeMascot — an 8-bit pixel creature with one big, living eye.
+ * RiftMascot — an 8-bit pixel creature with one big, living eye.
  *
- * Claude-Code-terminal-banner energy, but EYE-themed: a chunky cyan pixel body
+ * Claude-Code-terminal-banner energy, but RIFT-themed: a chunky cyan pixel body
  * (antenna + frame + little feet) wrapped around a large central eye whose iris
  * smoothly tracks the cursor and blinks on a natural cadence. Rendered as SVG so
  * it stays crisp and scales by a single `cell` size. Respects reduced-motion.
@@ -27,7 +27,7 @@ const BODY: number[][] = [
   [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
 ];
 
-export function EyeMascot({ cell = 12 }: { cell?: number }) {
+export function RiftMascot({ cell = 12 }: { cell?: number }) {
   const cols = BODY[0].length;
   const rows = BODY.length;
   const W = cols * cell;
@@ -112,7 +112,7 @@ export function EyeMascot({ cell = 12 }: { cell?: number }) {
       viewBox={`0 0 ${W} ${H}`}
       shapeRendering="crispEdges"
       role="img"
-      aria-label="EYE"
+      aria-label="RIFT"
       className="select-none"
     >
       {/* 8-bit body pixels */}

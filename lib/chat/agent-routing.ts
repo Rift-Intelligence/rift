@@ -1,6 +1,6 @@
 import type { ChatMode } from "@/types";
 
-const HACKERAI_DESKTOP_USER_AGENT_TOKEN = "RIFT-Desktop";
+const RIFT_DESKTOP_USER_AGENT_TOKEN = "RIFT-Desktop";
 
 export const LEGACY_DESKTOP_AGENT_UPDATE_MESSAGE =
   "Agent mode now requires the latest RIFT Desktop app. Please update RIFT Desktop, then try again.";
@@ -8,7 +8,7 @@ export const LEGACY_DESKTOP_AGENT_UPDATE_MESSAGE =
 export function isRIFTDesktopUserAgent(
   userAgent: string | null | undefined = getBrowserUserAgent(),
 ): boolean {
-  return userAgent?.includes(HACKERAI_DESKTOP_USER_AGENT_TOKEN) ?? false;
+  return userAgent?.includes(RIFT_DESKTOP_USER_AGENT_TOKEN) ?? false;
 }
 
 export function isLegacyDesktopAgentClient({

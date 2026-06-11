@@ -379,7 +379,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                   ~/session
                 </div>
               </div>
-              <span className="inline-block size-1.5 shrink-0 rounded-full bg-primary eye-live" />
+              <span className="inline-block size-1.5 shrink-0 rounded-full bg-primary rift-live" />
             </button>
           )}
         </DropdownMenuTrigger>

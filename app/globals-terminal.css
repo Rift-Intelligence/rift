@@ -462,7 +462,7 @@ samp,
 /* ============================================================
    RIFT terminal chrome — square off every "modern SaaS" surface
    (dialogs, dropdowns, popovers, command palette) and frame them
-   like terminal windows. Kills the ChatGPT/HackerAI-clone feel.
+   like terminal windows. Kills the ChatGPT/RIFT-clone feel.
    ============================================================ */
 
 /* Content surfaces: zero radius + cyan hairline frame + dark fill */
@@ -499,7 +499,7 @@ samp,
 }
 
 /* Square off rounded chrome buttons/badges/inputs inside these surfaces and
-   the settings/account panels, but keep avatars + the eye SVGs round. */
+   the settings/account panels, but keep avatars + the rift SVGs round. */
 [data-slot="dialog-content"] .rounded-2xl,
 [data-slot="dialog-content"] .rounded-xl,
 [data-slot="dialog-content"] .rounded-lg,

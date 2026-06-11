@@ -36,7 +36,7 @@ export function BiosStatusBar() {
   return (
     <div className="relative z-20 hidden h-[22px] shrink-0 select-none items-center gap-4 border-t border-terminal-border bg-black px-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground sm:flex">
       <span className="flex items-center gap-1.5 text-primary">
-        <span className="inline-block size-1.5 rounded-full bg-primary eye-live" />
+        <span className="inline-block size-1.5 rounded-full bg-primary rift-live" />
         [ secure mode: on ]
       </span>
       <span className="text-terminal-border">│</span>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * EyeThinkingConsole — minimal, neutral "working" indicator.
+ * RiftThinkingConsole — minimal, neutral "working" indicator.
  *
  * Shown in place of the old three-dot spinner while a turn is submitted /
  * streaming but no assistant content has arrived yet. Deliberately NEUTRAL: it
@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 
 const STATES = ["thinking", "reading your message", "composing a response"];
 
-export function EyeThinkingConsole() {
+export function RiftThinkingConsole() {
   const [reduce] = useState(
     () =>
       typeof matchMedia !== "undefined" &&
