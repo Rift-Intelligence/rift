@@ -354,7 +354,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
               <div className="min-w-0 flex-1 leading-tight">
                 <div className="flex items-baseline gap-1.5 truncate">
                   <span className="text-sm font-semibold tracking-wide text-foreground">
-                    EYE
+                    RIFT
                   </span>
                   <span className="text-[10px] text-muted-foreground">
                     v1.0

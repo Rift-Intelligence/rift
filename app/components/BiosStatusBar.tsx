@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 /**
- * BiosStatusBar — EYE OS bottom readout.
+ * BiosStatusBar — RIFT OS bottom readout.
  *
  * A thin BIOS/CRT status strip pinned to the bottom of the workstation, in the
  * spirit of a classified terminal footer: secure-mode flag, crypto stack, link
@@ -50,7 +50,7 @@ export function BiosStatusBar() {
         link: <span className="text-primary/80">encrypted</span>
       </span>
       <span className="hidden lg:inline">
-        protocol: <span className="text-foreground/70">eyenet/3.0</span>
+        protocol: <span className="text-foreground/70">riftnet/3.0</span>
       </span>
       <span className="ml-auto flex items-center gap-3 tabular-nums">
         <span className="text-foreground/70">{clock}</span>

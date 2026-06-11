@@ -9,7 +9,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* EYE is a full-terminal aesthetic: sans utilities resolve to mono too. */
+  /* RIFT is a full-terminal aesthetic: sans utilities resolve to mono too. */
   --font-sans: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
@@ -51,7 +51,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* EYE — "Surveillance Brutalism" signal palette exposed as Tailwind color
+  /* RIFT — "Surveillance Brutalism" signal palette exposed as Tailwind color
      utilities (text-terminal-green, bg-terminal-green, border-terminal-green,
      etc.). The legacy var names are kept so existing markup re-themes with zero
      edits; their VALUES are now cyan surveillance signal on true black.
@@ -66,7 +66,7 @@
   --color-terminal-primary: #000000;
   --color-terminal-secondary: #020602;
 
-  /* Canonical EYE tokens (preferred names for new components) */
+  /* Canonical RIFT tokens (preferred names for new components) */
   --color-eye: #00ff66;
   --color-eye-dim: #0a9d4a;
   --color-eye-deep: #063a20;
@@ -76,7 +76,7 @@
 
 :root {
   --radius: 0rem;
-  /* EYE OS — "Classified Hacker Terminal"
+  /* RIFT OS — "Classified Hacker Terminal"
      Pure-black void · phosphor-green primary signal · terminal cyan secondary
      · red reserved for alarm. BIOS/CRT readout, no SaaS surfaces. */
   --background: #000000;
@@ -111,7 +111,7 @@
   --sidebar-border: #10331f;
   --sidebar-ring: #00ff66;
 
-  /* Surfaces & ramp (new EYE names) */
+  /* Surfaces & ramp (new RIFT names) */
   --surface: #000000;
   --border-strong: #1c5a36;
   --eye-glow: rgba(0, 255, 102, 0.4);
@@ -241,7 +241,7 @@
   opacity: 0;
 }
 
-/* Display heading emphasis: terminal glitch highlight (EYE). Mono, cyan,
+/* Display heading emphasis: terminal glitch highlight (RIFT). Mono, cyan,
    tracked + faint signal glow — replaces the old serif-italic zauth treatment. */
 .display-emphasis {
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -598,7 +598,7 @@
 }
 
 /* ============================================================
-   EYE — Surveillance Brutalism primitives
+   RIFT — Surveillance Brutalism primitives
    Pure-black void · cold cyan signal · HUD chrome · dot-matrix
    ============================================================ */
 

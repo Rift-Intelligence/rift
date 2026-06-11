@@ -30,7 +30,7 @@ const TurnOffExtraUsageDialog = ({
           <DialogTitle>Turn off extra usage?</DialogTitle>
         </DialogHeader>
         <DialogDescription className="text-muted-foreground py-4">
-          Turning off extra usage will immediately prevent you from using EYE
+          Turning off extra usage will immediately prevent you from using RIFT
           beyond your base subscription limits. Any ongoing conversations may be
           interrupted.
         </DialogDescription>

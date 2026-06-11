@@ -12,7 +12,7 @@ interface ToolBlockProps {
 }
 
 /**
- * ToolBlock — EYE terminal-native action line.
+ * ToolBlock — RIFT terminal-native action line.
  *
  * Renders a single agent action as a command-log row: a cyan `$` prompt, the
  * tool's glyph, the action verb, and an optional mono target. Square corners +

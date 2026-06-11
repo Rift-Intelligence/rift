@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
-  /* === EYE OS "Classified Hacker Terminal": pure-black void + phosphor green === */
+  /* === RIFT OS "Classified Hacker Terminal": pure-black void + phosphor green === */
   --terminal-bg: #000000;
   --terminal-primary: #000000;
   --terminal-secondary: #020602;
@@ -45,7 +45,7 @@
   --premium-hover: #00ff66;
 }
 
-/* EYE typography: FULL terminal — everything is monospace. JetBrains Mono is
+/* RIFT typography: FULL terminal — everything is monospace. JetBrains Mono is
    the single system face. Readability is preserved via tuned line-height and
    letter-spacing rather than by switching to a sans face. */
 body {
@@ -460,7 +460,7 @@ samp,
 }
 
 /* ============================================================
-   EYE terminal chrome — square off every "modern SaaS" surface
+   RIFT terminal chrome — square off every "modern SaaS" surface
    (dialogs, dropdowns, popovers, command palette) and frame them
    like terminal windows. Kills the ChatGPT/HackerAI-clone feel.
    ============================================================ */
@@ -522,7 +522,7 @@ samp,
 }
 
 /* =========================================================================
-   EYE OS — Cinematic CRT overlay (global)
+   RIFT OS — Cinematic CRT overlay (global)
    Scanlines + edge vignette + faint phosphor wash, applied to the whole
    viewport so every screen (login, landing, chat) reads like a CRT monitor
    in a classified workstation. Static (no per-frame repaint) to keep typing

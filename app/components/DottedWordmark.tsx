@@ -88,11 +88,11 @@ interface DottedWordmarkProps {
 }
 
 export default function DottedWordmark({
-  word = "EYE",
+  word = "RIFT",
   className,
   fill = "#e8edeb",
   animate = true,
-  title = "EYE",
+  title = "RIFT",
 }: DottedWordmarkProps) {
   const letters = word.toUpperCase().split("");
   const cols = letters.length * GLYPH_W + (letters.length - 1) * GAP;

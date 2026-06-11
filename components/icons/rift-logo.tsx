@@ -9,14 +9,11 @@ interface RiftLogoProps {
 }
 
 /**
- * EYE logo mark.
+ * RIFT logo mark.
  *
- * Concept: an almond eye drawn as a HUD optic — outer lid, iris ring, and a
- * solid pupil void at center, with two registration ticks. Reads as a watching
- * eye / surveillance scope at any size. Inherits `currentColor`; pass `glow`
- * for the cyan signal halo.
- *
- * (Component name kept as `RiftLogo` to avoid churn across import sites.)
+ * Concept: two triangular wedges pointing inward with a glowing gap between
+ * them — a dimensional rift / tear in space. Registration ticks top & bottom.
+ * Inherits `currentColor`; pass `glow` for the phosphor-green signal halo.
  */
 export const RiftLogo: FC<RiftLogoProps> = ({
   size = 32,
@@ -32,27 +29,38 @@ export const RiftLogo: FC<RiftLogoProps> = ({
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
-      aria-label="EYE"
+      aria-label="RIFT"
       style={
         glow
-          ? { filter: "drop-shadow(0 0 5px rgba(34,224,255,0.6))" }
+          ? { filter: "drop-shadow(0 0 5px rgba(0,255,102,0.6))" }
           : undefined
       }
     >
-      {/* Eyelid / almond outline */}
+      {/* Left wedge — apex points right toward the rift */}
       <path
-        d="M2 16 C7 8.5 12 6 16 6 C20 6 25 8.5 30 16 C25 23.5 20 26 16 26 C12 26 7 23.5 2 16 Z"
+        d="M2 4 L14 16 L2 28 Z"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.8"
         strokeLinejoin="round"
       />
-      {/* Iris ring */}
-      <circle cx="16" cy="16" r="6" stroke="currentColor" strokeWidth="2" />
-      {/* Pupil void */}
-      <circle cx="16" cy="16" r="2.6" fill="currentColor" />
-      {/* Registration ticks (left/right) */}
+      {/* Right wedge — apex points left toward the rift */}
       <path
-        d="M0.5 16 H2.5 M29.5 16 H31.5"
+        d="M30 4 L18 16 L30 28 Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      {/* Rift gap — glowing crack at center */}
+      <path
+        d="M16 9 L16 23"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+        opacity="0.45"
+      />
+      {/* Registration ticks (top/bottom) */}
+      <path
+        d="M16 0.5 V2.5 M16 29.5 V31.5"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"

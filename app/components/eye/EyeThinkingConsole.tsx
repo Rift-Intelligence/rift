@@ -41,9 +41,9 @@ export function EyeThinkingConsole() {
     <div
       className="inline-flex items-center gap-2 px-1 py-1 font-mono text-sm"
       role="status"
-      aria-label="EYE is thinking"
+      aria-label="RIFT is thinking"
     >
-      <span className="text-primary">eye@root</span>
+      <span className="text-primary">rift@root</span>
       <span className="text-muted-foreground">~</span>
       <span className="text-foreground/80">{STATES[i]}</span>
       <span

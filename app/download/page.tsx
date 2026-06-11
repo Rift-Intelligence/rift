@@ -2,20 +2,20 @@ import type { Metadata } from "next";
 import { DownloadPageContent } from "./DownloadPageContent";
 
 export const metadata: Metadata = {
-  title: "Download | EYE",
+  title: "Download | RIFT",
   description:
-    "Download EYE for macOS, Windows, Linux, iOS, and Android. AI-powered penetration testing at your fingertips.",
+    "Download RIFT for macOS, Windows, Linux, iOS, and Android. AI-powered penetration testing at your fingertips.",
   openGraph: {
-    title: "Download EYE",
+    title: "Download RIFT",
     description:
-      "Download EYE for macOS, Windows, Linux, iOS, and Android. AI-powered penetration testing at your fingertips.",
+      "Download RIFT for macOS, Windows, Linux, iOS, and Android. AI-powered penetration testing at your fingertips.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Download EYE",
+    title: "Download RIFT",
     description:
-      "Download EYE for macOS, Windows, Linux, iOS, and Android. AI-powered penetration testing at your fingertips.",
+      "Download RIFT for macOS, Windows, Linux, iOS, and Android. AI-powered penetration testing at your fingertips.",
   },
 };
 

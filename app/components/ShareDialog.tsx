@@ -337,11 +337,11 @@ export const ShareDialog = ({
                 {/* Fade-out gradient at the bottom - starts at 66% height, more opaque */}
                 <div className="absolute bottom-0 left-0 right-0 h-[34%] bg-gradient-to-t from-muted/90 via-muted/70 via-30% via-muted/40 via-70% to-transparent pointer-events-none" />
 
-                {/* Floating EYE Logo - bottom right corner */}
+                {/* Floating RIFT Logo - bottom right corner */}
                 <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5">
                   <RiftLogo size={20} className="text-terminal-green" glow />
                   <span className="font-mono text-[12px] font-semibold tracking-[0.2em] text-terminal-green">
-                    EYE
+                    RIFT
                   </span>
                 </div>
               </div>

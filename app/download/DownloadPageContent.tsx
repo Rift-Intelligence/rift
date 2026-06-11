@@ -18,7 +18,7 @@ function AuthenticatedHeader() {
         <div className="flex items-center gap-2">
           <RiftLogo size={24} className="text-terminal-green" />
           <DottedWordmark
-            word="EYE"
+            word="RIFT"
             animate={false}
             fill="#f4f4f5"
             className="h-[14px] w-auto"
@@ -50,7 +50,7 @@ function DownloadContent() {
       <div className="container mx-auto max-w-3xl space-y-8">
         <div className="text-center">
           <h1 className="mb-4 text-4xl font-bold text-card-foreground">
-            {isMobile ? "Install EYE" : "Download EYE"}
+            {isMobile ? "Install RIFT" : "Download RIFT"}
           </h1>
           <p className="text-lg text-muted-foreground">
             {isMobile

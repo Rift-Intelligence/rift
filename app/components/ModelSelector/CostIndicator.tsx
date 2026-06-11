@@ -8,7 +8,7 @@ import { isAgentMode } from "@/lib/utils/mode-helpers";
 
 type CostTier = "low" | "medium" | "high" | "very-high";
 
-// Cost tier per EYE tier id. Standard is mode-aware: in ask it routes
+// Cost tier per RIFT tier id. Standard is mode-aware: in ask it routes
 // through the cheap DeepSeek V4 Flash text path (low), in agent it runs on
 // Kimi K2.6 (medium).
 export function getCostTier(modelId: string, mode?: ChatMode): CostTier {

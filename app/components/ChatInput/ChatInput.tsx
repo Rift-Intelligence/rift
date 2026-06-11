@@ -229,7 +229,9 @@ export const ChatInput = ({
           <div className="terminal-titlebar flex items-center gap-2 px-3 py-1.5 select-none">
             <span className="text-xs text-primary">▸</span>
             <span className="text-xs text-terminal-green/70 truncate">
-              {chatMode === "agent" ? "root@eye: ~/exploit" : "operator@eye: ~"}
+              {chatMode === "agent"
+                ? "root@rift: ~/exploit"
+                : "operator@rift: ~"}
             </span>
             <span className="ml-auto text-[10px] uppercase tracking-wider hidden sm:flex items-center gap-1.5">
               <span

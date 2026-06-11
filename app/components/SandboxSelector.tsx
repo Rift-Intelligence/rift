@@ -209,7 +209,8 @@ export function SandboxSelector({
                 </div>
                 <h4 className="text-sm font-semibold mb-1">My Computer</h4>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Download the desktop app to grant EYE access to your computer.
+                  Download the desktop app to grant RIFT access to your
+                  computer.
                 </p>
                 <Button asChild size="sm" className="w-full">
                   <a

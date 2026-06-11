@@ -42,7 +42,7 @@ export const HackingSuggestions = () => {
 
   return (
     <div className="relative mx-auto mb-6 flex w-full max-w-[680px] flex-col items-center px-4">
-      <h1 className="sr-only">New EYE session</h1>
+      <h1 className="sr-only">New RIFT session</h1>
       <div className="flex items-center gap-5">
         {/* 8-bit living eye */}
         <EyeMascot cell={11} />
@@ -63,7 +63,7 @@ export const HackingSuggestions = () => {
           ))}
           {bootDone && (
             <div className="mt-1 flex items-center text-foreground">
-              <span className="text-primary">eye@root</span>
+              <span className="text-primary">rift@root</span>
               <span className="text-muted-foreground">:~$</span>
               <span className="ml-2 text-muted-foreground">{prompt}</span>
               <span className="terminal-cursor ml-1 inline-block !h-3.5 !w-1.5" />

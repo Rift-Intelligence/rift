@@ -1204,13 +1204,13 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
 
             {/* Chat interface */}
             <div className="bg-transparent flex flex-col flex-1 relative min-h-0">
-              {/* Terminal titlebar with the mascot EYE — pinned to the top of
+              {/* Terminal titlebar with the mascot RIFT — pinned to the top of
                   the terminal; messages scroll beneath it and never overlap. */}
               {!isChatNotFound && (
                 <div className="terminal-titlebar terminal-border relative z-20 mx-auto mt-2 flex h-10 w-full max-w-full items-center gap-2.5 overflow-hidden px-3 sm:max-w-[768px]">
                   <span className="text-xs text-primary">▸</span>
                   <span className="truncate text-xs text-terminal-green/80">
-                    root@eye: ~/session
+                    root@rift: ~/session
                   </span>
                   {/* session mode: normal vs incognito (new chats only) */}
                   {!isExistingChat && (
@@ -1298,7 +1298,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                             </h1>
                             <p className="text-muted-foreground max-w-md mx-auto px-4 py-3">
                               This chat won&apos;t appear in history, use or
-                              update EYE&apos;s memory, or be used to train
+                              update RIFT&apos;s memory, or be used to train
                               models. This chat will be deleted when you refresh
                               the page.
                             </p>

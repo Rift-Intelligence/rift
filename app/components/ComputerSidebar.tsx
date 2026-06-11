@@ -444,7 +444,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
   const icon = getSidebarIcon(displayContent);
   const toolName = getToolName(displayContent);
   const displayTarget = getDisplayTarget(displayContent);
-  const headerTitle = isProxy ? "EYE\u2019s Proxy" : "EYE\u2019s Computer";
+  const headerTitle = isProxy ? "RIFT\u2019s Proxy" : "RIFT\u2019s Computer";
   const isLive = status === "streaming" || status === "submitted";
 
   const handleClose = () => {
@@ -563,7 +563,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                   </div>
                   <div className="flex-1 flex flex-col gap-1 min-w-0">
                     <div className="text-[12px] text-muted-foreground">
-                      EYE is using{" "}
+                      RIFT is using{" "}
                       <span className="text-foreground">{toolName}</span>
                     </div>
                     <div

@@ -39,7 +39,7 @@ const UnauthenticatedContent = () => {
 
   return (
     <div className="relative h-full flex flex-col overflow-hidden bg-transparent">
-      {/* The huge watching EYE — landing background only */}
+      {/* The huge watching RIFT — landing background only */}
       <EyeBackdrop />
 
       <div className="relative z-10 flex-shrink-0">
@@ -61,7 +61,7 @@ const UnauthenticatedContent = () => {
               />
               {/* status line */}
               <div className="hud-label mb-5 text-primary/80">
-                {"// EYE v1.0 — AUTONOMOUS OFFENSIVE INTELLIGENCE"}
+                {"// RIFT v1.0 — AUTONOMOUS OFFENSIVE INTELLIGENCE"}
               </div>
 
               {/* headline */}
@@ -77,7 +77,7 @@ const UnauthenticatedContent = () => {
                 className="animate-fade-in-up mt-6 max-w-xl text-pretty text-sm leading-relaxed text-foreground/80 sm:text-base"
                 style={{ animationDelay: "0.6s" }}
               >
-                Point EYE at a target and walk away. It runs reconnaissance,
+                Point RIFT at a target and walk away. It runs reconnaissance,
                 finds and exploits vulnerabilities, and writes the report — on
                 its own, inside its own isolated sandbox. You watch. It works.
               </p>

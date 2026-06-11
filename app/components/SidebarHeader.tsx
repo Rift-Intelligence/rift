@@ -177,7 +177,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
           type="button"
           onClick={handleNewChat}
           className="group flex items-center gap-2 focus-visible:outline-none"
-          aria-label="EYE home"
+          aria-label="RIFT home"
         >
           <RiftLogo
             size={20}
@@ -185,7 +185,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
             glow
           />
           <span className="font-mono text-sm font-semibold tracking-[0.2em] text-foreground">
-            EYE
+            RIFT
           </span>
           <span className="font-mono text-[10px] text-muted-foreground">
             v1.0

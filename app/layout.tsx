@@ -35,11 +35,11 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 });
 
-const APP_NAME = "EYE";
-const APP_DEFAULT_TITLE = "EYE — Autonomous Offensive Intelligence";
-const APP_TITLE_TEMPLATE = "%s | EYE";
+const APP_NAME = "RIFT";
+const APP_DEFAULT_TITLE = "RIFT — Autonomous Offensive Intelligence";
+const APP_TITLE_TEMPLATE = "%s | RIFT";
 const APP_DESCRIPTION =
-  "EYE is an autonomous offensive-security agent. Point it at a target and it runs recon, exploitation, and reporting on its own — every operation isolated in its own sandbox.";
+  "RIFT is an autonomous offensive-security agent. Point it at a target and it runs recon, exploitation, and reporting on its own — every operation isolated in its own sandbox.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
         url: "/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "EYE",
+        alt: "RIFT",
       },
     ],
   },
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
         url: "/icon-512x512.png",
         width: 512,
         height: 512,
-        alt: "EYE",
+        alt: "RIFT",
       },
     ],
   },

@@ -2,17 +2,19 @@ import type { Metadata } from "next";
 import ZauthPageShell from "@/app/components/ZauthPageShell";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | EYE",
-  description: "Privacy Policy and data handling practices for EYE services.",
+  title: "Privacy Policy | RIFT",
+  description: "Privacy Policy and data handling practices for RIFT services.",
   openGraph: {
-    title: "Privacy Policy | EYE",
-    description: "Privacy Policy and data handling practices for EYE services.",
+    title: "Privacy Policy | RIFT",
+    description:
+      "Privacy Policy and data handling practices for RIFT services.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Privacy Policy | EYE",
-    description: "Privacy Policy and data handling practices for EYE services.",
+    title: "Privacy Policy | RIFT",
+    description:
+      "Privacy Policy and data handling practices for RIFT services.",
   },
 };
 
@@ -24,12 +26,12 @@ export default function PrivacyPolicyPage() {
       <div className="px-4 py-12 pb-20 md:px-0">
         <div className="container mx-auto max-w-2xl space-y-6 rounded-[14px] border border-white/10 bg-white/[0.03] px-4 py-8 backdrop-blur-sm sm:px-8">
           <h1 className="mb-5 text-center text-3xl font-semibold text-[#f4f4f5]">
-            EYE Privacy Policy
+            RIFT Privacy Policy
           </h1>
 
           <div className="mt-4 text-lg leading-relaxed text-card-foreground">
             <p className="mb-6">
-              Welcome to EYE. This Privacy Policy explains how EYE LLC
+              Welcome to RIFT. This Privacy Policy explains how RIFT LLC
               (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;) collects,
               uses, shares, and protects information in relation to our website
               and any associated services, software, and content (collectively,
@@ -67,7 +69,7 @@ export default function PrivacyPolicyPage() {
               <li className="mb-3">
                 <strong>Information Sharing and Disclosure:</strong> We do not
                 share personal information with companies, organizations, or
-                individuals outside of EYE LLC except in the following
+                individuals outside of RIFT LLC except in the following
                 circumstances:
                 <ul className="ml-6 mt-2 list-disc">
                   <li>With your consent.</li>

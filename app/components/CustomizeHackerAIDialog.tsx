@@ -166,7 +166,7 @@ export const CustomizeHackerAIDialog = ({
           <div className="space-y-5 pb-3">
             {/* Nickname */}
             <div className="flex flex-col gap-2 px-1">
-              <Label htmlFor="nickname">What should EYE call you?</Label>
+              <Label htmlFor="nickname">What should RIFT call you?</Label>
               <TextareaAutosize
                 id="nickname"
                 placeholder="Nickname"
@@ -204,7 +204,7 @@ export const CustomizeHackerAIDialog = ({
             <div className="flex flex-col gap-2 px-1">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <Label className="sm:flex-shrink-0">
-                  What personality should EYE have?
+                  What personality should RIFT have?
                 </Label>
                 <Select value={personality} onValueChange={setPersonality}>
                   <SelectTrigger className="w-full sm:w-auto">
@@ -240,7 +240,7 @@ export const CustomizeHackerAIDialog = ({
 
             {/* Traits */}
             <div className="flex flex-col gap-2 px-1">
-              <Label>What traits should EYE have?</Label>
+              <Label>What traits should RIFT have?</Label>
 
               <TextareaAutosize
                 placeholder="Describe or select traits"
@@ -275,7 +275,7 @@ export const CustomizeHackerAIDialog = ({
             {/* Additional Info */}
             <div className="flex flex-col gap-3 px-1">
               <Label htmlFor="additional-info">
-                Anything else EYE should know about you?
+                Anything else RIFT should know about you?
               </Label>
               <TextareaAutosize
                 id="additional-info"

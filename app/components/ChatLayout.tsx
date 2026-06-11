@@ -172,7 +172,7 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
           initialTab={settingsDialogTab}
         />
       </div>
-      {/* EYE OS BIOS status strip */}
+      {/* RIFT OS BIOS status strip */}
       <BiosStatusBar />
     </div>
   );

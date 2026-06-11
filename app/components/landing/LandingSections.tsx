@@ -40,7 +40,7 @@ export function LandingSections({ onLaunch }: { onLaunch: () => void }) {
         <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Every operation runs inside its own disposable cloud sandbox. Nothing
           touches your machine, and the environment is destroyed when the run
-          ends. EYE only acts inside the scope you point it at.
+          ends. RIFT only acts inside the scope you point it at.
         </p>
         <div className="grid gap-3 sm:grid-cols-3">
           <Panel>
@@ -101,7 +101,7 @@ export function LandingSections({ onLaunch }: { onLaunch: () => void }) {
               ASK MODE
             </div>
             <p className="mt-2 text-[12px] leading-snug text-muted-foreground">
-              Talk to EYE — questions, guidance, payloads, explanations.
+              Talk to RIFT — questions, guidance, payloads, explanations.
             </p>
           </Panel>
           <Panel className="flex-1">
@@ -109,7 +109,7 @@ export function LandingSections({ onLaunch }: { onLaunch: () => void }) {
               EXECUTOR MODE
             </div>
             <p className="mt-2 text-[12px] leading-snug text-muted-foreground">
-              Hand EYE a target and it autonomously executes end-to-end.
+              Hand RIFT a target and it autonomously executes end-to-end.
             </p>
           </Panel>
         </div>
@@ -180,7 +180,7 @@ export function LandingSections({ onLaunch }: { onLaunch: () => void }) {
         <SectionHeading index="04 // PRIVACY" title="Your data stays yours" />
         <Panel>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            EYE doesn&apos;t sell your data or train models on your operations.
+            RIFT doesn&apos;t sell your data or train models on your operations.
             Sandboxes are destroyed after each run; conversation history is
             yours to delete at any time. Full details in the{" "}
             <Link

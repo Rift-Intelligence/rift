@@ -86,7 +86,7 @@ export function ToyEye({ size = 26 }: { size?: number }) {
       viewBox="0 0 32 32"
       fill="none"
       role="img"
-      aria-label="EYE"
+      aria-label="RIFT"
       className="shrink-0"
     >
       {/* outer glow */}
