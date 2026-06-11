@@ -44,7 +44,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
 import { setMockTier, isMockBillingEnabled } from "@/lib/billing/mock-billing";
-import { ToyEye } from "./eye/ToyEye";
+import { RiftLogo } from "@/components/icons/rift-logo";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
   process.env.NEXT_PUBLIC_HELP_CENTER_URL || "https://help.hackerai.co/en/";
@@ -350,7 +350,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
               aria-haspopup="menu"
               aria-label={`Open user menu for ${getDisplayName()}`}
             >
-              <ToyEye size={34} />
+              <RiftLogo size={30} className="text-terminal-green" glow />
               <div className="min-w-0 flex-1 leading-tight">
                 <div className="flex items-baseline gap-1.5 truncate">
                   <span className="text-sm font-semibold tracking-wide text-foreground">
