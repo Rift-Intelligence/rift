@@ -32,7 +32,7 @@ export function ModeSelectorTrigger({ chatMode }: ModeSelectorTriggerProps) {
         {chatMode === "agent" ? (
           <>
             <Infinity className="w-3 h-3 md:mr-1" />
-            <span className="hidden md:inline">Agent</span>
+            <span className="hidden md:inline">EXECUTOR</span>
           </>
         ) : (
           <>

@@ -188,6 +188,7 @@ const buildProviderMap = (or: OpenRouterInstance) =>
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
     "model-deepseek-v4-flash": or("deepseek/deepseek-v4-flash"),
     "model-opus-4.6": or("anthropic/claude-opus-4.6"),
+    "model-fable-5": or("anthropic/claude-fable-5"),
     "model-kimi-k2.6": or("moonshotai/kimi-k2.6:exacto"),
     "fallback-agent-model": or("google/gemini-3-flash-preview"),
     "fallback-ask-model": or("google/gemini-3-flash-preview"),
@@ -210,6 +211,7 @@ export const modelCutoffDates: Record<ModelName, string> &
   "model-gemini-3-flash": "January 2025",
   "model-deepseek-v4-flash": "May 2025",
   "model-opus-4.6": "May 2025",
+  "model-fable-5": "February 2025",
   "model-kimi-k2.6": "April 2024",
   "fallback-agent-model": "January 2025",
   "fallback-ask-model": "January 2025",
@@ -228,6 +230,7 @@ export const modelDisplayNames: Record<ModelName, string> &
   "model-gemini-3-flash": "Google Gemini 3 Flash",
   "model-deepseek-v4-flash": "DeepSeek V4 Flash",
   "model-opus-4.6": "Anthropic Claude Opus 4.6",
+  "model-fable-5": "Anthropic Claude Fable 5",
   "model-kimi-k2.6": "Moonshot Kimi K2.6",
   "fallback-agent-model": "Auto, an intelligent model router built by HackerAI",
   "fallback-ask-model": "Auto, an intelligent model router built by HackerAI",
@@ -299,7 +302,7 @@ export function resolveTierToProviderKey(
     case "hackerai-pro":
       return "model-sonnet-4.6";
     case "hackerai-max":
-      return "model-opus-4.6";
+      return "model-fable-5";
   }
 }
 
