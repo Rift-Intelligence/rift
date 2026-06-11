@@ -1,6 +1,6 @@
 "use node";
 
-import { action } from "./_generated/server";
+import { action, type ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import Stripe from "stripe";
@@ -25,11 +25,37 @@ function getStripe(): Stripe {
 // Helper Functions
 // =============================================================================
 
-// The Stripe customer used to be resolved from the user's organization.
-// it has been removed and per-user billing is deferred, so there is no
-// customer to resolve yet; callers treat null as "no billing configured".
-async function getStripeCustomerId(_userId: string): Promise<string | null> {
-  return null;
+/**
+ * Resolve (and optionally lazily create) the per-user Stripe customer for
+ * pay-as-you-go token purchases.
+ *
+ * - Reads the persisted `stripe_customer_id` from the user's extra_usage row.
+ * - With `createIfMissing`, creates a Stripe customer on first checkout and
+ *   persists it. Read-only callers (payment status, billing portal, auto-
+ *   reload) pass createIfMissing=false and treat null as "no billing yet".
+ */
+async function getStripeCustomerId(
+  ctx: ActionCtx,
+  userId: string,
+  opts?: { email?: string | null; createIfMissing?: boolean },
+): Promise<string | null> {
+  const existing = await ctx.runQuery(
+    internal.extraUsage.getStripeCustomerIdForUser,
+    { userId },
+  );
+  if (existing) return existing;
+  if (!opts?.createIfMissing) return null;
+
+  const stripe = getStripe();
+  const customer = await stripe.customers.create({
+    email: opts.email ?? undefined,
+    metadata: { userId },
+  });
+  await ctx.runMutation(internal.extraUsage.setStripeCustomerIdForUser, {
+    userId,
+    stripeCustomerId: customer.id,
+  });
+  return customer.id;
 }
 
 async function getStripePaymentMethod(customerId: string): Promise<{
@@ -221,6 +247,7 @@ export const getPaymentStatus = action({
 
     try {
       const stripeCustomerId = await getStripeCustomerId(
+        ctx,
         identity.subject.split("|")[0],
       );
       if (!stripeCustomerId) {
@@ -291,13 +318,19 @@ export const createPurchaseSession = action({
     }
 
     try {
+      // Lazily create the per-user Stripe customer on first purchase.
       const stripeCustomerId = await getStripeCustomerId(
+        ctx,
         identity.subject.split("|")[0],
+        {
+          email: identity.email ?? null,
+          createIfMissing: true,
+        },
       );
       if (!stripeCustomerId) {
         return {
           url: null,
-          error: "No Stripe customer found. Please subscribe first.",
+          error: "Could not initialize billing account. Please try again.",
         };
       }
 
@@ -389,6 +422,7 @@ export const createBillingPortalSession = action({
 
     try {
       const stripeCustomerId = await getStripeCustomerId(
+        ctx,
         identity.subject.split("|")[0],
       );
       if (!stripeCustomerId) {
@@ -515,8 +549,8 @@ export const deductWithAutoReload = action({
     if (allConditionsMet) {
       autoReloadTriggered = true;
 
-      // Get Stripe customer ID
-      const stripeCustomerId = await getStripeCustomerId(args.userId);
+      // Get Stripe customer ID (must already exist from a prior purchase)
+      const stripeCustomerId = await getStripeCustomerId(ctx, args.userId);
       if (!stripeCustomerId) {
         autoReloadResult = { success: false, reason: "no_stripe_customer" };
       } else {

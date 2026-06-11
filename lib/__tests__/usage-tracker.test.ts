@@ -1,5 +1,10 @@
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 import { UsageTracker } from "../usage-tracker";
+import { RETAIL_MARGIN } from "../rate-limit/token-bucket";
+
+// 1M default-priced input tokens, in dollars, at the current retail margin
+// ($0.50/1M × margin). Tracks calculateTokenCost so it survives margin tweaks.
+const ONE_M_DEFAULT_INPUT_DOLLARS = 0.5 * RETAIL_MARGIN;
 
 describe("UsageTracker", () => {
   let tracker: UsageTracker;
@@ -195,15 +200,18 @@ describe("UsageTracker", () => {
       tracker.accumulateStep({ inputTokens: 1_000_000, outputTokens: 0 });
 
       const cost = tracker.computeCostDollars("model-default");
-      // 1M input tokens at $0.50/1M * 1.3x = 6500 points / 10000 = 0.65
-      expect(cost).toBe(0.65);
+      // 1M input tokens at $0.50/1M × retail margin
+      expect(cost).toBeCloseTo(ONE_M_DEFAULT_INPUT_DOLLARS, 5);
     });
 
     it("should include non-model costs when provider cost is unavailable", () => {
       tracker.accumulateStep({ inputTokens: 1_000_000, outputTokens: 0 });
       tracker.nonModelCost = 0.25;
 
-      expect(tracker.computeCostDollars("model-default")).toBe(0.9);
+      expect(tracker.computeCostDollars("model-default")).toBeCloseTo(
+        ONE_M_DEFAULT_INPUT_DOLLARS + 0.25,
+        5,
+      );
     });
 
     it("should use token-based model cost + nonModelCost when modelProviderCost is 0 but providerCost is positive from sandbox/tool spend (post-resetModelLeg scenario)", () => {
@@ -214,9 +222,12 @@ describe("UsageTracker", () => {
       tracker.nonModelCost = 0.25;
       // modelProviderCost stays 0 because the fallback provider didn't emit cost.
 
-      // Must include BOTH the token-based model cost (0.65) AND the sandbox
-      // spend (0.25). The old implementation returned just providerCost = 0.25.
-      expect(tracker.computeCostDollars("model-default")).toBe(0.9);
+      // Must include BOTH the token-based model cost AND the sandbox spend
+      // (0.25). The old implementation returned just providerCost = 0.25.
+      expect(tracker.computeCostDollars("model-default")).toBeCloseTo(
+        ONE_M_DEFAULT_INPUT_DOLLARS + 0.25,
+        5,
+      );
     });
   });
 

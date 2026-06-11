@@ -151,6 +151,9 @@ export default defineSchema({
   extra_usage: defineTable({
     user_id: v.string(),
     balance_points: v.number(),
+    // Per-user Stripe customer for pay-as-you-go token purchases. Lazily
+    // created on first checkout (see extraUsageActions.getStripeCustomerId).
+    stripe_customer_id: v.optional(v.string()),
     auto_reload_enabled: v.optional(v.boolean()),
     auto_reload_threshold_points: v.optional(v.number()),
     auto_reload_amount_dollars: v.optional(v.number()), // Stored in dollars for Stripe
@@ -167,7 +170,9 @@ export default defineSchema({
     auto_reload_consecutive_failures: v.optional(v.number()),
     auto_reload_disabled_reason: v.optional(v.string()),
     updated_at: v.number(),
-  }).index("by_user_id", ["user_id"]),
+  })
+    .index("by_user_id", ["user_id"])
+    .index("by_stripe_customer_id", ["stripe_customer_id"]),
 
   // Team-shared extra usage pool. Admin funds it; any member of the org draws
   // from it for overflow once the team subscription bucket is exhausted.

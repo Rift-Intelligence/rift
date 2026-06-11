@@ -41,12 +41,19 @@ const getModelPricing = (modelName?: string) =>
 export const POINTS_PER_DOLLAR = 10_000;
 
 /**
- * Normal usage pricing multiplier — covers additional operational costs
- * (infrastructure, overhead, etc.) on top of raw model pricing.
- * This is baked into the point cost so it depletes the subscription bucket
- * faster; it is NOT subtracted from the user's subscription credit balance.
+ * Retail margin multiplier — the single knob that turns raw model cost into the
+ * price the user pays in tokens (points). Pay-as-you-go: ≥2× cost. Applied at
+ * consumption time (cost estimate + provider-cost true-up), NOT at purchase, so
+ * $X always buys X×POINTS_PER_DOLLAR tokens and the margin is earned on burn.
+ * Tune this single constant to change pricing across every model.
  */
-export const NORMAL_USAGE_MULTIPLIER = 1.3;
+export const RETAIL_MARGIN = 2.2;
+
+/**
+ * @deprecated Legacy alias kept so existing importers (team path, tests) keep
+ * compiling. Equals RETAIL_MARGIN; remove in the Phase 5 cleanup.
+ */
+export const NORMAL_USAGE_MULTIPLIER = RETAIL_MARGIN;
 
 /** 30 days in seconds — used for Redis TTLs aligned with billing cycles. */
 const THIRTY_DAYS_SECONDS = 30 * 24 * 60 * 60;
@@ -76,7 +83,7 @@ export const calculateTokenCost = (
   const pricing = getModelPricing(modelName);
   const price = type === "input" ? pricing.input : pricing.output;
   return Math.ceil(
-    (tokens / 1_000_000) * price * POINTS_PER_DOLLAR * NORMAL_USAGE_MULTIPLIER,
+    (tokens / 1_000_000) * price * POINTS_PER_DOLLAR * RETAIL_MARGIN,
   );
 };
 
@@ -467,7 +474,11 @@ export const deductUsage = async (
     let actualCostPoints: number;
 
     if (providerCostDollars !== undefined && providerCostDollars > 0) {
-      actualCostPoints = Math.ceil(providerCostDollars * POINTS_PER_DOLLAR);
+      // Apply RETAIL_MARGIN here too — most real cost flows through this clean-
+      // completion branch, so without the multiplier the margin would leak.
+      actualCostPoints = Math.ceil(
+        providerCostDollars * POINTS_PER_DOLLAR * RETAIL_MARGIN,
+      );
     } else {
       const actualInputCost = calculateTokenCost(
         actualInputTokens,
@@ -479,9 +490,11 @@ export const deductUsage = async (
         "output",
         modelName,
       );
+      // calculateTokenCost already bakes in RETAIL_MARGIN; non-model (sandbox/
+      // tool) cost is raw dollars, so apply the margin to it explicitly.
       const nonModelCostPoints =
         nonModelCostDollars > 0
-          ? Math.ceil(nonModelCostDollars * POINTS_PER_DOLLAR)
+          ? Math.ceil(nonModelCostDollars * POINTS_PER_DOLLAR * RETAIL_MARGIN)
           : 0;
       actualCostPoints = actualInputCost + outputCost + nonModelCostPoints;
     }

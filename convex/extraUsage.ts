@@ -1,8 +1,56 @@
-import { internalMutation, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { validateServiceKey } from "./lib/utils";
 import { convexLogger } from "./lib/logger";
 import { recordRevenueEventInternal } from "./unitEconomicsLib";
+
+// =============================================================================
+// Stripe customer mapping (per-user, pay-as-you-go)
+// =============================================================================
+
+/** Read the user's stored Stripe customer id, or null if none yet. */
+export const getStripeCustomerIdForUser = internalQuery({
+  args: { userId: v.string() },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, args) => {
+    const row = await ctx.db
+      .query("extra_usage")
+      .withIndex("by_user_id", (q) => q.eq("user_id", args.userId))
+      .first();
+    return row?.stripe_customer_id ?? null;
+  },
+});
+
+/** Persist the user's Stripe customer id (upsert the extra_usage row). */
+export const setStripeCustomerIdForUser = internalMutation({
+  args: { userId: v.string(), stripeCustomerId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const row = await ctx.db
+      .query("extra_usage")
+      .withIndex("by_user_id", (q) => q.eq("user_id", args.userId))
+      .first();
+    if (row) {
+      await ctx.db.patch(row._id, {
+        stripe_customer_id: args.stripeCustomerId,
+        updated_at: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("extra_usage", {
+        user_id: args.userId,
+        balance_points: 0,
+        stripe_customer_id: args.stripeCustomerId,
+        updated_at: Date.now(),
+      });
+    }
+    return null;
+  },
+});
 
 // =============================================================================
 // Currency Conversion Helpers

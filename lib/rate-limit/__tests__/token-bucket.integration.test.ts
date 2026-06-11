@@ -326,7 +326,7 @@ describe("token-bucket async functions", () => {
     });
 
     it("should use extra usage when bucket depleted", async () => {
-      const { deductUsage } = getIsolatedModule();
+      const { deductUsage, calculateTokenCost } = getIsolatedModule();
 
       // Atomic deduction goes negative when bucket is depleted
       mockLimitFn.mockResolvedValue({
@@ -342,7 +342,12 @@ describe("token-bucket async functions", () => {
         autoReloadEnabled: false,
       });
 
-      expect(mockDeductFromBalance).toHaveBeenCalledWith("user-123", 39);
+      // Overflow charged to balance = actual cost minus the pre-deducted estimate.
+      const overflow =
+        calculateTokenCost(1000, "input") +
+        calculateTokenCost(1000, "output") -
+        calculateTokenCost(1000, "input");
+      expect(mockDeductFromBalance).toHaveBeenCalledWith("user-123", overflow);
     });
 
     it("should skip deduction for free tier", async () => {
@@ -354,13 +359,13 @@ describe("token-bucket async functions", () => {
     });
 
     it("should refund when provider cost is less than estimated (over-estimation)", async () => {
-      const { deductUsage, calculateTokenCost } = getIsolatedModule();
+      const { deductUsage, calculateTokenCost, RETAIL_MARGIN } =
+        getIsolatedModule();
 
-      // Estimate: 10000 input tokens = 50 points
       const estimatedInputTokens = 10000;
       const estimatedCost = calculateTokenCost(estimatedInputTokens, "input");
 
-      // Actual provider cost: $0.002 = 20 points (less than 50)
+      // Actual provider cost (small enough that marked-up actual < estimate)
       const providerCostDollars = 0.002;
 
       await deductUsage(
@@ -373,9 +378,10 @@ describe("token-bucket async functions", () => {
         providerCostDollars,
       );
 
-      // Should refund the difference (50 - 20 = 30 points)
+      // Provider cost is marked up by RETAIL_MARGIN in production; refund is the
+      // difference vs the pre-deducted estimate.
       const expectedRefund =
-        estimatedCost - Math.ceil(providerCostDollars * 10000);
+        estimatedCost - Math.ceil(providerCostDollars * 10000 * RETAIL_MARGIN);
       expect(mockHincrbyFn).toHaveBeenCalledWith(
         expect.stringContaining("usage:monthly"),
         "tokens",
@@ -419,14 +425,15 @@ describe("token-bucket async functions", () => {
     });
 
     it("should not refund or charge when actual cost equals estimated", async () => {
-      const { deductUsage, calculateTokenCost } = getIsolatedModule();
+      const { deductUsage, calculateTokenCost, RETAIL_MARGIN } =
+        getIsolatedModule();
 
-      // Estimate: 1000 input tokens = 5 points
       const estimatedInputTokens = 1000;
       const estimatedCost = calculateTokenCost(estimatedInputTokens, "input");
 
-      // Actual provider cost exactly matches: $0.0005 = 5 points
-      const providerCostDollars = estimatedCost / 10000;
+      // Choose provider cost so the marked-up actual equals the estimate:
+      // ceil(providerCost * 10000 * margin) === estimatedCost.
+      const providerCostDollars = estimatedCost / 10000 / RETAIL_MARGIN;
 
       await deductUsage(
         "user-123",
@@ -543,7 +550,8 @@ describe("token-bucket async functions", () => {
 
   describe("deductUsage - split deduction (peek-then-deduct)", () => {
     it("should deduct overflow from extra usage when bucket has insufficient balance", async () => {
-      const { deductUsage } = getIsolatedModule();
+      const { deductUsage, calculateTokenCost, RETAIL_MARGIN } =
+        getIsolatedModule();
 
       // Peek: bucket has 10 remaining
       mockLimitFn.mockResolvedValueOnce({
@@ -560,9 +568,7 @@ describe("token-bucket async functions", () => {
         limit: 250000,
       });
 
-      // Estimated 1000 input = 7 points (with 1.3x), actual provider cost = $0.005 = 50 points
-      // Difference = 50 - 7 = 43 additional needed
-      // Bucket has 10, so fromBucket=10, fromExtraUsage=33
+      const providerCostDollars = 0.005;
       await deductUsage(
         "user-123",
         "pro",
@@ -570,7 +576,7 @@ describe("token-bucket async functions", () => {
         5000,
         1000,
         { enabled: true, hasBalance: true, autoReloadEnabled: false },
-        0.005,
+        providerCostDollars,
       );
 
       // Should peek first (rate: 0), then deduct only what bucket can cover (rate: 10)
@@ -582,8 +588,10 @@ describe("token-bucket async functions", () => {
         expect.any(String),
         expect.objectContaining({ rate: 10 }),
       );
-      // Should deduct the overflow (33) from extra usage
-      expect(mockDeductFromBalance).toHaveBeenCalledWith("user-123", 33);
+      // Overflow = marked-up actual − pre-deducted estimate − what the bucket covered (10).
+      const actualCost = Math.ceil(providerCostDollars * 10000 * RETAIL_MARGIN);
+      const overflow = actualCost - calculateTokenCost(1000, "input") - 10;
+      expect(mockDeductFromBalance).toHaveBeenCalledWith("user-123", overflow);
     });
 
     it("should not call extra usage when bucket covers the full amount", async () => {
@@ -620,7 +628,10 @@ describe("token-bucket async functions", () => {
 
   describe("concurrent deduction safety", () => {
     it("should reject a concurrent check when its final deduction fails", async () => {
-      const { checkTokenBucketLimit } = getIsolatedModule();
+      const { checkTokenBucketLimit, calculateTokenCost } = getIsolatedModule();
+
+      // Peek shows exactly enough for one request (sized to the current cost).
+      const oneRequestCost = calculateTokenCost(1000, "input");
 
       // Simulate two concurrent requests seeing the same bucket state
       let deductionCalls = 0;
@@ -632,7 +643,7 @@ describe("token-bucket async functions", () => {
           if (opts.rate === 0) {
             return {
               success: true,
-              remaining: 7,
+              remaining: oneRequestCost,
               reset: Date.now() + 3600000,
               limit: 250000,
             };
