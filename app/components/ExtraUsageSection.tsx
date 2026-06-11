@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { formatTokens } from "@/lib/billing/token-display";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -172,6 +173,7 @@ const ExtraUsageSection = () => {
   };
 
   const balanceDollars = extraUsageSettings?.balanceDollars ?? 0;
+  const balancePoints = extraUsageSettings?.balancePoints ?? 0;
   const autoReloadEnabled = extraUsageSettings?.autoReloadEnabled ?? false;
   const autoReloadDisabledReason = extraUsageSettings?.autoReloadDisabledReason;
   const monthlyCapDollars = extraUsageSettings?.monthlyCapDollars;
@@ -196,7 +198,8 @@ const ExtraUsageSection = () => {
           <div className="w-full min-w-0 flex flex-row gap-4 items-center">
             <div className="flex flex-col gap-1.5 min-w-0">
               <p className="text-sm">
-                Turn on extra usage to keep using RIFT if you hit a limit.{" "}
+                Turn on auto-reload to top up tokens automatically when you run
+                low.{" "}
                 <a
                   href="https://help.rift.co/en/articles/13455916-extra-usage-for-paid-rift-plans"
                   target="_blank"
@@ -293,9 +296,11 @@ const ExtraUsageSection = () => {
             {/* Current Balance Row */}
             <div className="w-full flex flex-row gap-x-8 gap-y-3 justify-between items-center flex-wrap">
               <div className="flex flex-col gap-1.5 min-w-0">
-                <p className="text-sm">${balanceDollars.toFixed(2)}</p>
+                <p className="text-sm tabular-nums">
+                  {formatTokens(balancePoints, { compact: false })} tokens
+                </p>
                 <p className="text-sm text-muted-foreground whitespace-nowrap">
-                  Current balance
+                  Token balance
                   <span className="mx-1">·</span>
                   <button
                     type="button"
@@ -328,10 +333,10 @@ const ExtraUsageSection = () => {
                 onClick={() => setShowBuyDialog(true)}
                 disabled={isPurchasing}
                 className="min-w-[5rem]"
-                aria-label="Buy extra usage"
+                aria-label="Buy tokens"
                 tabIndex={0}
               >
-                Buy extra usage
+                Buy tokens
               </Button>
             </div>
           </>

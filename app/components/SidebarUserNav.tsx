@@ -44,6 +44,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
 import { setMockTier, isMockBillingEnabled } from "@/lib/billing/mock-billing";
+import { formatBalanceTokens } from "@/lib/billing/token-display";
 import { RiftLogo } from "@/components/icons/rift-logo";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
@@ -189,6 +190,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   );
   const extraUsageEnabled = userCustomization?.extra_usage_enabled ?? false;
   const extraUsageBalanceDollars = extraUsageSettings?.balanceDollars ?? 0;
+  const tokenBalancePoints = extraUsageSettings?.balancePoints ?? 0;
   const extraUsageMonthlySpentDollars =
     extraUsageSettings?.monthlySpentDollars ?? 0;
   const extraUsageMonthlyCapDollars = extraUsageSettings?.monthlyCapDollars;
@@ -365,15 +367,13 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                   className="truncate text-[11px] text-primary"
                 >
                   {chatMode === "agent" ? "EXECUTOR" : "ASK"} ·{" "}
-                  {subscription === "ultra"
-                    ? "Ultra"
-                    : subscription === "team"
-                      ? "Team"
-                      : subscription === "pro-plus"
-                        ? "Pro+"
-                        : subscription === "pro"
-                          ? "Pro"
-                          : "Free"}
+                  {subscription === "team" ? (
+                    "Team"
+                  ) : (
+                    <span className="tabular-nums">
+                      {formatBalanceTokens(tokenBalancePoints)} tokens
+                    </span>
+                  )}
                 </div>
                 <div className="truncate text-[10px] text-muted-foreground">
                   ~/session

@@ -675,6 +675,9 @@ export const getExtraUsageSettings = query({
     v.null(),
     v.object({
       balanceDollars: v.number(),
+      // Prepaid balance as displayed tokens (1 token = 1 point). Source of
+      // truth for the "X tokens left" UI.
+      balancePoints: v.number(),
       autoReloadEnabled: v.boolean(),
       autoReloadThresholdDollars: v.optional(v.number()),
       autoReloadAmountDollars: v.optional(v.number()),
@@ -704,6 +707,7 @@ export const getExtraUsageSettings = query({
 
     return {
       balanceDollars: pointsToDollars(settings.balance_points),
+      balancePoints: settings.balance_points ?? 0,
       autoReloadEnabled: settings.auto_reload_enabled ?? false,
       autoReloadThresholdDollars: settings.auto_reload_threshold_points
         ? pointsToDollars(settings.auto_reload_threshold_points)
