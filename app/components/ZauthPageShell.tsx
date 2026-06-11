@@ -21,7 +21,7 @@ export default function ZauthPageShell({
   className?: string;
 }) {
   return (
-    <div className="relative flex min-h-full flex-col overflow-hidden bg-transparent">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-transparent">
       {header && (
         <div className="relative z-10 flex-shrink-0">
           <Header />

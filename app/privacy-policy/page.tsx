@@ -111,12 +111,12 @@ export default function PrivacyPolicyPage() {
                 <strong>Contact Us:</strong> If you have any questions about
                 this Privacy Policy, please visit our help center at{" "}
                 <a
-                  href="https://help.rift.security/en/"
+                  href="https://help.rift.co/en/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                 >
-                  https://help.rift.security/en/
+                  https://help.rift.co/en/
                 </a>
               </li>
             </ul>
