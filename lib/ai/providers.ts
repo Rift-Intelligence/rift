@@ -1,5 +1,6 @@
 import { customProvider } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import type { ChatMode, SelectedModel } from "@/types/chat";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
 import { openrouterAttributionHeaders } from "@/lib/ai/openrouter-attribution";
@@ -176,6 +177,12 @@ const openrouter = createOpenRouter({
   headers: openrouterAttributionHeaders,
 });
 
+// Direct Anthropic provider — used only for the top-tier "Dominate" model
+// (Claude Fable 5), which is not routed through OpenRouter.
+const anthropic = createAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
 type OpenRouterInstance = typeof openrouter;
 
 const buildProviderMap = (or: OpenRouterInstance) =>
@@ -188,7 +195,8 @@ const buildProviderMap = (or: OpenRouterInstance) =>
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
     "model-deepseek-v4-flash": or("deepseek/deepseek-v4-flash"),
     "model-opus-4.6": or("anthropic/claude-opus-4.6"),
-    "model-fable-5": or("anthropic/claude-fable-5"),
+    // Fable 5 calls the Anthropic API directly (not OpenRouter).
+    "model-fable-5": anthropic("claude-fable-5"),
     "model-kimi-k2.6": or("moonshotai/kimi-k2.6:exacto"),
     "fallback-agent-model": or("google/gemini-3-flash-preview"),
     "fallback-ask-model": or("google/gemini-3-flash-preview"),
