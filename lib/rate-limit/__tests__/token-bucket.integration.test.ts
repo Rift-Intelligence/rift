@@ -755,4 +755,209 @@ describe("token-bucket async functions", () => {
       );
     });
   });
+
+  // ==========================================================================
+  // checkBalanceLimit — PAYG pre-flight (free allowance exhausted)
+  // ==========================================================================
+  describe("checkBalanceLimit", () => {
+    const cfg = { enabled: true, hasBalance: true, autoReloadEnabled: false };
+
+    it("pre-charges the estimated input cost to the balance and reports servedFrom=balance", async () => {
+      const { checkBalanceLimit, calculateTokenCost } = getIsolatedModule();
+
+      mockDeductFromBalance.mockResolvedValueOnce({
+        success: true,
+        newBalanceDollars: 9.5,
+        insufficientFunds: false,
+        monthlyCapExceeded: false,
+      });
+
+      const result = await checkBalanceLimit("user-123", 1000, "model-x", cfg);
+
+      const estimate = calculateTokenCost(1000, "input", "model-x");
+      expect(mockDeductFromBalance).toHaveBeenCalledWith("user-123", estimate);
+      expect(result.servedFrom).toBe("balance");
+      expect(result.pointsDeducted).toBe(estimate);
+      expect(result.extraUsagePointsDeducted).toBe(estimate);
+      // remaining derived from newBalanceDollars × POINTS_PER_DOLLAR
+      expect(result.remaining).toBe(95_000);
+    });
+
+    it("throws 'buy tokens' when there is no balance and no auto-reload", async () => {
+      const { checkBalanceLimit } = getIsolatedModule();
+
+      try {
+        await checkBalanceLimit("user-123", 1000, "model-x", {
+          enabled: true,
+          hasBalance: false,
+          autoReloadEnabled: false,
+        });
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.cause).toContain("out of tokens");
+      }
+      expect(mockDeductFromBalance).not.toHaveBeenCalled();
+    });
+
+    it("throws 'buy tokens' when the config is undefined (no funding)", async () => {
+      const { checkBalanceLimit } = getIsolatedModule();
+
+      await expect(
+        checkBalanceLimit("user-123", 1000, "model-x", undefined),
+      ).rejects.toMatchObject({ type: "rate_limit" });
+      expect(mockDeductFromBalance).not.toHaveBeenCalled();
+    });
+
+    it("throws 'buy tokens' when the deduction reports insufficient funds", async () => {
+      const { checkBalanceLimit } = getIsolatedModule();
+
+      mockDeductFromBalance.mockResolvedValueOnce({
+        success: false,
+        newBalanceDollars: 0,
+        insufficientFunds: true,
+        monthlyCapExceeded: false,
+      });
+
+      try {
+        await checkBalanceLimit("user-123", 1000, "model-x", cfg);
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.cause).toContain("out of tokens");
+      }
+    });
+
+    it("allows auto-reload users with $0 balance to proceed", async () => {
+      const { checkBalanceLimit } = getIsolatedModule();
+
+      mockDeductFromBalance.mockResolvedValueOnce({
+        success: true,
+        newBalanceDollars: 0,
+        insufficientFunds: false,
+        monthlyCapExceeded: false,
+      });
+
+      const result = await checkBalanceLimit("user-123", 1000, "model-x", {
+        enabled: true,
+        hasBalance: false,
+        autoReloadEnabled: true,
+      });
+
+      expect(result.servedFrom).toBe("balance");
+      expect(mockDeductFromBalance).toHaveBeenCalled();
+    });
+  });
+
+  // ==========================================================================
+  // deductBalanceUsage — PAYG post-stream true-up against the balance
+  // ==========================================================================
+  describe("deductBalanceUsage", () => {
+    it("charges the difference between actual cost and the pre-charged input estimate", async () => {
+      const {
+        deductBalanceUsage,
+        calculateTokenCost,
+        computeActualCostPoints,
+      } = getIsolatedModule();
+
+      // estimate = input(1000); actual = input(1000)+output(5000) via tokens
+      await deductBalanceUsage(
+        "user-123",
+        1000, // estimatedInputTokens (pre-charged)
+        1000, // actualInputTokens
+        5000, // actualOutputTokens
+        undefined, // no providerCost → token-based path
+        "model-x",
+        0,
+      );
+
+      const estimate = calculateTokenCost(1000, "input", "model-x");
+      const actual = computeActualCostPoints({
+        actualInputTokens: 1000,
+        actualOutputTokens: 5000,
+        providerCostDollars: undefined,
+        modelName: "model-x",
+        nonModelCostDollars: 0,
+      });
+      expect(mockDeductFromBalance).toHaveBeenCalledWith(
+        "user-123",
+        actual - estimate,
+      );
+      expect(mockRefundToBalance).not.toHaveBeenCalled();
+    });
+
+    it("refunds the balance when the pre-charged estimate exceeded the actual cost", async () => {
+      const {
+        deductBalanceUsage,
+        calculateTokenCost,
+        computeActualCostPoints,
+      } = getIsolatedModule();
+
+      // Pre-charged a big input estimate; actual turned out tiny.
+      await deductBalanceUsage(
+        "user-123",
+        100_000, // estimatedInputTokens (over-estimate)
+        100, // actualInputTokens
+        0, // actualOutputTokens
+        undefined,
+        "model-x",
+        0,
+      );
+
+      const estimate = calculateTokenCost(100_000, "input", "model-x");
+      const actual = computeActualCostPoints({
+        actualInputTokens: 100,
+        actualOutputTokens: 0,
+        providerCostDollars: undefined,
+        modelName: "model-x",
+        nonModelCostDollars: 0,
+      });
+      expect(mockRefundToBalance).toHaveBeenCalledWith(
+        "user-123",
+        estimate - actual,
+      );
+      expect(mockDeductFromBalance).not.toHaveBeenCalled();
+    });
+
+    it("uses the marked-up provider cost when available (clean completion)", async () => {
+      const { deductBalanceUsage, calculateTokenCost } = getIsolatedModule();
+      const { RETAIL_MARGIN, POINTS_PER_DOLLAR } = getIsolatedModule();
+
+      const providerCostDollars = 0.01;
+      await deductBalanceUsage(
+        "user-123",
+        1000,
+        1000,
+        5000,
+        providerCostDollars,
+        "model-x",
+        0,
+      );
+
+      const estimate = calculateTokenCost(1000, "input", "model-x");
+      const actual = Math.ceil(
+        providerCostDollars * POINTS_PER_DOLLAR * RETAIL_MARGIN,
+      );
+      expect(mockDeductFromBalance).toHaveBeenCalledWith(
+        "user-123",
+        actual - estimate,
+      );
+    });
+
+    it("does nothing when actual cost equals the pre-charged estimate", async () => {
+      const { deductBalanceUsage } = getIsolatedModule();
+
+      // input-only request: estimate == actual (both = input(1000))
+      await deductBalanceUsage(
+        "user-123",
+        1000,
+        1000,
+        0,
+        undefined,
+        "model-x",
+        0,
+      );
+
+      expect(mockDeductFromBalance).not.toHaveBeenCalled();
+      expect(mockRefundToBalance).not.toHaveBeenCalled();
+    });
+  });
 });

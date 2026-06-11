@@ -911,7 +911,23 @@ export async function buildExtraUsageConfig(args: {
   organizationId?: string;
 }): Promise<ExtraUsageConfig | undefined> {
   const { userId, subscription, userCustomization, organizationId } = args;
-  if (subscription === "free") return undefined;
+
+  // Free users (PAYG): once the daily allowance is spent, requests draw from
+  // the prepaid token balance. No opt-in gate — holding a balance is consent to
+  // spend it. (Auto-reload still requires its own explicit toggle.)
+  if (subscription === "free") {
+    const balanceInfo = await getExtraUsageBalance(userId);
+    if (!balanceInfo) return undefined;
+    if (balanceInfo.balanceDollars > 0 || balanceInfo.autoReloadEnabled) {
+      return {
+        enabled: true,
+        hasBalance: balanceInfo.balanceDollars > 0,
+        balanceDollars: balanceInfo.balanceDollars,
+        autoReloadEnabled: balanceInfo.autoReloadEnabled,
+      };
+    }
+    return undefined;
+  }
 
   // Team users: extra usage is org-funded and admin-controlled. Personal
   // extra_usage settings are ignored — overflow routes through the team pool.

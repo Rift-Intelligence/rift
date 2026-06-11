@@ -327,6 +327,13 @@ export type RateLimitInfo = {
   extraUsagePointsDeducted?: number;
   // True when rate limiting was skipped (Redis not configured)
   rateLimitSkipped?: boolean;
+  // Where this request was served from (PAYG routing):
+  //  - "free"    : within the daily free allowance (no balance charge)
+  //  - "balance" : drawn from the prepaid token balance
+  //  - "bucket"  : monthly token bucket (team / legacy paid tiers)
+  // Threaded into post-stream deductUsage so a free-served request never
+  // double-charges the balance.
+  servedFrom?: "free" | "balance" | "bucket";
 };
 
 export interface ExtraUsageConfig {

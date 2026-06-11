@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach, jest } from "@jest/globals";
 describe("checkRateLimit", () => {
   const mockEvalFn = jest.fn();
   const mockCheckTokenBucketLimit = jest.fn();
+  const mockCheckBalanceLimit = jest.fn();
   const mockCreateRedisClient = jest.fn();
 
   beforeEach(() => {
@@ -37,7 +38,10 @@ describe("checkRateLimit", () => {
 
       jest.doMock("../token-bucket", () => ({
         checkTokenBucketLimit: mockCheckTokenBucketLimit,
+        checkBalanceLimit: mockCheckBalanceLimit,
         deductUsage: jest.fn(),
+        deductBalanceUsage: jest.fn(),
+        computeActualCostPoints: jest.fn(),
         refundUsage: jest.fn(),
         calculateTokenCost: jest.fn(),
         getBudgetLimits: jest.fn(),
@@ -100,18 +104,60 @@ describe("checkRateLimit", () => {
       expect(result.rateLimitSkipped).toBe(true);
     });
 
-    it("should throw rate limit error when free limit exceeded", async () => {
+    it("should fall through to the prepaid balance when the free window is exhausted (PAYG)", async () => {
       const { checkRateLimit } = getIsolatedModule();
 
       mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
+      // Free window exhausted: script returns success=0, remaining=0.
       mockEvalFn.mockResolvedValue([0, 0]);
+      mockCheckBalanceLimit.mockResolvedValue({
+        remaining: 4900,
+        resetTime: new Date(),
+        limit: 5000,
+        pointsDeducted: 100,
+        extraUsagePointsDeducted: 100,
+        servedFrom: "balance",
+      });
+
+      const cfg = { enabled: true, hasBalance: true, autoReloadEnabled: false };
+      const result = await checkRateLimit(
+        "user-123",
+        "ask",
+        "free",
+        1000,
+        cfg,
+        "model-x",
+      );
+
+      // Routed to the balance path with the estimate + model + config.
+      expect(mockCheckBalanceLimit).toHaveBeenCalledWith(
+        "user-123",
+        1000,
+        "model-x",
+        cfg,
+      );
+      expect(result.servedFrom).toBe("balance");
+      expect(mockCheckTokenBucketLimit).not.toHaveBeenCalled();
+    });
+
+    it("should throw 'buy tokens' when free window is exhausted and balance is empty", async () => {
+      const { checkRateLimit } = getIsolatedModule();
+      const { ChatSDKError } = require("@/lib/errors");
+
+      mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
+      mockEvalFn.mockResolvedValue([0, 0]);
+      mockCheckBalanceLimit.mockRejectedValue(
+        new ChatSDKError(
+          "rate_limit:chat",
+          "You're out of tokens. Buy more tokens in Settings to keep going.",
+        ),
+      );
 
       try {
         await checkRateLimit("user-123", "ask", "free", 0);
         expect.fail("Should have thrown");
       } catch (error: any) {
-        expect(error.cause).toContain("daily requests");
-        expect(error.cause).toContain("Upgrade plan");
+        expect(error.cause).toContain("out of tokens");
       }
     });
   });

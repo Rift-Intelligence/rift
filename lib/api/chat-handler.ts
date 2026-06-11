@@ -27,6 +27,7 @@ import {
   checkFreeMonthlyCostLimit,
   checkRateLimit,
   deductUsage,
+  deductBalanceUsage,
   recordFreeMonthlyCost,
   UsageRefundTracker,
 } from "@/lib/rate-limit";
@@ -253,12 +254,9 @@ export const createChatHandler = () => {
         });
       }
 
-      // Free ask: pre-flight rate-limit before any token counting/model work.
-      const freeAskRateLimitInfo =
-        mode === "ask" && subscription === "free"
-          ? await checkRateLimit(userId, mode, subscription)
-          : null;
-
+      // PAYG: the daily-free vs prepaid-balance routing needs the input-token
+      // estimate + extra-usage config, so the rate-limit check runs once below
+      // (after token counting) for every tier — no separate free-ask pre-flight.
       const uploadBasePath = isAgentMode(mode)
         ? getUploadBasePath(sandboxPreference)
         : undefined;
@@ -317,17 +315,15 @@ export const createChatHandler = () => {
         organizationId,
       });
 
-      const rateLimitInfo: RateLimitInfo =
-        freeAskRateLimitInfo ??
-        (await checkRateLimit(
-          userId,
-          mode,
-          subscription,
-          estimatedInputTokens,
-          extraUsageConfig,
-          selectedModel,
-          organizationId,
-        ));
+      const rateLimitInfo: RateLimitInfo = await checkRateLimit(
+        userId,
+        mode,
+        subscription,
+        estimatedInputTokens,
+        extraUsageConfig,
+        selectedModel,
+        organizationId,
+      );
 
       const freeMonthlyBudgetSnapshot =
         subscription === "free"
@@ -661,11 +657,41 @@ export const createChatHandler = () => {
                     ? usageTracker.providerCost
                     : undefined;
 
-                if (subscription === "free") {
+                if (
+                  subscription === "free" &&
+                  rateLimitInfo.servedFrom !== "balance"
+                ) {
+                  // Served within the daily free allowance — only track the
+                  // free monthly cost cap; no balance charge.
                   await recordFreeMonthlyCost(
                     userId,
                     usageCostRecord.costDollars,
                   );
+                } else if (rateLimitInfo.servedFrom === "balance") {
+                  // PAYG free user past the daily allowance: reconcile the
+                  // actual cost against the prepaid balance (input pre-charged).
+                  await deductBalanceUsage(
+                    userId,
+                    estimatedInputTokens,
+                    usageTracker.inputTokens,
+                    usageTracker.outputTokens,
+                    providerCost,
+                    selectedModel,
+                    usageTracker.nonModelCost,
+                  );
+                  usageTracker.log({
+                    userId,
+                    organizationId,
+                    chatId,
+                    endpoint,
+                    mode,
+                    subscription,
+                    selectedModel,
+                    selectedModelOverride,
+                    responseModel: state.responseModel,
+                    configuredModelId,
+                    rateLimitInfo,
+                  });
                 } else {
                   await deductUsage(
                     userId,

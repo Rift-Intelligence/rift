@@ -27,7 +27,10 @@ import type {
 // Re-export token bucket functions
 export {
   checkTokenBucketLimit,
+  checkBalanceLimit,
   deductUsage,
+  deductBalanceUsage,
+  computeActualCostPoints,
   refundUsage,
   resetRateLimitBuckets,
   stashOldBucketRemaining,
@@ -61,7 +64,8 @@ export {
 } from "./free-monthly-cost";
 
 // Import for internal use
-import { checkTokenBucketLimit } from "./token-bucket";
+import { checkTokenBucketLimit, checkBalanceLimit } from "./token-bucket";
+import { FREE_AGENT_REQUEST_COST, FREE_ASK_REQUEST_COST } from "./free-config";
 import {
   checkFreeUserRateLimit,
   checkFreeAgentRateLimit,
@@ -90,13 +94,31 @@ export const checkRateLimit = async (
   modelName?: string,
   organizationId?: string,
 ): Promise<RateLimitInfo> => {
-  // Free users: fixed daily window
+  // Free users (PAYG): daily free window first, then prepaid balance.
   if (subscription === "free") {
-    if (isAgentMode(mode)) {
-      // Free agent mode shares the daily free budget and consumes 2 units.
-      return checkFreeAgentRateLimit(userId);
+    const requestCost = isAgentMode(mode)
+      ? FREE_AGENT_REQUEST_COST
+      : FREE_ASK_REQUEST_COST;
+
+    // Peek/consume the free window WITHOUT throwing on exhaustion, so we can
+    // fall through to the prepaid balance when the user has tokens.
+    const free = await checkFreeUserRateLimit(userId, requestCost, {
+      throwOnExhaustion: false,
+    });
+
+    if (!free.freeExhausted) {
+      // Served within the daily free allowance — no balance charge.
+      return free;
     }
-    return checkFreeUserRateLimit(userId);
+
+    // Free allowance spent. Draw from the prepaid token balance; throws a
+    // "buy tokens" error when empty and auto-reload is off.
+    return checkBalanceLimit(
+      userId,
+      estimatedInputTokens || 0,
+      modelName,
+      extraUsageConfig,
+    );
   }
 
   // Paid users: token bucket (same budget for both modes)

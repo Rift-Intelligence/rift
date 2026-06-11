@@ -46,6 +46,7 @@ import {
   checkFreeMonthlyCostLimit,
   checkRateLimit,
   deductUsage,
+  deductBalanceUsage,
   recordFreeMonthlyCost,
   UsageRefundTracker,
 } from "@/lib/rate-limit";
@@ -1048,11 +1049,41 @@ export const agentLongTask = task({
                   usageTracker.modelProviderCost > 0
                     ? usageTracker.providerCost
                     : undefined;
-                if (subscription === "free") {
+                if (
+                  subscription === "free" &&
+                  rateLimitInfo.servedFrom !== "balance"
+                ) {
+                  // Served within the daily free allowance — only track the
+                  // free monthly cost cap; no balance charge.
                   await recordFreeMonthlyCost(
                     userId,
                     usageCostRecord.costDollars,
                   );
+                } else if (rateLimitInfo.servedFrom === "balance") {
+                  // PAYG free user past the daily allowance: reconcile the
+                  // actual cost against the prepaid balance (input pre-charged).
+                  await deductBalanceUsage(
+                    userId,
+                    estimatedInputTokens,
+                    usageTracker.inputTokens,
+                    usageTracker.outputTokens,
+                    providerCost,
+                    selectedModel,
+                    usageTracker.nonModelCost,
+                  );
+                  usageTracker.log({
+                    userId,
+                    organizationId,
+                    chatId,
+                    endpoint: "/api/agent-long",
+                    mode,
+                    subscription,
+                    selectedModel,
+                    selectedModelOverride,
+                    responseModel: state.responseModel,
+                    configuredModelId,
+                    rateLimitInfo,
+                  });
                 } else {
                   await deductUsage(
                     userId,

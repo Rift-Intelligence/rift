@@ -11,6 +11,7 @@ import {
   refundToBalance,
   deductFromTeamBalance,
   refundToTeamBalance,
+  getExtraUsageBalance,
 } from "@/lib/extra-usage";
 import { getSuspensionMessage } from "@/lib/suspensionMessage";
 
@@ -435,6 +436,152 @@ export const checkTokenBucketLimit = async (
  * @param nonModelCostDollars - Sandbox session and tool costs (always accurate). When providerCostDollars
  *   is undefined (non-clean streams), this is added on top of token-based model cost.
  */
+/**
+ * Compute the marked-up actual cost of a completed turn, in points.
+ *
+ * Single source of truth for post-stream cost — shared by the token-bucket
+ * true-up (`deductUsage`) and the prepaid-balance true-up (`deductBalanceUsage`)
+ * so the retail margin is applied identically on every path.
+ *
+ * Prefers provider-reported cost (clean completions, includes model + sandbox +
+ * tools); falls back to token-based model cost + explicit non-model cost.
+ */
+export const computeActualCostPoints = ({
+  actualInputTokens,
+  actualOutputTokens,
+  providerCostDollars,
+  modelName,
+  nonModelCostDollars = 0,
+}: {
+  actualInputTokens: number;
+  actualOutputTokens: number;
+  providerCostDollars?: number;
+  modelName?: string;
+  nonModelCostDollars?: number;
+}): number => {
+  if (providerCostDollars !== undefined && providerCostDollars > 0) {
+    // Apply RETAIL_MARGIN here too — most real cost flows through this clean-
+    // completion branch, so without the multiplier the margin would leak.
+    return Math.ceil(providerCostDollars * POINTS_PER_DOLLAR * RETAIL_MARGIN);
+  }
+  const actualInputCost = calculateTokenCost(
+    actualInputTokens,
+    "input",
+    modelName,
+  );
+  const outputCost = calculateTokenCost(
+    actualOutputTokens,
+    "output",
+    modelName,
+  );
+  // calculateTokenCost already bakes in RETAIL_MARGIN; non-model (sandbox/tool)
+  // cost is raw dollars, so apply the margin to it explicitly.
+  const nonModelCostPoints =
+    nonModelCostDollars > 0
+      ? Math.ceil(nonModelCostDollars * POINTS_PER_DOLLAR * RETAIL_MARGIN)
+      : 0;
+  return actualInputCost + outputCost + nonModelCostPoints;
+};
+
+/**
+ * Pre-flight check for a PAYG request drawn from the prepaid token balance.
+ *
+ * Used when a non-team user has exhausted the daily free allowance. Estimates
+ * the input cost, charges it to `balance_points` up front (refundable on error
+ * via `pointsDeducted`), and returns `servedFrom: "balance"`. The post-stream
+ * `deductBalanceUsage` reconciles the estimate against the true cost.
+ *
+ * Throws a "buy tokens" rate-limit error when the balance can't cover the
+ * estimate and auto-reload is off.
+ */
+export const checkBalanceLimit = async (
+  userId: string,
+  estimatedInputTokens: number,
+  modelName?: string,
+  extraUsageConfig?: ExtraUsageConfig,
+): Promise<RateLimitInfo> => {
+  const estimatedCost = calculateTokenCost(
+    estimatedInputTokens,
+    "input",
+    modelName,
+  );
+
+  const outOfTokens = () =>
+    new ChatSDKError(
+      "rate_limit:chat",
+      "You're out of tokens. Buy more tokens in Settings to keep going.",
+      { capReason: "balance_exhausted" },
+    );
+
+  // No balance and no auto-reload → nothing to draw from.
+  const hasFunding =
+    extraUsageConfig?.enabled &&
+    (extraUsageConfig.hasBalance || extraUsageConfig.autoReloadEnabled);
+  if (!hasFunding) {
+    throw outOfTokens();
+  }
+
+  const deductResult = await deductFromBalance(userId, estimatedCost);
+  if (!deductResult.success || deductResult.insufficientFunds) {
+    throw outOfTokens();
+  }
+
+  const remainingPoints = Math.max(
+    0,
+    Math.round((deductResult.newBalanceDollars ?? 0) * POINTS_PER_DOLLAR),
+  );
+
+  return {
+    remaining: remainingPoints,
+    resetTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    limit: remainingPoints + estimatedCost,
+    pointsDeducted: estimatedCost,
+    extraUsagePointsDeducted: estimatedCost,
+    servedFrom: "balance",
+  };
+};
+
+/**
+ * Post-stream true-up for a request served from the prepaid balance.
+ *
+ * Mirrors `deductUsage`'s reconciliation but targets `balance_points` directly
+ * (no token bucket): charges the difference between the marked-up actual cost
+ * and the pre-charged input estimate, or refunds an over-estimate.
+ */
+export const deductBalanceUsage = async (
+  userId: string,
+  estimatedInputTokens: number,
+  actualInputTokens: number,
+  actualOutputTokens: number,
+  providerCostDollars?: number,
+  modelName?: string,
+  nonModelCostDollars: number = 0,
+): Promise<void> => {
+  try {
+    const estimatedInputCost = calculateTokenCost(
+      estimatedInputTokens,
+      "input",
+      modelName,
+    );
+    const actualCostPoints = computeActualCostPoints({
+      actualInputTokens,
+      actualOutputTokens,
+      providerCostDollars,
+      modelName,
+      nonModelCostDollars,
+    });
+
+    const costDifference = actualCostPoints - estimatedInputCost;
+    if (costDifference > 0) {
+      await deductFromBalance(userId, costDifference);
+    } else if (costDifference < 0) {
+      await refundToBalance(userId, Math.abs(costDifference));
+    }
+  } catch (error) {
+    console.error("Failed to deduct balance usage:", error);
+  }
+};
+
 export const deductUsage = async (
   userId: string,
   subscription: SubscriptionTier,
@@ -469,35 +616,13 @@ export const deductUsage = async (
     );
 
     // Calculate actual cost - prefer provider cost if available.
-    // Provider cost already includes non-model costs (sandbox/tools) when present.
-    // When absent (non-clean streams), add non-model costs on top of token-based estimate.
-    let actualCostPoints: number;
-
-    if (providerCostDollars !== undefined && providerCostDollars > 0) {
-      // Apply RETAIL_MARGIN here too — most real cost flows through this clean-
-      // completion branch, so without the multiplier the margin would leak.
-      actualCostPoints = Math.ceil(
-        providerCostDollars * POINTS_PER_DOLLAR * RETAIL_MARGIN,
-      );
-    } else {
-      const actualInputCost = calculateTokenCost(
-        actualInputTokens,
-        "input",
-        modelName,
-      );
-      const outputCost = calculateTokenCost(
-        actualOutputTokens,
-        "output",
-        modelName,
-      );
-      // calculateTokenCost already bakes in RETAIL_MARGIN; non-model (sandbox/
-      // tool) cost is raw dollars, so apply the margin to it explicitly.
-      const nonModelCostPoints =
-        nonModelCostDollars > 0
-          ? Math.ceil(nonModelCostDollars * POINTS_PER_DOLLAR * RETAIL_MARGIN)
-          : 0;
-      actualCostPoints = actualInputCost + outputCost + nonModelCostPoints;
-    }
+    const actualCostPoints = computeActualCostPoints({
+      actualInputTokens,
+      actualOutputTokens,
+      providerCostDollars,
+      modelName,
+      nonModelCostDollars,
+    });
 
     // Calculate the difference between what we pre-deducted and actual cost
     const costDifference = actualCostPoints - estimatedInputCost;
