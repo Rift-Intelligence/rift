@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,14 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreditCard, Pencil, Wallet } from "lucide-react";
-import { toast } from "sonner";
+import { Bitcoin } from "lucide-react";
 import {
   TOKEN_PACKAGES,
   MIN_CUSTOM_TOPUP_USD,
+  bonusPointsForDollars,
   type TokenPackage,
 } from "@/lib/billing/token-packages";
 import { formatTokens } from "@/lib/billing/token-display";
+import { POINTS_PER_DOLLAR } from "@/lib/rate-limit/token-bucket";
 import { cn } from "@/lib/utils";
 
 type BuyExtraUsageDialogProps = {
@@ -29,17 +28,9 @@ type BuyExtraUsageDialogProps = {
   title?: string;
   description?: string;
   lineItemLabel?: string;
-  paymentMethodMode?: "personal" | "checkout";
-};
-
-/** Format card brand name for display */
-const formatCardBrand = (brand: string | null): string => {
-  if (!brand) return "Card";
-  return brand.charAt(0).toUpperCase() + brand.slice(1).replace(/_/g, " ");
 };
 
 const MAX_AMOUNT = 999_999;
-const POINTS_PER_DOLLAR = 10_000;
 
 /** Format number with commas (e.g., 1000 -> 1,000) */
 const formatWithCommas = (value: string): string => {
@@ -52,20 +43,6 @@ const formatWithCommas = (value: string): string => {
 /** Remove commas for parsing */
 const removeCommas = (value: string): string => value.replace(/,/g, "");
 
-/**
- * Volume-bonus tokens for a dollar amount — display mirror of the server's
- * bonusPointsForDollars (convex/extraUsageActions.ts). Kept in sync by the
- * shared package thresholds; used to preview custom-amount totals.
- */
-const bonusPointsForDollars = (dollars: number): number => {
-  const base = dollars * POINTS_PER_DOLLAR;
-  let pct = 0;
-  if (dollars >= 300) pct = 20;
-  else if (dollars >= 100) pct = 10;
-  else if (dollars >= 50) pct = 5;
-  return Math.round((base * pct) / 100);
-};
-
 /** Total displayed tokens (base + bonus) for a dollar amount. */
 const totalTokensForDollars = (dollars: number): number =>
   dollars * POINTS_PER_DOLLAR + bonusPointsForDollars(dollars);
@@ -77,7 +54,6 @@ type ContentProps = {
   title: string;
   description: string;
   lineItemLabel: string;
-  paymentMethodMode: "personal" | "checkout";
 };
 
 const BuyExtraUsageDialogContent = ({
@@ -86,66 +62,12 @@ const BuyExtraUsageDialogContent = ({
   title,
   description,
   lineItemLabel,
-  paymentMethodMode,
 }: ContentProps) => {
   // Selected package id, or "custom" for a free-form amount.
   const [selected, setSelected] = useState<TokenPackage["id"] | "custom">(
     "plus",
   );
   const [customAmount, setCustomAmount] = useState<string>("50");
-  const [paymentMethod, setPaymentMethod] = useState<{
-    hasPaymentMethod: boolean;
-    last4: string | null;
-    brand: string | null;
-  } | null>(null);
-  const [loadingPaymentMethod, setLoadingPaymentMethod] = useState(
-    paymentMethodMode === "personal",
-  );
-
-  const createBillingPortalSession = useAction(
-    api.extraUsageActions.createBillingPortalSession,
-  );
-  const getPaymentStatus = useAction(api.extraUsageActions.getPaymentStatus);
-
-  // Fetch payment method on mount
-  useEffect(() => {
-    if (paymentMethodMode === "checkout") {
-      return;
-    }
-
-    getPaymentStatus({})
-      .then((result) => {
-        setPaymentMethod({
-          hasPaymentMethod: result.hasPaymentMethod,
-          last4: result.paymentMethodLast4,
-          brand: result.paymentMethodBrand,
-        });
-      })
-      .catch((err) => {
-        console.error("Failed to fetch payment method:", err);
-      })
-      .finally(() => {
-        setLoadingPaymentMethod(false);
-      });
-  }, [getPaymentStatus, paymentMethodMode]);
-
-  const handleEditPaymentMethod = async () => {
-    try {
-      const result = await createBillingPortalSession({
-        flow: "payment_method",
-        baseUrl: window.location.origin,
-      });
-      if (result.url) {
-        window.open(result.url, "_blank", "noopener,noreferrer");
-        // Clear cached payment method so it refreshes when user returns
-        setPaymentMethod(null);
-      } else {
-        toast.error(result.error || "Failed to open billing portal");
-      }
-    } catch {
-      toast.error("Failed to open billing portal");
-    }
-  };
 
   const selectedPackage =
     selected === "custom"
@@ -290,41 +212,18 @@ const BuyExtraUsageDialogContent = ({
           </div>
         </div>
         <div className="mt-2">
-          <div className="flex items-center justify-between p-5 border border-border rounded-lg">
-            <span className="font-medium text-sm">Payment method</span>
-            <div className="flex items-center gap-3">
-              {paymentMethodMode === "checkout" ? (
-                <p className="text-sm flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Team billing account
-                </p>
-              ) : loadingPaymentMethod ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
-              ) : paymentMethod?.hasPaymentMethod && paymentMethod.last4 ? (
-                <p className="text-sm flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  {formatCardBrand(paymentMethod.brand)} ending in{" "}
-                  {paymentMethod.last4}
-                </p>
-              ) : (
-                <p className="text-sm flex items-center gap-2">
-                  <Wallet className="h-5 w-5" />
-                  Link by Stripe
-                </p>
-              )}
-              {paymentMethodMode === "personal" && (
-                <button
-                  type="button"
-                  className="text-muted-foreground hover:text-foreground"
-                  aria-label="Edit payment method"
-                  tabIndex={0}
-                  onClick={handleEditPaymentMethod}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-              )}
-            </div>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
+            <span className="text-sm font-medium">Payment method</span>
+            <p className="flex items-center gap-2 text-sm">
+              <Bitcoin className="h-5 w-5 text-primary" />
+              Crypto (BTC, ETH, USDT…)
+            </p>
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            You&apos;ll be taken to a secure NowPayments page to pay. Tokens are
+            credited once the payment is confirmed on-chain (usually a few
+            minutes).
+          </p>
         </div>
         <div className="flex flex-col gap-3">
           <Button
@@ -335,7 +234,7 @@ const BuyExtraUsageDialogContent = ({
             {isLoading
               ? "Processing..."
               : isValidAmount
-                ? `Buy ${formatTokens(totalTokens)} tokens`
+                ? `Pay with crypto — ${formatTokens(totalTokens)} tokens`
                 : "Buy tokens"}
           </Button>
         </div>
@@ -352,7 +251,6 @@ const BuyExtraUsageDialog = ({
   title = "Buy tokens",
   description = "Top up your token balance. Bigger packs include bonus tokens.",
   lineItemLabel = "Tokens",
-  paymentMethodMode = "personal",
 }: BuyExtraUsageDialogProps) => {
   const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen);
@@ -369,7 +267,6 @@ const BuyExtraUsageDialog = ({
             title={title}
             description={description}
             lineItemLabel={lineItemLabel}
-            paymentMethodMode={paymentMethodMode}
           />
         )}
       </DialogContent>

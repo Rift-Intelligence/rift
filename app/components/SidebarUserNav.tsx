@@ -185,8 +185,8 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
     api.rateLimitStatus.getAgentRateLimitStatus,
   );
 
-  const createPurchaseSession = useAction(
-    api.extraUsageActions.createPurchaseSession,
+  const createCryptoInvoice = useAction(
+    api.extraUsageActions.createCryptoInvoice,
   );
   const [showBuyDialog, setShowBuyDialog] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -195,7 +195,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
     async (amountDollars: number) => {
       setIsPurchasing(true);
       try {
-        const result = await createPurchaseSession({
+        const result = await createCryptoInvoice({
           amountDollars,
           baseUrl: window.location.origin,
         });
@@ -210,7 +210,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         setIsPurchasing(false);
       }
     },
-    [createPurchaseSession],
+    [createCryptoInvoice],
   );
 
   const extraUsageSettings = useQuery(api.extraUsage.getExtraUsageSettings);

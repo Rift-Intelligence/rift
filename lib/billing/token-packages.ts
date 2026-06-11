@@ -68,8 +68,28 @@ export const TOKEN_PACKAGES: readonly TokenPackage[] = [
   pkg("scale", "Scale", 300, 20),
 ] as const;
 
-/** Minimum custom top-up amount, in USD (matches Stripe checkout floor). */
+/** Minimum custom top-up amount, in USD (matches the checkout floor). */
 export const MIN_CUSTOM_TOPUP_USD = 10;
+
+/**
+ * Volume-bonus tokens (points) for a dollar amount, tiered by spend.
+ *
+ * Canonical rule shared by the checkout UI and the payment-provider crediting
+ * path (NowPayments IPN). Thresholds match the package ladder above:
+ *   < $50  → +0%   ·  ≥ $50 → +5%  ·  ≥ $100 → +10%  ·  ≥ $300 → +20%
+ * Custom amounts land in whichever tier their dollar value reaches.
+ *
+ * NOTE: convex/extraUsageActions.ts keeps a byte-identical copy (Convex can't
+ * import app `lib/`); the token-packages drift test guards they agree.
+ */
+export function bonusPointsForDollars(dollars: number): number {
+  const basePoints = dollars * POINTS_PER_DOLLAR;
+  let pct = 0;
+  if (dollars >= 300) pct = 20;
+  else if (dollars >= 100) pct = 10;
+  else if (dollars >= 50) pct = 5;
+  return Math.round((basePoints * pct) / 100);
+}
 
 /** Look up a package by id. */
 export function getTokenPackage(

@@ -311,6 +311,109 @@ export const getPaymentStatus = action({
  * 2. The actual payment confirmation happens via secure webhooks
  * 3. A malicious user can only redirect themselves to a different site
  */
+/**
+ * Create a NowPayments hosted crypto invoice for a token top-up.
+ *
+ * Pay-as-you-go, no account/customer object needed (crypto). Returns the hosted
+ * `invoice_url` to redirect to. Crediting is async: NowPayments POSTs an IPN to
+ * `/api/extra-usage/nowpayments-ipn` when the payment reaches `finished`, which
+ * is where `addCredits` runs. The dollar amount and (server-derived) bonus are
+ * recovered on the IPN from `price_amount` + `order_id`.
+ */
+export const createCryptoInvoice = action({
+  args: {
+    amountDollars: v.number(),
+    baseUrl: v.string(),
+  },
+  returns: v.object({
+    url: v.union(v.string(), v.null()),
+    error: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { url: null, error: "Not authenticated" };
+    }
+    const userId = identity.subject.split("|")[0];
+
+    if (!Number.isInteger(args.amountDollars)) {
+      return { url: null, error: "Amount must be a whole dollar value" };
+    }
+    if (args.amountDollars < 10) {
+      return { url: null, error: "Minimum amount is $10" };
+    }
+    if (args.amountDollars > 999_999) {
+      return { url: null, error: "Maximum amount is $999,999" };
+    }
+    if (!args.baseUrl || !args.baseUrl.startsWith("http")) {
+      return { url: null, error: "Invalid base URL" };
+    }
+
+    const apiKey = process.env.NOWPAYMENTS_API_KEY;
+    if (!apiKey) {
+      return {
+        url: null,
+        error: "Crypto payments are not configured. Please try again later.",
+      };
+    }
+
+    // order_id carries the userId so the IPN can attribute the credit. A random
+    // suffix keeps it unique per attempt. The bonus is NOT trusted from here —
+    // the IPN recomputes it server-side from the paid price_amount.
+    const orderId = `${userId}::${identity.subject.slice(-6)}-${args.amountDollars}`;
+
+    try {
+      const res = await fetch("https://api.nowpayments.io/v1/invoice", {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          price_amount: args.amountDollars,
+          price_currency: "usd",
+          order_id: orderId,
+          order_description: `RIFT tokens — $${args.amountDollars}`,
+          ipn_callback_url: `${args.baseUrl}/api/extra-usage/nowpayments-ipn`,
+          success_url: `${args.baseUrl}/?tokens-pending=1`,
+          cancel_url: args.baseUrl,
+        }),
+      });
+
+      if (!res.ok) {
+        const detail = await res.text();
+        convexLogger.error("nowpayments_invoice_failed", {
+          user_id: userId,
+          amount_dollars: args.amountDollars,
+          status: res.status,
+          detail: detail.slice(0, 500),
+        });
+        return { url: null, error: "Could not start crypto checkout." };
+      }
+
+      const data = (await res.json()) as { invoice_url?: string; id?: string };
+      if (!data.invoice_url) {
+        return { url: null, error: "Could not start crypto checkout." };
+      }
+
+      convexLogger.info("nowpayments_invoice_created", {
+        user_id: userId,
+        amount_dollars: args.amountDollars,
+        invoice_id: data.id,
+      });
+
+      return { url: data.invoice_url };
+    } catch (error) {
+      convexLogger.error("nowpayments_invoice_error", {
+        user_id: userId,
+        amount_dollars: args.amountDollars,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      return { url: null, error: "Could not start crypto checkout." };
+    }
+  },
+});
+
 export const createPurchaseSession = action({
   args: {
     amountDollars: v.number(),
