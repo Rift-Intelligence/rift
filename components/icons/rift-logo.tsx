@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { useId, type FC } from "react";
 
 interface RiftLogoProps {
   /** Pixel size of the square logo */
@@ -9,17 +9,20 @@ interface RiftLogoProps {
 }
 
 /**
- * RIFT logo mark.
+ * RIFT logo mark — "slip-fault".
  *
- * Concept: two triangular wedges pointing inward with a glowing gap between
- * them — a dimensional rift / tear in space. Registration ticks top & bottom.
- * Inherits `currentColor`; pass `glow` for the phosphor-green signal halo.
+ * A solid rounded square split by an offset vertical tear: the upper crack sits
+ * left of center, the lower crack right, joined by a 45° slip plane — reading as
+ * two tectonic plates that have shifted past each other (a breach / rift). The
+ * tear is a true transparent cut (via mask), so the mark inherits `currentColor`
+ * and works on any background, at any size. Pass `glow` for the phosphor halo.
  */
 export const RiftLogo: FC<RiftLogoProps> = ({
   size = 32,
   glow = false,
   className,
 }) => {
+  const maskId = useId();
   return (
     <svg
       width={size}
@@ -32,39 +35,29 @@ export const RiftLogo: FC<RiftLogoProps> = ({
       aria-label="RIFT"
       style={
         glow
-          ? { filter: "drop-shadow(0 0 5px rgba(0,255,102,0.6))" }
+          ? { filter: "drop-shadow(0 0 4px rgba(0,255,102,0.6))" }
           : undefined
       }
     >
-      {/* Left wedge — apex points right toward the rift */}
-      <path
-        d="M2 4 L14 16 L2 28 Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      {/* Right wedge — apex points left toward the rift */}
-      <path
-        d="M30 4 L18 16 L30 28 Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      {/* Rift gap — glowing crack at center */}
-      <path
-        d="M16 9 L16 23"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.45"
-      />
-      {/* Registration ticks (top/bottom) */}
-      <path
-        d="M16 0.5 V2.5 M16 29.5 V31.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity="0.7"
+      <mask id={maskId}>
+        {/* Visible body */}
+        <rect x="1" y="1" width="30" height="30" rx="8" fill="#fff" />
+        {/* Carved slip-fault tear (offset top→bottom, 45° slip in the middle) */}
+        <path
+          d="M16 -2 L13.4 13 L18.6 18 L15.4 34"
+          stroke="#000"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+      </mask>
+      <rect
+        x="1"
+        y="1"
+        width="30"
+        height="30"
+        rx="8"
+        fill="currentColor"
+        mask={`url(#${maskId})`}
       />
     </svg>
   );
