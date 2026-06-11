@@ -114,7 +114,7 @@ const DesktopSidebarContent: FC<{
         <SidebarGroup className="min-h-0 flex-1" />
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="pb-3">
         <SidebarUserNav isCollapsed={isCollapsed} />
       </SidebarFooter>
       <SidebarRail />
@@ -158,7 +158,7 @@ const MainSidebar: FC<{
           <div className="flex-1 overflow-hidden" />
 
           {/* Footer */}
-          <div className="p-2">
+          <div className="p-2 pb-3">
             <SidebarUserNav isCollapsed={false} />
           </div>
         </div>
