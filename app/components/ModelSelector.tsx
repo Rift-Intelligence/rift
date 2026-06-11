@@ -1,6 +1,6 @@
 "use client";
 
-import { Brain, Check, ChevronDown, ChevronRight, Lock } from "lucide-react";
+import { Brain, Check, ChevronDown } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -32,19 +32,6 @@ import {
 import { useState } from "react";
 import type { ChatMode, SelectedModel } from "@/types/chat";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
-import { setMockTier, isMockBillingEnabled } from "@/lib/billing/mock-billing";
-
-/** Instantly grant the highest tier locally (mock billing), then reload so
- * GlobalState re-derives the subscription and unlocks everything. */
-function handleInstantUpgrade() {
-  if (isMockBillingEnabled()) {
-    setMockTier("ultra");
-    window.location.reload();
-  } else {
-    window.location.hash = "pricing";
-  }
-}
-import { useGlobalState } from "@/app/contexts/GlobalState";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 import { CostIndicator } from "./ModelSelector/CostIndicator";
@@ -108,14 +95,12 @@ const AutoOptionButton = ({
 const ModelOptionButton = ({
   option,
   isSelected,
-  isFreeUser,
   onSelect,
   mode,
   mobile = false,
 }: {
   option: ModelOption;
   isSelected: boolean;
-  isFreeUser: boolean;
   onSelect: (option: ModelOption) => void;
   mode: ChatMode;
   mobile?: boolean;
@@ -148,17 +133,11 @@ const ModelOptionButton = ({
           )}
         </div>
       </div>
-      {isFreeUser ? (
-        <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
-      ) : isSelected ? (
-        <Check className="h-3.5 w-3.5 shrink-0" />
-      ) : null}
+      {isSelected ? <Check className="h-3.5 w-3.5 shrink-0" /> : null}
     </button>
   );
 
-  // Free users get the upgrade tooltip from the parent ModelOptionList; skipping
-  // the inner one prevents a flicker where both nested tooltips race to render.
-  if (mobile || !option.description || isFreeUser) return button;
+  if (mobile || !option.description) return button;
 
   return (
     <Tooltip delayDuration={150}>
@@ -188,17 +167,14 @@ const ModelOptionList = ({
   options,
   value,
   isAuto,
-  isFreeUser,
   mode,
   onAutoSelect,
   onSelect,
-  onClose,
   mobile = false,
 }: {
   options: ModelOption[];
   value: SelectedModel;
   isAuto: boolean;
-  isFreeUser: boolean;
   mode: ChatMode;
   onAutoSelect: () => void;
   onSelect: (option: ModelOption) => void;
@@ -206,105 +182,24 @@ const ModelOptionList = ({
   mobile?: boolean;
 }) => (
   <div className="flex flex-col gap-px">
-    {isFreeUser ? (
-      <>
-        <button
-          type="button"
-          onClick={() => {
-            onClose();
-            handleInstantUpgrade();
-          }}
-          className="flex items-center justify-between rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-2 transition-colors hover:bg-primary/20 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <span className="text-sm font-mono text-primary">
-            ▸ unlock full arsenal
-          </span>
-          <ChevronRight className="h-4 w-4 text-primary shrink-0" />
-        </button>
-        <div className="my-1.5 border-b border-border/50" />
-      </>
-    ) : (
-      <>
-        <AutoOptionButton
-          isSelected={isAuto}
-          onSelect={onAutoSelect}
+    <AutoOptionButton
+      isSelected={isAuto}
+      onSelect={onAutoSelect}
+      mobile={mobile}
+    />
+    <div className="my-1 border-b border-border/50" />
+
+    {options.map((option) => (
+      <div key={option.id}>
+        <ModelOptionButton
+          option={option}
+          isSelected={value === option.id}
+          onSelect={onSelect}
+          mode={mode}
           mobile={mobile}
         />
-        <div className="my-1 border-b border-border/50" />
-      </>
-    )}
-
-    {options.map((option) => {
-      const isSelected = value === option.id;
-      const showUpgradeTooltip = isFreeUser && !mobile;
-
-      if (!showUpgradeTooltip) {
-        return (
-          <div key={option.id}>
-            <ModelOptionButton
-              option={option}
-              isSelected={isSelected}
-              isFreeUser={isFreeUser}
-              onSelect={onSelect}
-              mode={mode}
-              mobile={mobile}
-            />
-          </div>
-        );
-      }
-
-      return (
-        <Tooltip key={option.id}>
-          <TooltipTrigger asChild>
-            <div>
-              <ModelOptionButton
-                option={option}
-                isSelected={isSelected}
-                isFreeUser={isFreeUser}
-                onSelect={onSelect}
-                mode={mode}
-                mobile={mobile}
-              />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent
-            side="right"
-            sideOffset={12}
-            align="start"
-            className="bg-popover text-popover-foreground border border-border shadow-lg rounded-xl px-4 py-3 max-w-[240px] space-y-1.5 [&_svg]:!hidden"
-          >
-            {option.description ? (
-              <p className="text-sm font-semibold text-foreground leading-snug">
-                {option.description}
-              </p>
-            ) : (
-              <p className="text-sm font-semibold text-foreground leading-snug">
-                {option.label}
-              </p>
-            )}
-            {option.poweredBy && (
-              <p className="text-xs text-muted-foreground">
-                Powered by {option.poweredBy}
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground leading-relaxed pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  handleInstantUpgrade();
-                }}
-                className="text-primary underline underline-offset-2 hover:text-primary/80 font-mono"
-                tabIndex={0}
-              >
-                {"// clearance required"}
-              </button>{" "}
-              — upgrade to proceed.
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    })}
+      </div>
+    ))}
   </div>
 );
 
@@ -314,13 +209,9 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
   const [pendingProMaxNotice, setPendingProMaxNotice] =
     useState<ModelOption | null>(null);
-  const { subscription } = useGlobalState();
   const isMobile = useIsMobile();
 
   const isAuto = value === "auto";
-  const isFreeUser = subscription === "free";
-  /** Base Pro tier: Max is flagged as unusually heavy usage vs higher plans. */
-  const isBaseProTier = subscription === "pro";
 
   const options = isAgentMode(mode) ? AGENT_MODEL_OPTIONS : ASK_MODEL_OPTIONS;
 
@@ -328,14 +219,7 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
   const selected =
     options.find((opt) => opt.id === effectiveValue) ?? options[0];
 
-  const isFreeAgent = isFreeUser && isAgentMode(mode);
-  const triggerLabel = isFreeAgent
-    ? "Auto"
-    : isFreeUser
-      ? "Model"
-      : isAuto
-        ? "Auto"
-        : selected.label;
+  const triggerLabel = isAuto ? "Auto" : selected.label;
 
   const handleAutoSelect = () => {
     onChange("auto");
@@ -348,17 +232,9 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
   };
 
   const handleModelSelect = (option: ModelOption) => {
-    if (isFreeUser) {
-      window.location.hash = "pricing";
-      setOpen(false);
-      return;
-    }
-
-    if (
-      isBaseProTier &&
-      option.id === "rift-max" &&
-      !isProMaxUsageNoticeDismissed()
-    ) {
+    // PAYG: every model is selectable — they just spend tokens at different
+    // rates. The priciest tier shows a one-time heads-up about token burn.
+    if (option.id === "rift-max" && !isProMaxUsageNoticeDismissed()) {
       setPendingProMaxNotice(option);
       return;
     }
@@ -400,10 +276,10 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
     >
       <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle>Higher usage</AlertDialogTitle>
+          <AlertDialogTitle>Higher token usage</AlertDialogTitle>
           <AlertDialogDescription className="text-left">
-            RIFT Max uses quota much faster than Standard or Pro. One long task
-            can use much of what&apos;s included on Pro.
+            ⬥ Dominate spends tokens much faster than Recon or Strike. One long
+            task can burn a large share of your balance.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -438,7 +314,6 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
               options={options}
               value={value}
               isAuto={isAuto}
-              isFreeUser={isFreeUser}
               mode={mode}
               onAutoSelect={handleAutoSelect}
               onSelect={handleModelSelect}
@@ -461,7 +336,6 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
             options={options}
             value={value}
             isAuto={isAuto}
-            isFreeUser={isFreeUser}
             mode={mode}
             onAutoSelect={handleAutoSelect}
             onSelect={handleModelSelect}
