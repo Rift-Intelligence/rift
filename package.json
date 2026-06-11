@@ -52,7 +52,6 @@
     "sandbox:deploy": "pnpm docker:build:push && pnpm e2b:build:dev && pnpm e2b:build:prod"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.82",
     "@ai-sdk/openai": "^3.0.66",
     "@ai-sdk/react": "3.0.193",
     "@auth/core": "^0.37.0",

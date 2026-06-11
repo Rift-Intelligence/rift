@@ -29,7 +29,7 @@ export const ASK_MODEL_OPTIONS: ModelOption[] = [
     id: "hackerai-max",
     label: "⬥ Dominate",
     description: "Maximum power for unrestricted analysis",
-    poweredBy: "Claude Fable 5",
+    poweredBy: "Claude Opus 4.6",
   },
 ];
 
@@ -52,7 +52,7 @@ export const AGENT_MODEL_OPTIONS: ModelOption[] = [
     id: "hackerai-max",
     label: "⬥ Dominate",
     description: "Maximum autonomous penetration power",
-    poweredBy: "Claude Fable 5",
+    poweredBy: "Claude Opus 4.6",
     thinking: true,
   },
 ];

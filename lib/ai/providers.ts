@@ -1,6 +1,5 @@
 import { customProvider } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { createAnthropic } from "@ai-sdk/anthropic";
 import type { ChatMode, SelectedModel } from "@/types/chat";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
 import { openrouterAttributionHeaders } from "@/lib/ai/openrouter-attribution";
@@ -177,12 +176,6 @@ const openrouter = createOpenRouter({
   headers: openrouterAttributionHeaders,
 });
 
-// Direct Anthropic provider — used only for the top-tier "Dominate" model
-// (Claude Fable 5), which is not routed through OpenRouter.
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 type OpenRouterInstance = typeof openrouter;
 
 const buildProviderMap = (or: OpenRouterInstance) =>
@@ -195,8 +188,6 @@ const buildProviderMap = (or: OpenRouterInstance) =>
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
     "model-deepseek-v4-flash": or("deepseek/deepseek-v4-flash"),
     "model-opus-4.6": or("anthropic/claude-opus-4.6"),
-    // Fable 5 calls the Anthropic API directly (not OpenRouter).
-    "model-fable-5": anthropic("claude-fable-5"),
     "model-kimi-k2.6": or("moonshotai/kimi-k2.6:exacto"),
     "fallback-agent-model": or("google/gemini-3-flash-preview"),
     "fallback-ask-model": or("google/gemini-3-flash-preview"),
@@ -219,7 +210,6 @@ export const modelCutoffDates: Record<ModelName, string> &
   "model-gemini-3-flash": "January 2025",
   "model-deepseek-v4-flash": "May 2025",
   "model-opus-4.6": "May 2025",
-  "model-fable-5": "February 2025",
   "model-kimi-k2.6": "April 2024",
   "fallback-agent-model": "January 2025",
   "fallback-ask-model": "January 2025",
@@ -238,7 +228,6 @@ export const modelDisplayNames: Record<ModelName, string> &
   "model-gemini-3-flash": "Google Gemini 3 Flash",
   "model-deepseek-v4-flash": "DeepSeek V4 Flash",
   "model-opus-4.6": "Anthropic Claude Opus 4.6",
-  "model-fable-5": "Anthropic Claude Fable 5",
   "model-kimi-k2.6": "Moonshot Kimi K2.6",
   "fallback-agent-model": "Auto, an intelligent model router built by HackerAI",
   "fallback-ask-model": "Auto, an intelligent model router built by HackerAI",
@@ -310,7 +299,15 @@ export function resolveTierToProviderKey(
     case "hackerai-pro":
       return "model-sonnet-4.6";
     case "hackerai-max":
-      return "model-fable-5";
+      // Top tier → Opus 4.6 via OpenRouter in BOTH modes.
+      //
+      // Fable 5 via the Anthropic direct API is incompatible with this app:
+      // the system prompt carries offensive-security authorization content
+      // (reverse shells, C2, AV/AMSI/EDR bypass, credential harvesting) that
+      // Anthropic's real-time cyber content-filter empties out — in ask AND
+      // agent mode alike (getSecurityInstructions is added for every mode).
+      // OpenRouter does not apply that filter, so Opus 4.6 serves the tier.
+      return "model-opus-4.6";
   }
 }
 
