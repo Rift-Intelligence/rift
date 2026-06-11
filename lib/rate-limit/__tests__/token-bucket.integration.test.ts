@@ -597,17 +597,17 @@ describe("token-bucket async functions", () => {
     it("should not call extra usage when bucket covers the full amount", async () => {
       const { deductUsage } = getIsolatedModule();
 
-      // Peek: bucket has plenty remaining
+      // Peek: bucket has plenty remaining (well above any margin-scaled cost)
       mockLimitFn.mockResolvedValueOnce({
         success: true,
-        remaining: 100,
+        remaining: 100_000,
         reset: Date.now() + 3600000,
         limit: 250000,
       });
-      // Deduct full additional cost (45) from bucket
+      // Deduct the full additional cost from the bucket — leaves plenty.
       mockLimitFn.mockResolvedValueOnce({
         success: true,
-        remaining: 55,
+        remaining: 99_000,
         reset: Date.now() + 3600000,
         limit: 250000,
       });

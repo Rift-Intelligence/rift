@@ -47,7 +47,7 @@ export const POINTS_PER_DOLLAR = 10_000;
  * $X always buys X×POINTS_PER_DOLLAR tokens and the margin is earned on burn.
  * Tune this single constant to change pricing across every model.
  */
-export const RETAIL_MARGIN = 2.2;
+export const RETAIL_MARGIN = 2.5;
 
 /**
  * @deprecated Legacy alias kept so existing importers (team path, tests) keep
