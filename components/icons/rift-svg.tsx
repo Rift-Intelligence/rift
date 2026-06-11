@@ -1,11 +1,11 @@
 import type { FC } from "react";
 
-interface HackerAISVGProps {
+interface RIFTSVGProps {
   theme: "dark" | "light";
   scale?: number;
 }
 
-export const HackerAISVG: FC<HackerAISVGProps> = ({ theme, scale = 1 }) => {
+export const RIFTSVG: FC<RIFTSVGProps> = ({ theme, scale = 1 }) => {
   const fillColor = theme === "dark" ? "#fff" : "#000";
 
   return (

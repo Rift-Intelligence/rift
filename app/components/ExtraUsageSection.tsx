@@ -198,7 +198,7 @@ const ExtraUsageSection = () => {
               <p className="text-sm">
                 Turn on extra usage to keep using RIFT if you hit a limit.{" "}
                 <a
-                  href="https://help.hackerai.co/en/articles/13455916-extra-usage-for-paid-hackerai-plans"
+                  href="https://help.rift.co/en/articles/13455916-extra-usage-for-paid-rift-plans"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline underline underline-offset-[3px] text-muted-foreground hover:text-foreground"

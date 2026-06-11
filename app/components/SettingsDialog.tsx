@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ManageNotesDialog } from "@/app/components/ManageNotesDialog";
-import { CustomizeHackerAIDialog } from "@/app/components/CustomizeHackerAIDialog";
+import { CustomizeRIFTDialog } from "@/app/components/CustomizeRIFTDialog";
 import { PersonalizationTab } from "@/app/components/PersonalizationTab";
 import { AccountTab } from "@/app/components/AccountTab";
 import { DataControlsTab } from "@/app/components/DataControlsTab";
@@ -194,7 +194,7 @@ const SettingsDialog = ({
       />
 
       {/* Customize RIFT Dialog */}
-      <CustomizeHackerAIDialog
+      <CustomizeRIFTDialog
         open={showCustomizeDialog}
         onOpenChange={setShowCustomizeDialog}
       />

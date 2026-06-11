@@ -32,25 +32,23 @@ describe("ModelSelector tier ↔ provider drift", () => {
   });
 
   it("RIFT Standard resolves to different providers per mode", () => {
-    expect(resolveTierToProviderKey("hackerai-standard", "ask")).toBe(
+    expect(resolveTierToProviderKey("rift-standard", "ask")).toBe(
       "model-gemini-3-flash",
     );
-    expect(resolveTierToProviderKey("hackerai-standard", "agent")).toBe(
+    expect(resolveTierToProviderKey("rift-standard", "agent")).toBe(
       "model-kimi-k2.6",
     );
   });
 
   it("RIFT Pro and Max resolve to the same provider in both modes", () => {
-    expect(resolveTierToProviderKey("hackerai-pro", "ask")).toBe(
+    expect(resolveTierToProviderKey("rift-pro", "ask")).toBe(
       "model-sonnet-4.6",
     );
-    expect(resolveTierToProviderKey("hackerai-pro", "agent")).toBe(
+    expect(resolveTierToProviderKey("rift-pro", "agent")).toBe(
       "model-sonnet-4.6",
     );
-    expect(resolveTierToProviderKey("hackerai-max", "ask")).toBe(
-      "model-opus-4.6",
-    );
-    expect(resolveTierToProviderKey("hackerai-max", "agent")).toBe(
+    expect(resolveTierToProviderKey("rift-max", "ask")).toBe("model-opus-4.6");
+    expect(resolveTierToProviderKey("rift-max", "agent")).toBe(
       "model-opus-4.6",
     );
   });
@@ -61,7 +59,7 @@ describe("ModelSelector tier ↔ provider drift", () => {
   });
 
   it("hover-popup descriptions are present for every RIFT tier", () => {
-    const tiered = allOptions.filter((o) => o.id.startsWith("hackerai-"));
+    const tiered = allOptions.filter((o) => o.id.startsWith("rift-"));
     expect(tiered.length).toBeGreaterThan(0);
     for (const option of tiered) {
       expect(option.description).toBeTruthy();

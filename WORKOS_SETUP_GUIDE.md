@@ -187,7 +187,7 @@ WorkOS Dashboard'da test kullanıcıları oluşturabilir veya:
 
 ```bash
 # Deployment used by `npx convex dev`
-CONVEX_DEPLOYMENT=anonymous:anonymous-hackerai
+CONVEX_DEPLOYMENT=anonymous:anonymous-rift
 NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210
 NEXT_PUBLIC_CONVEX_SITE_URL=http://127.0.0.1:3211
 

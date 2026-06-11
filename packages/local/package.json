@@ -1,9 +1,9 @@
 {
-  "name": "@hackerai/local",
+  "name": "@rift/local",
   "version": "0.8.3",
-  "description": "HackerAI Local Sandbox Client - Execute commands on your local machine",
+  "description": "RIFT Local Sandbox Client - Execute commands on your local machine",
   "bin": {
-    "hackerai-local": "./dist/index.js"
+    "rift-local": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,17 +16,17 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "hackerai",
+    "rift",
     "sandbox",
     "pentesting",
     "security",
     "cli"
   ],
-  "author": "HackerAI",
+  "author": "RIFT",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hackerai-tech/hackerai.git",
+    "url": "https://github.com/rift-tech/rift.git",
     "directory": "packages/local"
   },
   "engines": {

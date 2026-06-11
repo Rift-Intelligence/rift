@@ -25,7 +25,7 @@ import {
 import { Plus } from "lucide-react";
 import TextareaAutosize from "react-textarea-autosize";
 
-interface CustomizeHackerAIDialogProps {
+interface CustomizeRIFTDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -50,10 +50,10 @@ const personalityOptions = [
   { value: "nerd", label: "Nerd", description: "Exploratory and enthusiastic" },
 ];
 
-export const CustomizeHackerAIDialog = ({
+export const CustomizeRIFTDialog = ({
   open,
   onOpenChange,
-}: CustomizeHackerAIDialogProps) => {
+}: CustomizeRIFTDialogProps) => {
   const [nickname, setNickname] = useState("");
   const [occupation, setOccupation] = useState("");
   const [personality, setPersonality] = useState("default");

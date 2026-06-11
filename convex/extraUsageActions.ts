@@ -172,7 +172,7 @@ async function createAutoReloadPayment(
       invoice: invoice.id,
       amount: amountCents,
       currency: "usd",
-      description: `HackerAI Extra Usage Auto-Reload ($${amountCents / 100})`,
+      description: `RIFT Extra Usage Auto-Reload ($${amountCents / 100})`,
     });
 
     // Finalize the invoice
@@ -346,7 +346,7 @@ export const createPurchaseSession = action({
             price_data: {
               currency: "usd",
               product_data: {
-                name: "HackerAI Extra Usage Credits",
+                name: "RIFT Extra Usage Credits",
                 description: `$${args.amountDollars} in extra usage credits`,
               },
               unit_amount: amountCents,

@@ -13,11 +13,11 @@ type CostTier = "low" | "medium" | "high" | "very-high";
 // Kimi K2.6 (medium).
 export function getCostTier(modelId: string, mode?: ChatMode): CostTier {
   switch (modelId) {
-    case "hackerai-standard":
+    case "rift-standard":
       return mode && isAgentMode(mode) ? "medium" : "low";
-    case "hackerai-pro":
+    case "rift-pro":
       return "high";
-    case "hackerai-max":
+    case "rift-max":
       return "very-high";
     default:
       return "medium";

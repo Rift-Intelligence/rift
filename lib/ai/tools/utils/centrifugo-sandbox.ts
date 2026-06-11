@@ -506,7 +506,7 @@ Commands run directly on the host OS "${hostname}" without Docker isolation. Be 
   }
 
   /**
-   * Convert Unix-style paths (e.g. /tmp/hackerai-upload/file.png) to
+   * Convert Unix-style paths (e.g. /tmp/rift-upload/file.png) to
    * Windows-native paths when running on a Windows sandbox.
    * Paths are generated before the sandbox platform is known, so they
    * always arrive in Unix form and need translating here.

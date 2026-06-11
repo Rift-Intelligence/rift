@@ -617,9 +617,7 @@ export class HybridSandboxManager implements SandboxManager {
       const platformName = getPlatformDisplayName(platform);
 
       const uploadPath =
-        platform === "win32"
-          ? "C:\\temp\\hackerai-upload"
-          : "/tmp/hackerai-upload";
+        platform === "win32" ? "C:\\temp\\rift-upload" : "/tmp/rift-upload";
 
       return `<sandbox_environment>
 IMPORTANT: You are connected to a LOCAL machine in DANGEROUS MODE. Commands run directly on the host OS without Docker isolation.

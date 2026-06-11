@@ -15,16 +15,16 @@ export interface TestUser {
 
 const DEFAULTS = {
   free: {
-    email: "free@hackerai.com",
-    password: "hackerai123@",
+    email: "free@rift.com",
+    password: "rift123@",
   },
   pro: {
-    email: "pro@hackerai.com",
-    password: "hackerai123@",
+    email: "pro@rift.com",
+    password: "rift123@",
   },
   ultra: {
-    email: "ultra@hackerai.com",
-    password: "hackerai123@",
+    email: "ultra@rift.com",
+    password: "rift123@",
   },
 } as const;
 

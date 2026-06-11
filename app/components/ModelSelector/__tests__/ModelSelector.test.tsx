@@ -46,9 +46,7 @@ describe("ModelSelector", () => {
 
   it("selects Auto as a first-class option", () => {
     const onChange = jest.fn();
-    render(
-      <ModelSelector value="hackerai-pro" onChange={onChange} mode="ask" />,
-    );
+    render(<ModelSelector value="rift-pro" onChange={onChange} mode="ask" />);
 
     fireEvent.click(screen.getByRole("button", { name: /⬢ Strike/i }));
     fireEvent.click(

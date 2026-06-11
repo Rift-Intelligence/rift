@@ -47,7 +47,7 @@ import { setMockTier, isMockBillingEnabled } from "@/lib/billing/mock-billing";
 import { RiftLogo } from "@/components/icons/rift-logo";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
-  process.env.NEXT_PUBLIC_HELP_CENTER_URL || "https://help.hackerai.co/en/";
+  process.env.NEXT_PUBLIC_HELP_CENTER_URL || "https://help.rift.co/en/";
 
 const REFERRAL_CARD_DISMISSED_COOKIE = "referral_sidebar_dismissed";
 
@@ -261,7 +261,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
 
   const handleGitHub = () => {
     const newWindow = window.open(
-      "https://github.com/hackerai-tech/hackerai",
+      "https://github.com/rift-tech/rift",
       "_blank",
       "noopener,noreferrer",
     );

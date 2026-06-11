@@ -13,7 +13,7 @@ import DeleteAccountDialog from "../DeleteAccountDialog";
 // auth helpers; drive the real Convex Auth-backed useAuth shim through them.
 import { __setAuthState, __setViewer, __resetAuth } from "convex/react";
 
-const ACCOUNT_EMAIL = "signin.hackerai.co.harmonize442@passmail.net";
+const ACCOUNT_EMAIL = "signin.rift.co.harmonize442@passmail.net";
 
 jest.mock("@/convex/_generated/api", () => ({
   api: {

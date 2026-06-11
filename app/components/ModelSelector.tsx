@@ -356,7 +356,7 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
 
     if (
       isBaseProTier &&
-      option.id === "hackerai-max" &&
+      option.id === "rift-max" &&
       !isProMaxUsageNoticeDismissed()
     ) {
       setPendingProMaxNotice(option);
