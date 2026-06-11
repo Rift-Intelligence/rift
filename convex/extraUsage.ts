@@ -273,6 +273,9 @@ export const addCredits = mutation({
     serviceKey: v.string(),
     userId: v.string(),
     amountDollars: v.number(),
+    // Volume-bonus tokens (points) granted on top of the dollar amount. Always
+    // server-derived (see bonusPointsForDollars) — never client-supplied.
+    bonusPoints: v.optional(v.number()),
     idempotencyKey: v.optional(v.string()), // Primary dedup key (session-scoped: `cs_<id>`)
     legacyIdempotencyKey: v.optional(v.string()), // Stripe event ID — checked only to guard pre-deploy webhook retries
     revenueSource: v.optional(
@@ -324,7 +327,11 @@ export const addCredits = mutation({
       throw new Error("Invalid amount: must be a positive number");
     }
 
-    const amountPoints = dollarsToPoints(args.amountDollars);
+    const bonusPoints =
+      args.bonusPoints && args.bonusPoints > 0
+        ? Math.floor(args.bonusPoints)
+        : 0;
+    const amountPoints = dollarsToPoints(args.amountDollars) + bonusPoints;
 
     // Get current settings
     const settings = await ctx.db

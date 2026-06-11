@@ -21,6 +21,31 @@ function getStripe(): Stripe {
   return stripeInstance;
 }
 
+/** Points per dollar (1 point = $0.0001), mirrors convex/extraUsage.ts. */
+const POINTS_PER_DOLLAR = 10_000;
+
+/**
+ * Volume-bonus tokens (points) for a top-up amount, tiered by spend.
+ *
+ * Thresholds mirror the package ladder in lib/billing/token-packages.ts so a
+ * package's displayed bonus matches what gets credited:
+ *   < $50  → +0%    ($20 Starter)
+ *   ≥ $50  → +5%    ($50 Plus)
+ *   ≥ $100 → +10%   ($100 Pro)
+ *   ≥ $300 → +20%   ($300 Scale)
+ * Custom amounts land in whichever tier their dollar value reaches.
+ *
+ * Server-derived from the validated dollar amount — never trust a client value.
+ */
+function bonusPointsForDollars(dollars: number): number {
+  const basePoints = dollars * POINTS_PER_DOLLAR;
+  let pct = 0;
+  if (dollars >= 300) pct = 20;
+  else if (dollars >= 100) pct = 10;
+  else if (dollars >= 50) pct = 5;
+  return Math.round((basePoints * pct) / 100);
+}
+
 // =============================================================================
 // Helper Functions
 // =============================================================================
@@ -305,12 +330,17 @@ export const createPurchaseSession = action({
     if (!Number.isInteger(args.amountDollars)) {
       return { url: null, error: "Amount must be a whole dollar value" };
     }
-    if (args.amountDollars < 15) {
-      return { url: null, error: "Minimum amount is $15" };
+    if (args.amountDollars < 10) {
+      return { url: null, error: "Minimum amount is $10" };
     }
     if (args.amountDollars > 999_999) {
       return { url: null, error: "Maximum amount is $999,999" };
     }
+
+    // Server-derived volume bonus (tokens granted on top of the dollar amount).
+    // Tiered by spend so packages AND custom amounts both reward larger top-ups.
+    // Thresholds match the package ladder in lib/billing/token-packages.ts.
+    const bonusPoints = bonusPointsForDollars(args.amountDollars);
 
     // Basic URL validation
     if (!args.baseUrl || !args.baseUrl.startsWith("http")) {
@@ -364,6 +394,7 @@ export const createPurchaseSession = action({
           type: "extra_usage_purchase",
           userId: identity.subject.split("|")[0],
           amountDollars: String(args.amountDollars),
+          bonusPoints: String(bonusPoints),
         },
         success_url: `${args.baseUrl}/api/extra-usage/confirm?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: args.baseUrl,

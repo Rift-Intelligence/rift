@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { CreditCard, Pencil, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import {
+  TOKEN_PACKAGES,
+  MIN_CUSTOM_TOPUP_USD,
+  type TokenPackage,
+} from "@/lib/billing/token-packages";
+import { formatTokens } from "@/lib/billing/token-display";
+import { cn } from "@/lib/utils";
 
 type BuyExtraUsageDialogProps = {
   open: boolean;
@@ -32,6 +39,7 @@ const formatCardBrand = (brand: string | null): string => {
 };
 
 const MAX_AMOUNT = 999_999;
+const POINTS_PER_DOLLAR = 10_000;
 
 /** Format number with commas (e.g., 1000 -> 1,000) */
 const formatWithCommas = (value: string): string => {
@@ -43,6 +51,24 @@ const formatWithCommas = (value: string): string => {
 
 /** Remove commas for parsing */
 const removeCommas = (value: string): string => value.replace(/,/g, "");
+
+/**
+ * Volume-bonus tokens for a dollar amount — display mirror of the server's
+ * bonusPointsForDollars (convex/extraUsageActions.ts). Kept in sync by the
+ * shared package thresholds; used to preview custom-amount totals.
+ */
+const bonusPointsForDollars = (dollars: number): number => {
+  const base = dollars * POINTS_PER_DOLLAR;
+  let pct = 0;
+  if (dollars >= 300) pct = 20;
+  else if (dollars >= 100) pct = 10;
+  else if (dollars >= 50) pct = 5;
+  return Math.round((base * pct) / 100);
+};
+
+/** Total displayed tokens (base + bonus) for a dollar amount. */
+const totalTokensForDollars = (dollars: number): number =>
+  dollars * POINTS_PER_DOLLAR + bonusPointsForDollars(dollars);
 
 type ContentProps = {
   onPurchase: (amountDollars: number) => Promise<void>;
@@ -62,7 +88,11 @@ const BuyExtraUsageDialogContent = ({
   lineItemLabel,
   paymentMethodMode,
 }: ContentProps) => {
-  const [purchaseAmount, setPurchaseAmount] = useState<string>("15");
+  // Selected package id, or "custom" for a free-form amount.
+  const [selected, setSelected] = useState<TokenPackage["id"] | "custom">(
+    "plus",
+  );
+  const [customAmount, setCustomAmount] = useState<string>("50");
   const [paymentMethod, setPaymentMethod] = useState<{
     hasPaymentMethod: boolean;
     last4: string | null;
@@ -117,17 +147,40 @@ const BuyExtraUsageDialogContent = ({
     }
   };
 
-  const parsedAmount = parseInt(removeCommas(purchaseAmount) || "0", 10);
+  const selectedPackage =
+    selected === "custom"
+      ? undefined
+      : TOKEN_PACKAGES.find((p) => p.id === selected);
+
+  const customParsed = parseInt(removeCommas(customAmount) || "0", 10);
+  const amountDollars = selectedPackage
+    ? selectedPackage.priceUsd
+    : customParsed;
+
   const isValidAmount =
-    !isNaN(parsedAmount) && parsedAmount >= 15 && parsedAmount <= MAX_AMOUNT;
+    !isNaN(amountDollars) &&
+    amountDollars >= MIN_CUSTOM_TOPUP_USD &&
+    amountDollars <= MAX_AMOUNT;
   const showMinAmountError =
-    purchaseAmount !== "" && !isNaN(parsedAmount) && parsedAmount < 15;
+    selected === "custom" &&
+    customAmount !== "" &&
+    !isNaN(customParsed) &&
+    customParsed < MIN_CUSTOM_TOPUP_USD;
   const showMaxAmountError =
-    purchaseAmount !== "" && !isNaN(parsedAmount) && parsedAmount > MAX_AMOUNT;
+    selected === "custom" &&
+    customAmount !== "" &&
+    !isNaN(customParsed) &&
+    customParsed > MAX_AMOUNT;
+
+  const totalTokens = selectedPackage
+    ? selectedPackage.totalTokens
+    : isValidAmount
+      ? totalTokensForDollars(amountDollars)
+      : 0;
 
   const handlePurchase = async () => {
     if (!isValidAmount) return;
-    await onPurchase(parsedAmount);
+    await onPurchase(amountDollars);
   };
 
   return (
@@ -136,40 +189,104 @@ const BuyExtraUsageDialogContent = ({
         <DialogTitle>{title}</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col gap-5 pt-4">
+        <label className="block text-muted-foreground text-sm">
+          {description}
+        </label>
+
+        {/* Package cards */}
+        <div className="grid grid-cols-2 gap-2.5">
+          {TOKEN_PACKAGES.map((pkg) => {
+            const active = selected === pkg.id;
+            return (
+              <button
+                key={pkg.id}
+                type="button"
+                onClick={() => setSelected(pkg.id)}
+                aria-pressed={active}
+                aria-label={`${pkg.name}: $${pkg.priceUsd} for ${formatTokens(pkg.totalTokens)} tokens`}
+                className={cn(
+                  "relative flex flex-col gap-0.5 rounded-lg border p-3 text-left transition-colors",
+                  active
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50",
+                )}
+              >
+                {pkg.bonusPct > 0 && (
+                  <span className="absolute right-2 top-2 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                    +{pkg.bonusPct}%
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  {pkg.name}
+                </span>
+                <span className="font-mono text-base font-semibold tabular-nums">
+                  {formatTokens(pkg.totalTokens)}
+                </span>
+                <span className="text-xs text-muted-foreground">tokens</span>
+                <span className="mt-1 text-sm font-medium">
+                  ${pkg.priceUsd}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom amount */}
         <div>
-          <label className="block text-muted-foreground text-sm mb-3">
-            {description}
-          </label>
-          <Input
-            placeholder="$15"
-            className="w-full"
-            type="text"
-            value={`$${formatWithCommas(purchaseAmount)}`}
-            onChange={(e) => {
-              // Remove $ and commas, keep only digits (whole dollars only)
-              const val = e.target.value.replace(/[^0-9]/g, "");
-              setPurchaseAmount(val);
-            }}
-            aria-label="Purchase amount"
-          />
-          {showMinAmountError && (
-            <p className="text-sm text-red-500 mt-2">Minimum amount is $15</p>
-          )}
-          {showMaxAmountError && (
-            <p className="text-sm text-red-500 mt-2">
-              Maximum amount is $999,999
-            </p>
+          <button
+            type="button"
+            onClick={() => setSelected("custom")}
+            aria-pressed={selected === "custom"}
+            className={cn(
+              "mb-2 text-sm underline-offset-2 transition-colors",
+              selected === "custom"
+                ? "text-primary underline"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            Custom amount
+          </button>
+          {selected === "custom" && (
+            <>
+              <Input
+                placeholder="$50"
+                className="w-full"
+                type="text"
+                value={`$${formatWithCommas(customAmount)}`}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, "");
+                  setCustomAmount(val);
+                }}
+                aria-label="Custom purchase amount"
+                autoFocus
+              />
+              {showMinAmountError && (
+                <p className="mt-2 text-sm text-red-500">
+                  Minimum amount is ${MIN_CUSTOM_TOPUP_USD}
+                </p>
+              )}
+              {showMaxAmountError && (
+                <p className="mt-2 text-sm text-red-500">
+                  Maximum amount is $999,999
+                </p>
+              )}
+            </>
           )}
         </div>
+
         <div className="space-y-2">
           <hr className="mb-5 border-border" />
           <div className="flex justify-between text-sm">
             <span>{lineItemLabel}</span>
-            <span>${formatWithCommas(String(parsedAmount))}</span>
+            <span className="tabular-nums">
+              {formatTokens(totalTokens)} tokens
+            </span>
           </div>
           <div className="flex justify-between pt-2 text-sm font-medium">
             <span>Total due</span>
-            <span>${formatWithCommas(String(parsedAmount))}</span>
+            <span>
+              ${formatWithCommas(String(isValidAmount ? amountDollars : 0))}
+            </span>
           </div>
         </div>
         <div className="mt-2">
@@ -215,7 +332,11 @@ const BuyExtraUsageDialogContent = ({
             disabled={isLoading || !isValidAmount}
             className="w-full h-11"
           >
-            {isLoading ? "Processing..." : "Purchase"}
+            {isLoading
+              ? "Processing..."
+              : isValidAmount
+                ? `Buy ${formatTokens(totalTokens)} tokens`
+                : "Buy tokens"}
           </Button>
         </div>
       </div>
@@ -228,9 +349,9 @@ const BuyExtraUsageDialog = ({
   onOpenChange,
   onPurchase,
   isLoading,
-  title = "Buy extra usage",
-  description = "Get extra usage to keep using RIFT when you hit a limit.",
-  lineItemLabel = "Extra usage",
+  title = "Buy tokens",
+  description = "Top up your token balance. Bigger packs include bonus tokens.",
+  lineItemLabel = "Tokens",
   paymentMethodMode = "personal",
 }: BuyExtraUsageDialogProps) => {
   const handleOpenChange = (newOpen: boolean) => {

@@ -63,6 +63,10 @@ export async function POST(req: NextRequest) {
       const amountDollars = session.metadata.amountDollars
         ? parseFloat(session.metadata.amountDollars)
         : parseInt(session.metadata.amountCents, 10) / 100;
+      // Server-derived volume bonus stamped at checkout creation (0 for legacy).
+      const bonusPoints = session.metadata.bonusPoints
+        ? parseInt(session.metadata.bonusPoints, 10)
+        : 0;
 
       if (!userId || isNaN(amountDollars)) {
         console.error(
@@ -83,6 +87,7 @@ export async function POST(req: NextRequest) {
           serviceKey: process.env.CONVEX_SERVICE_ROLE_KEY!,
           userId,
           amountDollars,
+          bonusPoints: Number.isFinite(bonusPoints) ? bonusPoints : 0,
           idempotencyKey: `cs_${session.id}`,
           legacyIdempotencyKey: event.id, // Guards retries of pre-deploy webhooks that stored `evt_<id>`
           revenueSource: "extra_usage_purchase",

@@ -43,8 +43,9 @@ import { clientLogout } from "@/lib/utils/logout";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
-import { setMockTier, isMockBillingEnabled } from "@/lib/billing/mock-billing";
 import { formatBalanceTokens } from "@/lib/billing/token-display";
+import { BuyExtraUsageDialog } from "./extra-usage/BuyExtraUsageDialog";
+import { toast } from "sonner";
 import { RiftLogo } from "@/components/icons/rift-logo";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
@@ -184,6 +185,34 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
     api.rateLimitStatus.getAgentRateLimitStatus,
   );
 
+  const createPurchaseSession = useAction(
+    api.extraUsageActions.createPurchaseSession,
+  );
+  const [showBuyDialog, setShowBuyDialog] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  const handleBuyTokens = useCallback(
+    async (amountDollars: number) => {
+      setIsPurchasing(true);
+      try {
+        const result = await createPurchaseSession({
+          amountDollars,
+          baseUrl: window.location.origin,
+        });
+        if (result.url) {
+          window.location.href = result.url;
+        } else {
+          toast.error(result.error || "Could not start checkout");
+          setIsPurchasing(false);
+        }
+      } catch {
+        toast.error("Could not start checkout");
+        setIsPurchasing(false);
+      }
+    },
+    [createPurchaseSession],
+  );
+
   const extraUsageSettings = useQuery(api.extraUsage.getExtraUsageSettings);
   const userCustomization = useQuery(
     api.userCustomization.getUserCustomization,
@@ -310,6 +339,13 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
       <ReferralRewardDialog
         open={referralDialogOpen}
         onOpenChange={setReferralDialogOpen}
+      />
+
+      <BuyExtraUsageDialog
+        open={showBuyDialog}
+        onOpenChange={setShowBuyDialog}
+        onPurchase={handleBuyTokens}
+        isLoading={isPurchasing}
       />
 
       {/* Referral card for paid users */}
@@ -504,21 +540,14 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
             </div>
           )}
 
-          {!isPaidUser && (
+          {subscription !== "team" && (
             <DropdownMenuItem
-              data-testid="upgrade-button"
-              onClick={() => {
-                if (isMockBillingEnabled()) {
-                  setMockTier("ultra");
-                  window.location.reload();
-                } else {
-                  window.location.hash = "pricing";
-                }
-              }}
+              data-testid="buy-tokens-button"
+              onClick={() => setShowBuyDialog(true)}
               className="py-1.5 text-primary focus:text-primary"
             >
               <Zap className="mr-2 h-4 w-4 text-primary" />
-              <span className="font-mono">▸ unlock full arsenal</span>
+              <span className="font-mono">▸ buy tokens</span>
             </DropdownMenuItem>
           )}
 
