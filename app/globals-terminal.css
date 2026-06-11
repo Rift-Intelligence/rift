@@ -1,48 +1,48 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
-  /* === EYE "Surveillance Brutalism": true-black void + cold cyan signal === */
-  --terminal-bg: #080c0e;
-  --terminal-primary: #070707;
-  --terminal-secondary: #0a0b0c;
+  /* === EYE OS "Classified Hacker Terminal": pure-black void + phosphor green === */
+  --terminal-bg: #000000;
+  --terminal-primary: #000000;
+  --terminal-secondary: #020602;
   --terminal-sidebar-bg: #000000;
-  --terminal-green: #22e0ff; /* legacy name → cyan signal */
-  --terminal-green-dim: #0e9fc4;
-  --terminal-green-glow: #22e0ff;
-  --terminal-sky: #6df4ff;
-  --terminal-text: #e8edeb;
-  --terminal-text-dim: #6b7572;
-  --terminal-border: #18211f;
-  --terminal-scanline: transparent;
-  --terminal-crt-flicker: transparent;
+  --terminal-green: #00ff66; /* primary phosphor green */
+  --terminal-green-dim: #0a9d4a;
+  --terminal-green-glow: #00ff66;
+  --terminal-sky: #36f0ff; /* secondary terminal cyan */
+  --terminal-text: #c5f2d2;
+  --terminal-text-dim: #4f8a66;
+  --terminal-border: #10331f;
+  --terminal-scanline: rgba(0, 255, 102, 0.04);
+  --terminal-crt-flicker: rgba(0, 255, 102, 0.015);
 
-  /* CRT effects kept subtle by default. */
-  --terminal-scanline-opacity: 0;
-  --terminal-glow-intensity: 0;
+  /* CRT effects ON — cinematic phosphor terminal. */
+  --terminal-scanline-opacity: 1;
+  --terminal-glow-intensity: 1;
 
-  /* === Accent system → cyan signal === */
-  --primary: #22e0ff;
-  --primary-foreground: #001a1f;
-  --secondary: #0d0f10;
-  --secondary-foreground: #e8edeb;
-  --accent: #0e1416;
-  --accent-foreground: #6df4ff;
-  --ring: #22e0ff;
-  --chart-1: #22e0ff;
-  --chart-2: #6df4ff;
-  --chart-3: #0e9fc4;
-  --chart-4: #06384a;
+  /* === Accent system → phosphor green signal === */
+  --primary: #00ff66;
+  --primary-foreground: #00220e;
+  --secondary: #020602;
+  --secondary-foreground: #c5f2d2;
+  --accent: #04140a;
+  --accent-foreground: #36f0ff;
+  --ring: #00ff66;
+  --chart-1: #00ff66;
+  --chart-2: #36f0ff;
+  --chart-3: #0a9d4a;
+  --chart-4: #063a20;
   --chart-5: #ff3b1d;
-  --link-color: #6df4ff;
+  --link-color: #36f0ff;
 
-  --sidebar-primary: #22e0ff;
-  --sidebar-primary-foreground: #001a1f;
-  --sidebar-ring: #22e0ff;
+  --sidebar-primary: #00ff66;
+  --sidebar-primary-foreground: #00220e;
+  --sidebar-ring: #00ff66;
 
-  /* Premium / Upgrade buttons → cyan */
-  --premium-bg: #06222b;
-  --premium-text: #6df4ff;
-  --premium-hover: #22e0ff;
+  /* Premium / Upgrade buttons → phosphor green */
+  --premium-bg: #04140a;
+  --premium-text: #36f0ff;
+  --premium-hover: #00ff66;
 }
 
 /* EYE typography: FULL terminal — everything is monospace. JetBrains Mono is
@@ -519,4 +519,86 @@ samp,
 [data-slot="dialog-content"] [data-slot="dialog-close"],
 [data-slot="dialog-content"] button[aria-label="Close"] {
   border-radius: 0 !important;
+}
+
+/* =========================================================================
+   EYE OS — Cinematic CRT overlay (global)
+   Scanlines + edge vignette + faint phosphor wash, applied to the whole
+   viewport so every screen (login, landing, chat) reads like a CRT monitor
+   in a classified workstation. Static (no per-frame repaint) to keep typing
+   responsive. pointer-events:none so it never intercepts input.
+   ========================================================================= */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483646;
+  /* horizontal scanlines */
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.22) 0,
+      rgba(0, 0, 0, 0.22) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    /* faint vertical aperture-grille */
+    repeating-linear-gradient(
+        90deg,
+        rgba(0, 255, 102, 0.02) 0,
+        rgba(0, 255, 102, 0.02) 1px,
+        transparent 1px,
+        transparent 3px
+      ),
+    /* edge vignette + center phosphor lift */
+    radial-gradient(
+        120% 120% at 50% 50%,
+        rgba(0, 255, 102, 0.025) 0%,
+        transparent 42%,
+        rgba(0, 0, 0, 0.55) 100%
+      );
+  mix-blend-mode: normal;
+}
+
+/* very slow CRT brightness flicker — animates ONLY this isolated overlay layer,
+   GPU-composited (opacity), so it doesn't repaint page content */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483645;
+  background: rgba(0, 255, 102, 0.012);
+  will-change: opacity;
+  animation: crt-flicker 5.2s steps(1) infinite;
+}
+@keyframes crt-flicker {
+  0%,
+  97%,
+  100% {
+    opacity: 0.5;
+  }
+  97.5% {
+    opacity: 0.9;
+  }
+  98% {
+    opacity: 0.35;
+  }
+  98.5% {
+    opacity: 0.8;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+}
+
+/* Phosphor text glow on the primary signal — re-enable a subtle bloom so
+   green readouts feel like emitted light, not painted pixels. */
+.text-primary,
+.terminal-prompt,
+.text-terminal-green {
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.28);
 }

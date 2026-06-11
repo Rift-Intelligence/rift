@@ -56,81 +56,81 @@
      etc.). The legacy var names are kept so existing markup re-themes with zero
      edits; their VALUES are now cyan surveillance signal on true black.
      Literal values so utilities (incl. /opacity modifiers) always generate. */
-  --color-terminal-green: #22e0ff; /* primary signal cyan */
-  --color-terminal-green-dim: #0e9fc4; /* mid ramp */
-  --color-terminal-sky: #6df4ff; /* hot highlight */
-  --color-terminal-text: #e8edeb;
-  --color-terminal-text-dim: #6b7572;
-  --color-terminal-border: #18211f;
+  --color-terminal-green: #00ff66; /* primary phosphor-green signal */
+  --color-terminal-green-dim: #0a9d4a; /* mid ramp */
+  --color-terminal-sky: #36f0ff; /* secondary terminal cyan */
+  --color-terminal-text: #c5f2d2; /* phosphor-tinted readout white */
+  --color-terminal-text-dim: #4f8a66;
+  --color-terminal-border: #10331f;
   --color-terminal-bg: #000000;
-  --color-terminal-primary: #070707;
-  --color-terminal-secondary: #0a0b0c;
+  --color-terminal-primary: #000000;
+  --color-terminal-secondary: #020602;
 
   /* Canonical EYE tokens (preferred names for new components) */
-  --color-eye: #22e0ff;
-  --color-eye-dim: #0e9fc4;
-  --color-eye-deep: #06384a;
-  --color-eye-hot: #c8faff;
+  --color-eye: #00ff66;
+  --color-eye-dim: #0a9d4a;
+  --color-eye-deep: #063a20;
+  --color-eye-hot: #9dffc4;
   --color-alarm: #ff3b1d; /* reserved: target acquired / breach / critical */
 }
 
 :root {
-  --radius: 0.125rem;
-  /* EYE Design System — "Surveillance Brutalism"
-     Pure-black OLED base · single cold cyan signal · red reserved for alarm.
-     No navy/grey "dark SaaS" surfaces — true black void + hairline borders. */
-  --background: #080c0e;
-  --foreground: #e8edeb;
-  --card: #070707;
-  --card-foreground: #e8edeb;
-  --popover: #0a0b0c;
-  --popover-foreground: #e8edeb;
-  --primary: #22e0ff;
-  --primary-foreground: #001a1f;
-  --secondary: #0d0f10;
-  --secondary-foreground: #e8edeb;
-  --muted: #0a0b0c;
-  --muted-foreground: #6b7572;
-  --accent: #0e1416;
-  --accent-foreground: #6df4ff;
+  --radius: 0rem;
+  /* EYE OS — "Classified Hacker Terminal"
+     Pure-black void · phosphor-green primary signal · terminal cyan secondary
+     · red reserved for alarm. BIOS/CRT readout, no SaaS surfaces. */
+  --background: #000000;
+  --foreground: #c5f2d2;
+  --card: #000000;
+  --card-foreground: #c5f2d2;
+  --popover: #020602;
+  --popover-foreground: #c5f2d2;
+  --primary: #00ff66;
+  --primary-foreground: #00220e;
+  --secondary: #020602;
+  --secondary-foreground: #c5f2d2;
+  --muted: #030703;
+  --muted-foreground: #4f8a66;
+  --accent: #04140a;
+  --accent-foreground: #36f0ff;
   --destructive: #ff3b1d;
-  --border: #18211f;
-  --input: #18211f;
-  --ring: #22e0ff;
-  --chart-1: #22e0ff;
-  --chart-2: #6df4ff;
-  --chart-3: #0e9fc4;
-  --chart-4: #06384a;
+  --border: #10331f;
+  --input: #10331f;
+  --ring: #00ff66;
+  --chart-1: #00ff66;
+  --chart-2: #36f0ff;
+  --chart-3: #0a9d4a;
+  --chart-4: #063a20;
   --chart-5: #ff3b1d;
   --sidebar: #000000;
-  --sidebar-foreground: #e8edeb;
-  --sidebar-primary: #22e0ff;
-  --sidebar-primary-foreground: #001a1f;
-  --sidebar-accent: #0a0b0c;
-  --sidebar-accent-foreground: #6df4ff;
-  --sidebar-border: #18211f;
-  --sidebar-ring: #22e0ff;
+  --sidebar-foreground: #c5f2d2;
+  --sidebar-primary: #00ff66;
+  --sidebar-primary-foreground: #00220e;
+  --sidebar-accent: #030703;
+  --sidebar-accent-foreground: #36f0ff;
+  --sidebar-border: #10331f;
+  --sidebar-ring: #00ff66;
 
   /* Surfaces & ramp (new EYE names) */
-  --surface: #070707;
-  --border-strong: #2b332f;
-  --eye-glow: rgba(34, 224, 255, 0.4);
+  --surface: #000000;
+  --border-strong: #1c5a36;
+  --eye-glow: rgba(0, 255, 102, 0.4);
 
   /* Custom chat input */
-  --fill-input-chat: #070707;
+  --fill-input-chat: #000000;
 
   /* Custom link colors */
-  --link-color: #6df4ff;
+  --link-color: #36f0ff;
 
   /* Premium/Upgrade colors */
-  --premium-bg: #0a0b0c;
-  --premium-text: #6df4ff;
-  --premium-hover: #22e0ff;
+  --premium-bg: #030703;
+  --premium-text: #36f0ff;
+  --premium-hover: #00ff66;
 
   /* Scrollbar colors */
   --scrollbar-track: #000000;
-  --scrollbar-thumb: rgba(34, 224, 255, 0.28);
-  --scrollbar-thumb-hover: rgba(34, 224, 255, 0.5);
+  --scrollbar-thumb: rgba(0, 255, 102, 0.28);
+  --scrollbar-thumb-hover: rgba(0, 255, 102, 0.5);
 
   /* Sidebar text mask for truncation */
   --sidebar-mask: linear-gradient(
@@ -149,10 +149,9 @@
   );
 
   /* Signal glow effect (cyan) */
-  --neon-glow:
-    0 0 10px rgba(34, 224, 255, 0.5), 0 0 20px rgba(34, 224, 255, 0.3);
+  --neon-glow: 0 0 10px rgba(0, 255, 102, 0.5), 0 0 20px rgba(0, 255, 102, 0.3);
   --neon-glow-intense:
-    0 0 15px rgba(34, 224, 255, 0.7), 0 0 30px rgba(34, 224, 255, 0.5);
+    0 0 15px rgba(0, 255, 102, 0.7), 0 0 30px rgba(0, 255, 102, 0.5);
 }
 
 @layer base {
@@ -250,7 +249,7 @@
   font-weight: 600;
   color: var(--primary);
   letter-spacing: -0.01em;
-  text-shadow: 0 0 18px rgba(34, 224, 255, 0.35);
+  text-shadow: 0 0 18px rgba(0, 255, 102, 0.35);
 }
 
 /* Glitch effect for hover */
@@ -271,8 +270,8 @@
 /* Text neon glow (cyan signal) */
 .text-neon-glow {
   text-shadow:
-    0 0 10px rgba(34, 224, 255, 0.5),
-    0 0 20px rgba(34, 224, 255, 0.3);
+    0 0 10px rgba(0, 255, 102, 0.5),
+    0 0 20px rgba(0, 255, 102, 0.3);
 }
 
 @keyframes worked-for-content-open {
@@ -421,10 +420,10 @@
 /* serif highlight settling from accent to white */
 @keyframes heroHighlight {
   0% {
-    color: var(--rift-highlight, #22e0ff);
+    color: var(--rift-highlight, #00ff66);
   }
   60% {
-    color: var(--rift-highlight, #22e0ff);
+    color: var(--rift-highlight, #00ff66);
   }
   100% {
     color: #ffffff;
@@ -532,8 +531,8 @@
     text-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
   20% {
-    color: #22e0ff;
-    text-shadow: 0 0 12px rgba(34, 224, 255, 0.5);
+    color: #00ff66;
+    text-shadow: 0 0 12px rgba(0, 255, 102, 0.5);
   }
   100% {
     color: inherit;
@@ -683,7 +682,7 @@
 }
 .dot-matrix-dense {
   background-image: radial-gradient(
-    rgba(34, 224, 255, 0.14) 1px,
+    rgba(0, 255, 102, 0.14) 1px,
     transparent 1.3px
   );
   background-size: 4px 4px;
@@ -724,8 +723,8 @@
   background: linear-gradient(
     180deg,
     transparent,
-    rgba(34, 224, 255, 0.06) 60%,
-    rgba(34, 224, 255, 0.12)
+    rgba(0, 255, 102, 0.06) 60%,
+    rgba(0, 255, 102, 0.12)
   );
   mix-blend-mode: screen;
   animation: eye-scan-sweep 4.2s linear infinite;
@@ -766,10 +765,10 @@
 @keyframes eye-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(34, 224, 255, 0);
+    box-shadow: 0 0 0 0 rgba(0, 255, 102, 0);
   }
   50% {
-    box-shadow: 0 0 14px 0 rgba(34, 224, 255, 0.45);
+    box-shadow: 0 0 14px 0 rgba(0, 255, 102, 0.45);
   }
 }
 .eye-live {
@@ -777,8 +776,8 @@
 }
 .text-eye-glow {
   text-shadow:
-    0 0 8px rgba(34, 224, 255, 0.45),
-    0 0 22px rgba(34, 224, 255, 0.25);
+    0 0 8px rgba(0, 255, 102, 0.45),
+    0 0 22px rgba(0, 255, 102, 0.25);
 }
 
 /* --- Outer page frame (inset hairline with corner ticks) --- */
