@@ -17,6 +17,7 @@ import {
   RefreshCw,
   Gift,
   X,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { useGlobalState } from "@/app/contexts/GlobalState";
@@ -42,6 +43,7 @@ import { clientLogout } from "@/lib/utils/logout";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
+import { setMockTier, isMockBillingEnabled } from "@/lib/billing/mock-billing";
 import { ToyEye } from "./eye/ToyEye";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
@@ -500,6 +502,24 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                 </div>
               )}
             </div>
+          )}
+
+          {!isPaidUser && (
+            <DropdownMenuItem
+              data-testid="upgrade-button"
+              onClick={() => {
+                if (isMockBillingEnabled()) {
+                  setMockTier("ultra");
+                  window.location.reload();
+                } else {
+                  window.location.hash = "pricing";
+                }
+              }}
+              className="py-1.5 text-primary focus:text-primary"
+            >
+              <Zap className="mr-2 h-4 w-4 text-primary" />
+              <span className="font-mono">▸ unlock full arsenal</span>
+            </DropdownMenuItem>
           )}
 
           <DropdownMenuSeparator />

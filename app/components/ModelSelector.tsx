@@ -32,6 +32,18 @@ import {
 import { useState } from "react";
 import type { ChatMode, SelectedModel } from "@/types/chat";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
+import { setMockTier, isMockBillingEnabled } from "@/lib/billing/mock-billing";
+
+/** Instantly grant the highest tier locally (mock billing), then reload so
+ * GlobalState re-derives the subscription and unlocks everything. */
+function handleInstantUpgrade() {
+  if (isMockBillingEnabled()) {
+    setMockTier("ultra");
+    window.location.reload();
+  } else {
+    window.location.hash = "pricing";
+  }
+}
 import { useGlobalState } from "@/app/contexts/GlobalState";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -196,16 +208,19 @@ const ModelOptionList = ({
   <div className="flex flex-col gap-px">
     {isFreeUser ? (
       <>
-        <a
-          href="#pricing"
-          onClick={() => onClose()}
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            handleInstantUpgrade();
+          }}
           className="flex items-center justify-between rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-2 transition-colors hover:bg-primary/20 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <span className="text-sm font-mono text-primary">
             ▸ unlock full arsenal
           </span>
           <ChevronRight className="h-4 w-4 text-primary shrink-0" />
-        </a>
+        </button>
         <div className="my-1.5 border-b border-border/50" />
       </>
     ) : (
@@ -273,14 +288,17 @@ const ModelOptionList = ({
               </p>
             )}
             <p className="text-xs text-muted-foreground leading-relaxed pt-1">
-              <a
-                href="#pricing"
-                onClick={() => onClose()}
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  handleInstantUpgrade();
+                }}
                 className="text-primary underline underline-offset-2 hover:text-primary/80 font-mono"
                 tabIndex={0}
               >
                 {"// clearance required"}
-              </a>{" "}
+              </button>{" "}
               — upgrade to proceed.
             </p>
           </TooltipContent>
