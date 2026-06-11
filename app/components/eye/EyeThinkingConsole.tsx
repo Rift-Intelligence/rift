@@ -47,7 +47,7 @@ export function EyeThinkingConsole() {
       <span className="text-muted-foreground">~</span>
       <span className="text-foreground/80">{STATES[i]}</span>
       <span
-        className={`inline-block h-3.5 w-[7px] bg-primary ${
+        className={`inline-block h-3.5 w-[7px] bg-foreground ${
           blink ? "opacity-100" : "opacity-0"
         }`}
         aria-hidden

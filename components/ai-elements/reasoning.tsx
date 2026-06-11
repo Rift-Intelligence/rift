@@ -7,7 +7,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { BrainIcon, ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import type { ComponentProps, ReactNode } from "react";
 
@@ -79,7 +79,7 @@ export type ReasoningTriggerProps = ComponentProps<
 };
 
 const defaultGetThinkingMessage = (isStreaming: boolean): ReactNode =>
-  isStreaming ? "Thinking..." : "Reasoning";
+  isStreaming ? "reasoning" : "reasoning";
 
 export function ReasoningTrigger({
   className,
@@ -91,24 +91,30 @@ export function ReasoningTrigger({
   return (
     <CollapsibleTrigger
       className={cn(
-        "flex w-full items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-foreground",
+        "group/reason flex w-full items-center gap-2 border-l-2 border-primary/30 py-0.5 pl-2.5 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-primary/70 hover:text-foreground",
         className,
       )}
       {...props}
     >
-      <BrainIcon className="size-4" />
+      <span
+        aria-hidden
+        className={cn("text-primary", isStreaming && "animate-pulse")}
+      >
+        {isStreaming ? "◇" : "◆"}
+      </span>
       <span className="flex-1 text-left">
         {getThinkingMessage(isStreaming)}
+        {isStreaming && <span className="text-primary">…</span>}
       </span>
       {isStreaming && (
         <span className="relative flex items-center">
-          <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-foreground/50 opacity-75" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-foreground" />
+          <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-primary/60 opacity-75" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
         </span>
       )}
       <ChevronDownIcon
         className={cn(
-          "size-4 transition-transform",
+          "size-3.5 text-muted-foreground/60 transition-transform group-hover/reason:text-primary/70",
           isOpen ? "rotate-180" : "rotate-0",
         )}
       />
@@ -136,7 +142,7 @@ export function ReasoningContent({
     <CollapsibleContent
       ref={contentRef}
       className={cn(
-        "mt-2 space-y-3 text-muted-foreground max-h-60 min-w-0 max-w-full overflow-x-hidden overflow-y-auto break-words",
+        "mt-1 ml-[1px] space-y-3 border-l border-primary/15 pl-3 text-muted-foreground max-h-60 min-w-0 max-w-full overflow-x-hidden overflow-y-auto break-words",
         "[overflow-wrap:anywhere]",
         "[&_pre]:max-w-full [&_pre]:overflow-x-auto",
         "data-[state=closed]:animate-out data-[state=open]:animate-in",
