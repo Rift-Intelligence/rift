@@ -409,6 +409,23 @@ In using these tools, adhere to the following guidelines:
             );
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
+            // KILL the unhealthy sandbox before reconnecting. Without this,
+            // ensureSandboxConnection's Sandbox.list() finds the same dead
+            // sandbox again, connect() "succeeds" (paused sandboxes accept
+            // connections) but isRunning() stays false — so the health check
+            // fails forever and a fresh sandbox is never actually created.
+            try {
+              await sandbox.kill();
+              console.warn(
+                "[Terminal Command] Killed unhealthy sandbox; creating a fresh one",
+              );
+            } catch (killError) {
+              console.warn(
+                "[Terminal Command] Failed to kill unhealthy sandbox (continuing to recreate):",
+                killError,
+              );
+            }
+
             // Reset cached instance to force ensureSandboxConnection to create a fresh one
             sandboxManager.setSandbox(null as any);
             const { sandbox: freshSandbox } = await sandboxManager.getSandbox();
