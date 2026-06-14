@@ -14,6 +14,7 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
 });
 
 export const config = {
+  runtime: "nodejs",
   // Run on everything except static assets / Next internals.
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };
