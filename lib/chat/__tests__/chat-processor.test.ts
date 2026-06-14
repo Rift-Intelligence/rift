@@ -203,8 +203,8 @@ describe("selectModel", () => {
       );
     });
 
-    it("should map RIFT Max to Opus 4.6", () => {
-      expect(selectModel("ask", "pro", "rift-max")).toBe("model-opus-4.6");
+    it("should map RIFT Max to Opus 4.8", () => {
+      expect(selectModel("ask", "pro", "rift-max")).toBe("model-opus-4.8");
     });
   });
 
@@ -220,8 +220,8 @@ describe("selectModel", () => {
       expect(selectModel("agent", "pro", "rift-pro")).toBe("model-sonnet-4.6");
     });
 
-    it("should map RIFT Max to Opus 4.6 in agent mode", () => {
-      expect(selectModel("agent", "pro", "rift-max")).toBe("model-opus-4.6");
+    it("should map RIFT Max to Opus 4.8 in agent mode", () => {
+      expect(selectModel("agent", "pro", "rift-max")).toBe("model-opus-4.8");
     });
 
     it("should default to agent-model when no model selected", () => {

@@ -184,10 +184,11 @@ const buildProviderMap = (or: OpenRouterInstance) =>
     "ask-model-free": or("deepseek/deepseek-v4-flash"),
     "agent-model": or("moonshotai/kimi-k2.6:exacto"),
     "agent-model-free": or("deepseek/deepseek-v4-flash"),
-    "model-sonnet-4.6": or("anthropic/claude-sonnet-4-6"),
+    "model-sonnet-4.6": or("anthropic/claude-sonnet-4.6"),
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
     "model-deepseek-v4-flash": or("deepseek/deepseek-v4-flash"),
     "model-opus-4.6": or("anthropic/claude-opus-4.6"),
+    "model-opus-4.8": or("anthropic/claude-opus-4.8"),
     "model-kimi-k2.6": or("moonshotai/kimi-k2.6:exacto"),
     "fallback-agent-model": or("google/gemini-3-flash-preview"),
     "fallback-ask-model": or("google/gemini-3-flash-preview"),
@@ -210,6 +211,7 @@ export const modelCutoffDates: Record<ModelName, string> &
   "model-gemini-3-flash": "January 2025",
   "model-deepseek-v4-flash": "May 2025",
   "model-opus-4.6": "May 2025",
+  "model-opus-4.8": "Early 2026",
   "model-kimi-k2.6": "April 2024",
   "fallback-agent-model": "January 2025",
   "fallback-ask-model": "January 2025",
@@ -228,6 +230,7 @@ export const modelDisplayNames: Record<ModelName, string> &
   "model-gemini-3-flash": "Google Gemini 3 Flash",
   "model-deepseek-v4-flash": "DeepSeek V4 Flash",
   "model-opus-4.6": "Anthropic Claude Opus 4.6",
+  "model-opus-4.8": "Anthropic Claude Opus 4.8",
   "model-kimi-k2.6": "Moonshot Kimi K2.6",
   "fallback-agent-model": "Auto, an intelligent model router built by RIFT",
   "fallback-ask-model": "Auto, an intelligent model router built by RIFT",
@@ -299,15 +302,15 @@ export function resolveTierToProviderKey(
     case "rift-pro":
       return "model-sonnet-4.6";
     case "rift-max":
-      // Top tier → Opus 4.6 via OpenRouter in BOTH modes.
+      // Top tier → Opus 4.8 via OpenRouter in BOTH modes.
       //
-      // Fable 5 via the Anthropic direct API is incompatible with this app:
-      // the system prompt carries offensive-security authorization content
-      // (reverse shells, C2, AV/AMSI/EDR bypass, credential harvesting) that
-      // Anthropic's real-time cyber content-filter empties out — in ask AND
-      // agent mode alike (getSecurityInstructions is added for every mode).
-      // OpenRouter does not apply that filter, so Opus 4.6 serves the tier.
-      return "model-opus-4.6";
+      // The Anthropic DIRECT API is incompatible with this app: the system
+      // prompt carries offensive-security authorization content (reverse
+      // shells, C2, AV/AMSI/EDR bypass, credential harvesting) that Anthropic's
+      // real-time cyber content-filter empties out — in ask AND agent mode
+      // alike (getSecurityInstructions is added for every mode). OpenRouter
+      // does not apply that filter, so we reach Opus 4.8 through it.
+      return "model-opus-4.8";
   }
 }
 

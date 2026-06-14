@@ -47,9 +47,9 @@ describe("ModelSelector tier ↔ provider drift", () => {
     expect(resolveTierToProviderKey("rift-pro", "agent")).toBe(
       "model-sonnet-4.6",
     );
-    expect(resolveTierToProviderKey("rift-max", "ask")).toBe("model-opus-4.6");
+    expect(resolveTierToProviderKey("rift-max", "ask")).toBe("model-opus-4.8");
     expect(resolveTierToProviderKey("rift-max", "agent")).toBe(
-      "model-opus-4.6",
+      "model-opus-4.8",
     );
   });
 
