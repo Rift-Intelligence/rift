@@ -266,8 +266,16 @@ export async function createAgentStream(
     model: requestedLanguageModel,
     maxOutputTokens,
     system: buildSystemPrompt(ctx.currentSystemPrompt, modelName),
+    // Cache breakpoint on the last user message of the INITIAL step too (not
+    // just from prepareStep / step 2 onward). Without it, the first step of
+    // turn N re-reads the entire accumulated history (turns 1..N-1) at full
+    // price; with it, that history is a ~0.1x cache read. system(1)+tail(1)
+    // breakpoints stay within Anthropic's limit of 4.
     messages: prepareProviderMessages(
-      await convertToModelMessages(state.finalMessages),
+      addCacheBreakpointToLastUserMessage(
+        await convertToModelMessages(state.finalMessages),
+        modelName,
+      ) as ModelMessage[],
     ),
     tools: ctx.tools,
     activeTools: initialActiveTools,

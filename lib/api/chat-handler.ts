@@ -183,7 +183,27 @@ export const createChatHandler = () => {
 
       const { userId, subscription, organizationId } =
         await getUserIDAndPro(req);
-      await assertUserCanMakeCostIncurringRequest(userId);
+
+      // Parallelize the independent preflight reads — none depends on another's
+      // result, yet they used to run serially (~30-80ms each) on the
+      // first-token critical path. The suspension assert still throws first if
+      // it rejects (Promise.all rejects fast); the two reads are cheap and
+      // discarded if it does.
+      const [, userCustomization, fetched] = await Promise.all([
+        assertUserCanMakeCostIncurringRequest(userId),
+        getUserCustomization({ userId }),
+        getMessagesByChatId({
+          chatId,
+          userId,
+          subscription,
+          newMessages: messages,
+          regenerate,
+          isTemporary: temporary,
+          mode,
+          useClientMessagesForRegenerate,
+        }),
+      ]);
+
       usageRefundTracker.setUser(userId, subscription, organizationId);
       if (subscription === "free") {
         const lock = await acquireFreeRunConcurrencyLock(
@@ -219,18 +239,6 @@ export const createChatHandler = () => {
         });
       }
 
-      const userCustomization = await getUserCustomization({ userId });
-
-      const fetched = await getMessagesByChatId({
-        chatId,
-        userId,
-        subscription,
-        newMessages: messages,
-        regenerate,
-        isTemporary: temporary,
-        mode,
-        useClientMessagesForRegenerate,
-      });
       const { chat, isNewChat, fileTokens } = fetched;
       const truncatedMessages =
         subscription === "free"
