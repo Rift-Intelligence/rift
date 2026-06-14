@@ -574,10 +574,13 @@ export function buildProviderOptions(
             },
           }
         : { reasoning: { enabled: false } }),
-      // Prefer the lowest-latency upstream for the requested model rather than
-      // OpenRouter's default price/uptime balancer (which varies turn-to-turn
-      // and can land on a slow provider). Fallbacks stay enabled.
-      provider: { sort: "latency", allow_fallbacks: true },
+      // NOTE: do NOT add provider:{sort:'latency'} here. For Anthropic models
+      // it let OpenRouter route to Google Vertex / first-party Anthropic, both
+      // of which enforce Anthropic's real-time cyber content-filter and EMPTY
+      // OUT offensive-security output (finish_reason:'content-filter' after a
+      // full agent run). OpenRouter's default routing happened to land on a
+      // non-filtering upstream; latency-sort broke that. The few hundred ms
+      // saved is not worth silently nuking the core capability.
       ...(userId && { user: userId }),
       ...(fallbackSlugs.length > 0 && { models: fallbackSlugs }),
     },
