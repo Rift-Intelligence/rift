@@ -183,12 +183,16 @@ describe("selectModel", () => {
 
   // Tier override — Pro/Max map to the same provider key in both modes
   describe("tier override for ask mode (paid users)", () => {
-    it("should map RIFT Pro to Sonnet 4.6 in ask mode", () => {
-      expect(selectModel("ask", "ultra", "rift-pro")).toBe("model-sonnet-4.6");
+    it("should map RIFT Pro to Kimi K2.7-code in ask mode", () => {
+      expect(selectModel("ask", "ultra", "rift-pro")).toBe(
+        "model-kimi-k2.7-code",
+      );
     });
 
-    it("should map RIFT Pro to Sonnet 4.6 for team users", () => {
-      expect(selectModel("ask", "team", "rift-pro")).toBe("model-sonnet-4.6");
+    it("should map RIFT Pro to Kimi K2.7-code for team users", () => {
+      expect(selectModel("ask", "team", "rift-pro")).toBe(
+        "model-kimi-k2.7-code",
+      );
     });
 
     it("should map RIFT Standard to DeepSeek V4 Flash when no image/PDF", () => {
@@ -203,8 +207,8 @@ describe("selectModel", () => {
       );
     });
 
-    it("should map RIFT Max to Opus 4.8", () => {
-      expect(selectModel("ask", "pro", "rift-max")).toBe("model-opus-4.8");
+    it("should map RIFT Max to Grok 4.3", () => {
+      expect(selectModel("ask", "pro", "rift-max")).toBe("model-grok-4.3");
     });
   });
 
@@ -216,12 +220,14 @@ describe("selectModel", () => {
       );
     });
 
-    it("should map RIFT Pro to Sonnet 4.6 in agent mode", () => {
-      expect(selectModel("agent", "pro", "rift-pro")).toBe("model-sonnet-4.6");
+    it("should map RIFT Pro to Kimi K2.7-code in agent mode", () => {
+      expect(selectModel("agent", "pro", "rift-pro")).toBe(
+        "model-kimi-k2.7-code",
+      );
     });
 
-    it("should map RIFT Max to Opus 4.8 in agent mode", () => {
-      expect(selectModel("agent", "pro", "rift-max")).toBe("model-opus-4.8");
+    it("should map RIFT Max to Grok 4.3 in agent mode", () => {
+      expect(selectModel("agent", "pro", "rift-max")).toBe("model-grok-4.3");
     });
 
     it("should default to agent-model when no model selected", () => {

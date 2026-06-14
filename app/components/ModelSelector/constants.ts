@@ -23,13 +23,13 @@ export const ASK_MODEL_OPTIONS: ModelOption[] = [
     id: "rift-pro",
     label: "⬢ Strike",
     description: "Advanced capability for complex operations",
-    poweredBy: "Claude Sonnet 4.6",
+    poweredBy: "Moonshot Kimi K2.7 Code",
   },
   {
     id: "rift-max",
     label: "⬥ Dominate",
     description: "Maximum power for unrestricted analysis",
-    poweredBy: "Claude Opus 4.8",
+    poweredBy: "xAI Grok 4.3",
   },
 ];
 
@@ -45,14 +45,14 @@ export const AGENT_MODEL_OPTIONS: ModelOption[] = [
     id: "rift-pro",
     label: "⬢ Strike",
     description: "Advanced autonomous exploitation & testing",
-    poweredBy: "Claude Sonnet 4.6",
+    poweredBy: "Moonshot Kimi K2.7 Code",
     thinking: true,
   },
   {
     id: "rift-max",
     label: "⬥ Dominate",
     description: "Maximum autonomous penetration power",
-    poweredBy: "Claude Opus 4.8",
+    poweredBy: "xAI Grok 4.3",
     thinking: true,
   },
 ];

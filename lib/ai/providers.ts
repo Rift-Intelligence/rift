@@ -190,6 +190,12 @@ const buildProviderMap = (or: OpenRouterInstance) =>
     "model-opus-4.6": or("anthropic/claude-opus-4.6"),
     "model-opus-4.8": or("anthropic/claude-opus-4.8"),
     "model-kimi-k2.6": or("moonshotai/kimi-k2.6:exacto"),
+    // Permissive, frontier-tier models that do NOT apply a cyber content-filter
+    // (unlike Claude/GPT/Gemini), so they actually serve offensive-security
+    // output. Grok 4.3 = the best practical pentest model; Kimi K2.7-code = top
+    // agentic-coding workhorse.
+    "model-grok-4.3": or("x-ai/grok-4.3"),
+    "model-kimi-k2.7-code": or("moonshotai/kimi-k2.7-code"),
     "fallback-agent-model": or("google/gemini-3-flash-preview"),
     "fallback-ask-model": or("google/gemini-3-flash-preview"),
     "fallback-gemini-3.5-flash": or("google/gemini-3.5-flash"),
@@ -213,6 +219,8 @@ export const modelCutoffDates: Record<ModelName, string> &
   "model-opus-4.6": "May 2025",
   "model-opus-4.8": "Early 2026",
   "model-kimi-k2.6": "April 2024",
+  "model-grok-4.3": "Late 2025",
+  "model-kimi-k2.7-code": "April 2024",
   "fallback-agent-model": "January 2025",
   "fallback-ask-model": "January 2025",
   "fallback-gemini-3.5-flash": "May 2026",
@@ -232,6 +240,8 @@ export const modelDisplayNames: Record<ModelName, string> &
   "model-opus-4.6": "Anthropic Claude Opus 4.6",
   "model-opus-4.8": "Anthropic Claude Opus 4.8",
   "model-kimi-k2.6": "Moonshot Kimi K2.6",
+  "model-grok-4.3": "xAI Grok 4.3",
+  "model-kimi-k2.7-code": "Moonshot Kimi K2.7 Code",
   "fallback-agent-model": "Auto, an intelligent model router built by RIFT",
   "fallback-ask-model": "Auto, an intelligent model router built by RIFT",
   "fallback-gemini-3.5-flash": "Google Gemini 3.5 Flash",
@@ -300,17 +310,17 @@ export function resolveTierToProviderKey(
     case "rift-standard":
       return isAgentMode(mode) ? "model-kimi-k2.6" : "model-gemini-3-flash";
     case "rift-pro":
-      return "model-sonnet-4.6";
+      // Strike → Kimi K2.7-code: top agentic-coding model that does NOT filter
+      // offensive output (Claude Sonnet did — content-filter on pentest text).
+      return "model-kimi-k2.7-code";
     case "rift-max":
-      // Top tier → Opus 4.8 via OpenRouter in BOTH modes.
-      //
-      // The Anthropic DIRECT API is incompatible with this app: the system
-      // prompt carries offensive-security authorization content (reverse
-      // shells, C2, AV/AMSI/EDR bypass, credential harvesting) that Anthropic's
-      // real-time cyber content-filter empties out — in ask AND agent mode
-      // alike (getSecurityInstructions is added for every mode). OpenRouter
-      // does not apply that filter, so we reach Opus 4.8 through it.
-      return "model-opus-4.8";
+      // Dominate → Grok 4.3: the best PRACTICAL pentest model. Frontier-tier
+      // cyber capability (xAI publishes Cybench results in its model cards) AND
+      // permissive — it actually serves offensive-security output. Claude/Opus
+      // top the raw benchmark but EMPTY OUT live exploit output via Anthropic's
+      // real-time cyber content-filter on every filtering upstream (direct,
+      // Vertex, Bedrock), so they're unusable here despite the higher score.
+      return "model-grok-4.3";
   }
 }
 

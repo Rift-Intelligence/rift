@@ -42,14 +42,14 @@ describe("ModelSelector tier ↔ provider drift", () => {
 
   it("RIFT Pro and Max resolve to the same provider in both modes", () => {
     expect(resolveTierToProviderKey("rift-pro", "ask")).toBe(
-      "model-sonnet-4.6",
+      "model-kimi-k2.7-code",
     );
     expect(resolveTierToProviderKey("rift-pro", "agent")).toBe(
-      "model-sonnet-4.6",
+      "model-kimi-k2.7-code",
     );
-    expect(resolveTierToProviderKey("rift-max", "ask")).toBe("model-opus-4.8");
+    expect(resolveTierToProviderKey("rift-max", "ask")).toBe("model-grok-4.3");
     expect(resolveTierToProviderKey("rift-max", "agent")).toBe(
-      "model-opus-4.8",
+      "model-grok-4.3",
     );
   });
 
