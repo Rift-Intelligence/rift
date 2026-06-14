@@ -12,9 +12,3 @@ export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     return nextjsMiddlewareRedirect(request, "/");
   }
 });
-
-export const config = {
-  runtime: "nodejs",
-  // Run on everything except static assets / Next internals.
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
-};
