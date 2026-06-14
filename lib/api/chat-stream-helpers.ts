@@ -564,10 +564,20 @@ export function buildProviderOptions(
         ? {
             reasoning: {
               enabled: true,
-              ...(isDeepSeekV4 && { effort: "xhigh" }),
+              // Bound the thinking budget. Without a cap, OpenRouter lets the
+              // model run an open-ended think-then-answer pass on EVERY turn —
+              // even a one-word greeting — adding 1-3s of TTFT. DeepSeek-V4
+              // takes a qualitative effort level; everyone else (Anthropic
+              // Opus/Sonnet) takes a token budget. 2048 is plenty for the
+              // step-level planning these agent turns actually need.
+              ...(isDeepSeekV4 ? { effort: "xhigh" } : { max_tokens: 2048 }),
             },
           }
         : { reasoning: { enabled: false } }),
+      // Prefer the lowest-latency upstream for the requested model rather than
+      // OpenRouter's default price/uptime balancer (which varies turn-to-turn
+      // and can land on a slow provider). Fallbacks stay enabled.
+      provider: { sort: "latency", allow_fallbacks: true },
       ...(userId && { user: userId }),
       ...(fallbackSlugs.length > 0 && { models: fallbackSlugs }),
     },
@@ -597,7 +607,12 @@ export function logOpenRouterFallbackIfFired(args: {
 }
 
 const ANTHROPIC_CACHE_BREAKPOINT = {
-  openrouter: { cacheControl: { type: "ephemeral" as const } },
+  // 1-hour TTL (vs the 5-minute default). The ~19k-token system prefix is
+  // identical across a session; a 1h window keeps it cache-readable across the
+  // normal pauses between user turns, so follow-ups pay ~0.1x reads instead of
+  // re-writing all 19k tokens at full price. Writes cost 2x (vs 1.25x for 5m)
+  // but reads dominate over a session, so this is a net win.
+  openrouter: { cacheControl: { type: "ephemeral" as const, ttl: "1h" } },
 };
 
 /**

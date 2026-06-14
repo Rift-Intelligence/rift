@@ -468,7 +468,11 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   } = useChat({
     id: chatId,
     messages: serverMessages,
-    experimental_throttle: 150,
+    // Throttle the streamed-token render coalescing window. 150ms made the UI
+    // lag the server by up to a full frame-batch; 50ms (Trigger's realtime
+    // guidance) shows the first token sooner and streams smoother. MessageItem
+    // memoization keeps per-tick render cost bounded.
+    experimental_throttle: 50,
     generateId: () => uuidv4(),
 
     transport: transportRef.current,
