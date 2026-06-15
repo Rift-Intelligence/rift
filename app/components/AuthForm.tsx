@@ -30,12 +30,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
       await signIn("password", form);
       router.push("/");
     } catch (err) {
-      const msg =
-        err instanceof Error && /invalid|password|account/i.test(err.message)
-          ? isSignUp
-            ? "Could not create account. The email may already be in use."
-            : "Invalid email or password."
-          : "Something went wrong. Please try again.";
+      const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
       setSubmitting(false);
     }
