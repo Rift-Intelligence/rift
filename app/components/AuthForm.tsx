@@ -30,8 +30,17 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
       await signIn("password", form);
       router.push("/");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
+      const raw = err instanceof Error ? err.message : String(err);
+      // The Convex Password provider surfaces InvalidAccountId / InvalidSecret
+      // for bad credentials; map those to a friendly line and treat anything
+      // else as an unexpected error.
+      const isCredentialError =
+        /invalid|account|secret|password|credential/i.test(raw);
+      setError(
+        isCredentialError
+          ? "Invalid email or password."
+          : "Something went wrong. Please try again.",
+      );
       setSubmitting(false);
     }
   };
