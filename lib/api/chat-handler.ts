@@ -82,7 +82,12 @@ import {
   createPreemptiveTimeout,
 } from "@/lib/utils/stream-cancellation";
 import { v4 as uuidv4 } from "uuid";
-import { processChatMessages, selectModel } from "@/lib/chat/chat-processor";
+import {
+  processChatMessages,
+  selectModel,
+  addAuthMessage,
+} from "@/lib/chat/chat-processor";
+import { getModerationResult } from "@/lib/moderation";
 import { summarizeIncompleteToolParts } from "@/lib/chat/tool-abort-utils";
 import { createTrackedProvider } from "@/lib/ai/providers";
 import {
@@ -251,16 +256,34 @@ export const createChatHandler = () => {
         { isTemporary: !!temporary, regenerate },
       );
 
-      if (!temporary) {
-        await handleInitialChatAndUserMessage({
-          chatId,
-          userId,
-          messages: stripLocalDesktopSourcePaths(truncatedMessages),
-          regenerate,
-          chat,
-          isHidden: isAutoContinue ? true : undefined,
-        });
-      }
+      // Persistence (saveChat + saveMessage) and the extra-usage config read
+      // are independent of model selection / token counting, so kick them off
+      // now and let them overlap the message processing + rate-limit work below
+      // instead of stacking their round-trips serially before the first token.
+      const persistencePromise: Promise<unknown> = temporary
+        ? Promise.resolve(undefined)
+        : handleInitialChatAndUserMessage({
+            chatId,
+            userId,
+            messages: stripLocalDesktopSourcePaths(truncatedMessages),
+            regenerate,
+            chat,
+            isHidden: isAutoContinue ? true : undefined,
+          });
+      // Always observe the rejection at creation so that if an earlier preflight
+      // await (rate-limit exhaustion, ownership throw, token estimation, …)
+      // throws before we reach the real `await persistencePromise` below, the
+      // orphaned promise can't surface as an UnhandledPromiseRejection and take
+      // down the serverless function. The real await still re-throws on the
+      // happy path, so error surfacing + ordering are preserved.
+      void persistencePromise.catch(() => {});
+
+      const extraUsageConfigPromise = buildExtraUsageConfig({
+        userId,
+        subscription,
+        userCustomization,
+        organizationId,
+      });
 
       // PAYG: the daily-free vs prepaid-balance routing needs the input-token
       // estimate + extra-usage config, so the rate-limit check runs once below
@@ -279,6 +302,8 @@ export const createChatHandler = () => {
           modelOverride: selectedModelOverride,
           allowLocalDesktopFiles:
             isAgentMode(mode) && sandboxPreference === "desktop",
+          // Run moderation concurrently with estimation + rate-limit below.
+          deferModeration: true,
         });
 
       // Empty after processing → Gemini rejects with "must include at least one parts field".
@@ -288,6 +313,14 @@ export const createChatHandler = () => {
           getEmptyProcessedMessagesCause(truncatedMessages),
         );
       }
+
+      // Capture the moderation input synchronously now (single-threaded JS reads
+      // the messages before the first await), then let the HTTPS round-trip
+      // resolve in parallel with token estimation and the rate-limit check.
+      const moderationPromise = getModerationResult(
+        processedMessages,
+        subscription !== "free",
+      );
 
       const memoryEnabled =
         (subscription !== "free" || isAgentMode(mode)) &&
@@ -316,27 +349,38 @@ export const createChatHandler = () => {
         selectedModel,
       );
 
-      const extraUsageConfig = await buildExtraUsageConfig({
-        userId,
-        subscription,
-        userCustomization,
-        organizationId,
-      });
+      const extraUsageConfig = await extraUsageConfigPromise;
 
-      const rateLimitInfo: RateLimitInfo = await checkRateLimit(
-        userId,
-        mode,
-        subscription,
-        estimatedInputTokens,
-        extraUsageConfig,
-        selectedModel,
-        organizationId,
-      );
+      // Rate-limit (which performs the usage deduction), the free monthly-cost
+      // snapshot, and moderation are mutually independent — overlap their
+      // round-trips. checkRateLimit rejecting (limit exceeded) fast-fails the
+      // whole group; getModerationResult never rejects (it self-catches).
+      const [rateLimitInfo, freeMonthlyBudgetSnapshot, moderationResult] =
+        (await Promise.all([
+          checkRateLimit(
+            userId,
+            mode,
+            subscription,
+            estimatedInputTokens,
+            extraUsageConfig,
+            selectedModel,
+            organizationId,
+          ),
+          subscription === "free"
+            ? checkFreeMonthlyCostLimit(userId)
+            : Promise.resolve(null),
+          moderationPromise,
+        ])) as [
+          RateLimitInfo,
+          Awaited<ReturnType<typeof checkFreeMonthlyCostLimit>> | null,
+          Awaited<typeof moderationPromise>,
+        ];
 
-      const freeMonthlyBudgetSnapshot =
-        subscription === "free"
-          ? await checkFreeMonthlyCostLimit(userId)
-          : null;
+      // Apply the moderation-gated authorization message before streaming so the
+      // model sees it on the very first step (uncensor path must not race).
+      if (moderationResult?.shouldUncensorResponse) {
+        addAuthMessage(processedMessages, moderationResult.moderationText);
+      }
 
       usageRefundTracker.recordDeductions(rateLimitInfo);
 
@@ -377,6 +421,12 @@ export const createChatHandler = () => {
       });
 
       const summarizationTracker = new SummarizationTracker();
+
+      // Ensure the chat row + user message are durably saved before streaming —
+      // the assistant-message save in onFinish depends on them. This was kicked
+      // off near the top and has overlapped all the preflight work above, so by
+      // now it is almost always already settled (near-zero added latency).
+      await persistencePromise;
 
       chatLogger.startStream();
 

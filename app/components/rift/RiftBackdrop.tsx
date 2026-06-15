@@ -147,10 +147,24 @@ export function RiftBackdrop() {
     };
     raf = requestAnimationFrame(draw);
 
+    // Don't burn the main thread animating a 2600-point canvas while the tab is
+    // hidden — pause the RAF loop on visibilitychange and resume when visible.
+    const onVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      } else if (!raf) {
+        t0 = 0; // reset elapsed so it doesn't jump after a long pause
+        raf = requestAnimationFrame(draw);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 

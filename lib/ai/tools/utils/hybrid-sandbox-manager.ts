@@ -211,6 +211,11 @@ async function queryLiveSandboxConnectionIds(
 
 export class HybridSandboxManager implements SandboxManager {
   private sandbox: SandboxInstance | null = null;
+  // De-dups concurrent E2B boots. Without it, the eager prewarm and the
+  // upload/first-tool calls all see `this.sandbox` still unset while the first
+  // boot is in-flight and each call Sandbox.create() → orphaned, billed
+  // sandboxes. Holding the in-flight promise makes concurrent callers share it.
+  private e2bCreationPromise: Promise<{ sandbox: Sandbox }> | null = null;
   private isLocal = false;
   private currentConnectionId: string | null = null;
   private currentConnectionName: string | null = null;
@@ -552,28 +557,47 @@ export class HybridSandboxManager implements SandboxManager {
       return { sandbox: this.sandbox };
     }
 
-    await this.closeCurrentSandbox();
-    const result = await ensureSandboxConnection(
-      {
-        userID: this.userID,
-        setSandbox: (sandbox) => {
-          this.sandbox = sandbox;
-          this.setSandboxCallback(sandbox);
+    // Share an in-flight boot across concurrent callers (eager prewarm + upload
+    // + first tool) so only ONE E2B sandbox is ever created per cold start.
+    if (this.e2bCreationPromise) {
+      return this.e2bCreationPromise;
+    }
+
+    const creation = (async () => {
+      await this.closeCurrentSandbox();
+      const result = await ensureSandboxConnection(
+        {
+          userID: this.userID,
+          setSandbox: (sandbox) => {
+            this.sandbox = sandbox;
+            this.setSandboxCallback(sandbox);
+          },
+          onBoot: this.onBoot,
         },
-        onBoot: this.onBoot,
-      },
-      {
-        initialSandbox: this.isLocal ? null : (this.sandbox as Sandbox | null),
-      },
-    );
+        {
+          initialSandbox: this.isLocal
+            ? null
+            : (this.sandbox as Sandbox | null),
+        },
+      );
 
-    this.sandbox = result.sandbox;
-    this.isLocal = false;
-    this.currentConnectionId = null;
-    this.currentConnectionName = null;
-    this.setSandboxCallback(result.sandbox);
+      this.sandbox = result.sandbox;
+      this.isLocal = false;
+      this.currentConnectionId = null;
+      this.currentConnectionName = null;
+      this.setSandboxCallback(result.sandbox);
 
-    return { sandbox: result.sandbox };
+      return { sandbox: result.sandbox };
+    })();
+
+    this.e2bCreationPromise = creation;
+    try {
+      return await creation;
+    } finally {
+      // Clear so a future reconnect (after the sandbox is closed/expired) can
+      // boot again; the `this.sandbox` fast-path above serves the hot case.
+      this.e2bCreationPromise = null;
+    }
   }
 
   setSandbox(sandbox: SandboxInstance): void {

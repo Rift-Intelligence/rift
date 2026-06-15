@@ -628,6 +628,7 @@ export async function processChatMessages({
   uploadBasePath,
   modelOverride,
   allowLocalDesktopFiles = false,
+  deferModeration = false,
 }: {
   messages: UIMessage[];
   mode: ChatMode;
@@ -636,6 +637,14 @@ export async function processChatMessages({
   uploadBasePath?: string;
   modelOverride?: SelectedModel;
   allowLocalDesktopFiles?: boolean;
+  /**
+   * When true, skip the (blocking) moderation round-trip here and let the
+   * caller run it concurrently with the rest of preflight (token estimate,
+   * rate-limit). The caller is then responsible for awaiting moderation and
+   * calling `addAuthMessage` on the returned `processedMessages` before
+   * streaming. Keeps the moderation HTTPS RTT off the serial critical path.
+   */
+  deferModeration?: boolean;
 }) {
   // Filter out UI-only parts (data-summarization) that AI providers don't understand
   const messagesWithoutUIOnlyParts = messages.map(filterUIOnlyParts);
@@ -719,15 +728,19 @@ export async function processChatMessages({
   // Strip originalContent from file edit outputs (large data not needed by model)
   const cleanedMessages = stripOriginalContentFromMessages(sanitizedMessages);
 
-  // Check moderation for the last user message
-  const moderationResult = await getModerationResult(
-    cleanedMessages,
-    subscription !== "free",
-  );
+  // Check moderation for the last user message. When deferModeration is set,
+  // the caller runs this concurrently with the rest of preflight and applies
+  // addAuthMessage itself — keeping the moderation RTT off the serial path.
+  if (!deferModeration) {
+    const moderationResult = await getModerationResult(
+      cleanedMessages,
+      subscription !== "free",
+    );
 
-  // If moderation allows, add authorization message
-  if (moderationResult.shouldUncensorResponse) {
-    addAuthMessage(cleanedMessages, moderationResult.moderationText);
+    // If moderation allows, add authorization message
+    if (moderationResult.shouldUncensorResponse) {
+      addAuthMessage(cleanedMessages, moderationResult.moderationText);
+    }
   }
 
   return {

@@ -1259,6 +1259,14 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                         This chat doesn&apos;t exist or you don&apos;t have
                         permission to view it.
                       </p>
+                      <a
+                        href="/"
+                        className="mt-6 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-5 py-2.5 font-mono text-sm uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                      >
+                        <span aria-hidden>$</span>
+                        Start new session
+                        <span aria-hidden>▸</span>
+                      </a>
                     </div>
                   </div>
                 </div>
