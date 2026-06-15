@@ -3,6 +3,17 @@ import { encode, decode } from "gpt-tokenizer";
 
 const MODERATION_TOKEN_LIMIT = 512;
 
+// Build the OpenAI client once per process instead of on every request — the
+// constructor sets up connection pooling/keep-alive, so reusing it avoids a
+// fresh TLS handshake to the moderation endpoint on the chat hot path.
+let openaiSingleton: OpenAI | null = null;
+function getOpenAIClient(apiKey: string): OpenAI {
+  if (!openaiSingleton) {
+    openaiSingleton = new OpenAI({ apiKey });
+  }
+  return openaiSingleton;
+}
+
 export async function getModerationResult(
   messages: any[],
   isPaidUser: boolean,
@@ -13,7 +24,7 @@ export async function getModerationResult(
     return { shouldUncensorResponse: false, moderationText: "" };
   }
 
-  const openai = new OpenAI({ apiKey: openaiApiKey });
+  const openai = getOpenAIClient(openaiApiKey);
 
   // Find the last user message that exceeds the minimum length
   const targetMessage = findTargetMessage(messages, 30);

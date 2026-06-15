@@ -857,6 +857,14 @@ export const agentLongTask = task({
               selectedModel,
             );
 
+            // Eagerly start the sandbox NOW so its cold-start (E2B create or
+            // resume-from-pause, 1-3s+) overlaps title generation and the first
+            // LLM round-trip instead of blocking the first tool call. getSandbox
+            // caches, so the later upload/tool paths reuse this same boot.
+            // Errors are intentionally swallowed here — the real tool call will
+            // surface them properly; this is only a prewarm.
+            void ensureSandbox().catch(() => {});
+
             const sendFileMetadataToStream = (
               fileMetadata: Array<{
                 fileId: Id<"files">;

@@ -405,6 +405,12 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                   {chatMode === "agent" ? "EXECUTOR" : "ASK"} ·{" "}
                   {subscription === "team" ? (
                     "Team"
+                  ) : extraUsageSettings === undefined ? (
+                    // Still loading — never flash "0 tokens" (worst possible
+                    // trust signal in a billing-sensitive product).
+                    <span className="tabular-nums text-muted-foreground/60">
+                      ··· tokens
+                    </span>
                   ) : (
                     <span className="tabular-nums">
                       {formatBalanceTokens(tokenBalancePoints)} tokens
