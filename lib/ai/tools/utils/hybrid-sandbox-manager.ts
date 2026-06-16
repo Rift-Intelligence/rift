@@ -8,7 +8,7 @@ import type {
 } from "@/types";
 import { CentrifugoSandbox, type CentrifugoConfig } from "./centrifugo-sandbox";
 import { isCentrifugoSandbox, type ConnectionInfo } from "./sandbox-types";
-import { ensureSandboxConnection } from "./sandbox";
+import { ensureSandboxConnection, SANDBOX_KEEPALIVE_MS } from "./sandbox";
 import { getConvexClient } from "@/lib/db/convex-client";
 import { api } from "@/convex/_generated/api";
 import { SANDBOX_ENVIRONMENT_TOOLS } from "./sandbox-tools";
@@ -259,6 +259,10 @@ export class HybridSandboxManager implements SandboxManager {
 
   isSandboxUnavailable(): boolean {
     return this.sandboxUnavailable;
+  }
+
+  isE2BSandboxBooted(): boolean {
+    return !this.isLocal && !!this.sandbox && this.sandbox instanceof Sandbox;
   }
 
   /**
@@ -554,6 +558,11 @@ export class HybridSandboxManager implements SandboxManager {
 
   private async getE2BSandbox(): Promise<{ sandbox: Sandbox }> {
     if (!this.isLocal && this.sandbox && this.sandbox instanceof Sandbox) {
+      // Keep-alive: push the auto-pause timeout out on every access so a live
+      // sandbox never pauses mid-run (E2B's timeout is absolute from creation
+      // and isn't extended by command activity). Fire-and-forget — a failed
+      // refresh must not block or break the tool call.
+      void this.sandbox.setTimeout(SANDBOX_KEEPALIVE_MS).catch(() => {});
       return { sandbox: this.sandbox };
     }
 

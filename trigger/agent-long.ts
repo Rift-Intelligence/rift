@@ -770,6 +770,15 @@ export const agentLongTask = task({
           return getUserFriendlyProviderError(error);
         },
         execute: async ({ writer }) => {
+          // Emit an early heartbeat before any await so the frontend's
+          // 5-minute idle timeout is cleared immediately. Without this,
+          // slow setup (E2B sandbox cold-start, LLM queue) can exceed
+          // 5 minutes before writer.merge() fires its first heartbeat.
+          writer.write({
+            type: AGENT_LONG_HEARTBEAT_PART_TYPE,
+            data: { at: Date.now() },
+          } as AgentLongUiStreamPart);
+
           try {
             await assertUserCanMakeCostIncurringRequest(userId);
             if (subscription === "free") {

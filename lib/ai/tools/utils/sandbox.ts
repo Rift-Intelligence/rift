@@ -1,12 +1,23 @@
 import { Sandbox } from "@e2b/code-interpreter";
 import type { SandboxBootInfo, SandboxContext } from "@/types";
 import { NotFoundError, getUserFacingE2BErrorMessage } from "./e2b-errors";
+import { reclaimSandboxDisk } from "./sandbox-disk-reclaim";
 
 type SandboxReadyPath = SandboxBootInfo["path"];
 
 const SANDBOX_TEMPLATE = process.env.E2B_TEMPLATE || "terminal-agent-sandbox";
 const BASH_SANDBOX_RESUME_TIMEOUT = 5 * 60 * 1000; // 5 minutes for resuming paused sandbox
-const BASH_SANDBOX_AUTOPAUSE_TIMEOUT = 7 * 60 * 1000; // 7 minutes auto-pause inactivity timeout
+// E2B's `timeoutMs` is absolute from creation and is NOT auto-extended by
+// running commands — so a long agent run on a single sandbox would auto-pause
+// mid-run, after which the next command's health check sees `isRunning()` false
+// ("Sandbox is not running") and falls into a kill+recreate loop. (This was
+// masked before by the disk death-loop, which kept minting fresh sandboxes and
+// resetting the clock; fixing the disk exposed it.) The hybrid sandbox manager
+// now refreshes this timeout on every getSandbox() call (see SANDBOX_KEEPALIVE_MS),
+// so 20 min is the keep-alive window: commands within 20 min of each other keep
+// the box alive, and an idle box pauses ~20 min after the last command.
+export const SANDBOX_KEEPALIVE_MS = 20 * 60 * 1000; // 20 minutes
+const BASH_SANDBOX_AUTOPAUSE_TIMEOUT = SANDBOX_KEEPALIVE_MS;
 // Retry config for E2B 429 rate limits
 const RATE_LIMIT_COOLDOWN_MS = 1_000;
 const MAX_CREATE_RETRIES = 3;
@@ -20,7 +31,10 @@ const MAX_CREATE_RETRIES = 3;
  */
 // v8: upgraded sandbox CPU (4 cores) and memory (2GB)
 // v9: added Caido proxy (caido-cli install, lazy start via ensureCaido, HTTP_PROXY env vars)
-const SANDBOX_VERSION = "v9";
+// v10: E2B Pro plan → template rebuilt with 20 GiB disk (was 10 GiB, born 100% full).
+//      Bumping the version force-recreates users' old 10 GiB sandboxes so everyone
+//      gets the ~9.8 GB of free disk that fixes the out-of-space death loop.
+const SANDBOX_VERSION = "v10";
 
 /**
  * Ensures a sandbox connection is established and maintained
@@ -159,6 +173,17 @@ export const ensureSandboxConnection = async (
             sandboxVersion: SANDBOX_VERSION,
           },
         });
+
+        // A fresh sandbox is born at ~100% disk (the image fills its auto-sized
+        // rootfs). Kick off a best-effort reclaim of non-functional space, but
+        // do NOT await it: on E2B's overlay filesystem, deleting image-layer
+        // files frees space only unreliably/asynchronously (sometimes ~1.2 GB,
+        // sometimes nothing for tens of seconds), and awaiting it would add
+        // ~35 s to every cold start for an uncertain payoff. Fire-and-forget
+        // keeps the boot fast; the kill+recreate cap in run_terminal_cmd makes
+        // the no-space case fail fast and clearly. The durable fix is a larger
+        // template disk from E2B (see sandbox-disk-reclaim.ts).
+        void reclaimSandboxDisk(sandbox);
 
         setSandbox(sandbox);
         reportBoot(createPath, attempt + 1);
