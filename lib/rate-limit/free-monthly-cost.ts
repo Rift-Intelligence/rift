@@ -27,6 +27,12 @@ export interface FreeMonthlyCostSnapshot {
   extraUsageBalanceAtStart: 0;
   extraUsageAutoReload: false;
   rateLimitSkipped?: boolean;
+  /**
+   * True when the monthly free-cost budget is spent. When the caller passes
+   * `throwOnExhaustion: false`, this lets the free path fall through to the
+   * prepaid balance instead of hard-blocking a user who has tokens to spend.
+   */
+  monthlyExhausted: boolean;
 }
 
 const dollarsToPoints = (dollars: number): number => {
@@ -60,7 +66,9 @@ const getLimitMessage = (reset: number) =>
 
 export async function checkFreeMonthlyCostLimit(
   userId: string,
+  options: { throwOnExhaustion?: boolean } = {},
 ): Promise<FreeMonthlyCostSnapshot> {
+  const { throwOnExhaustion = true } = options;
   const limitPoints = dollarsToPoints(getFreeMonthlyCostLimitDollars());
   const { bucket, reset } = getCurrentUtcMonthWindow();
   const redis = createRedisClient();
@@ -74,6 +82,7 @@ export async function checkFreeMonthlyCostLimit(
         extraUsageBalanceAtStart: 0,
         extraUsageAutoReload: false,
         rateLimitSkipped: true,
+        monthlyExhausted: false,
       };
     }
     throw new ChatSDKError(
@@ -87,8 +96,12 @@ export async function checkFreeMonthlyCostLimit(
     Number((await redis.get(freeMonthlyCostKey(userId, bucket))) ?? 0),
   );
   const remainingPoints = Math.max(0, limitPoints - usedPoints);
+  const monthlyExhausted = remainingPoints <= 0;
 
-  if (remainingPoints <= 0) {
+  // Exhausted: hard-block only when the caller opts in. Callers that can fall
+  // through to the prepaid balance pass `throwOnExhaustion: false` and route
+  // an exhausted month to balance instead (PAYG — holding tokens is consent).
+  if (monthlyExhausted && throwOnExhaustion) {
     throw new ChatSDKError("rate_limit:chat", getLimitMessage(reset));
   }
 
@@ -98,6 +111,7 @@ export async function checkFreeMonthlyCostLimit(
     monthlyResetTime: new Date(reset),
     extraUsageBalanceAtStart: 0,
     extraUsageAutoReload: false,
+    monthlyExhausted,
   };
 }
 

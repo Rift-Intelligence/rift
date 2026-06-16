@@ -806,9 +806,14 @@ export const agentLongTask = task({
               organizationId,
             );
 
+            // Snapshot only — never throw here. checkRateLimit already routed
+            // an exhausted month to the prepaid balance (servedFrom: balance);
+            // re-throwing on exhaustion would block a funded PAYG user.
             const freeMonthlyBudgetSnapshot =
               subscription === "free"
-                ? await checkFreeMonthlyCostLimit(userId)
+                ? await checkFreeMonthlyCostLimit(userId, {
+                    throwOnExhaustion: false,
+                  })
                 : null;
 
             usageRefundTracker.recordDeductions(rateLimitInfo);
@@ -1014,7 +1019,11 @@ export const agentLongTask = task({
             });
             const effectiveBudgetSnapshot =
               budgetSnapshot ??
-              (freeMonthlyBudgetSnapshot?.rateLimitSkipped
+              // When served from balance the monthly snapshot is exhausted
+              // (remaining 0, no cushion) — building a BudgetMonitor from it
+              // would spuriously abort a request the user is paying for.
+              (rateLimitInfo.servedFrom === "balance" ||
+              freeMonthlyBudgetSnapshot?.rateLimitSkipped
                 ? null
                 : freeMonthlyBudgetSnapshot);
             const budgetMonitor = effectiveBudgetSnapshot

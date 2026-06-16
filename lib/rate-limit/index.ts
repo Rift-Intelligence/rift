@@ -65,6 +65,7 @@ export {
 
 // Import for internal use
 import { checkTokenBucketLimit, checkBalanceLimit } from "./token-bucket";
+import { checkFreeMonthlyCostLimit } from "./free-monthly-cost";
 import { FREE_AGENT_REQUEST_COST, FREE_ASK_REQUEST_COST } from "./free-config";
 import {
   checkFreeUserRateLimit,
@@ -94,25 +95,35 @@ export const checkRateLimit = async (
   modelName?: string,
   organizationId?: string,
 ): Promise<RateLimitInfo> => {
-  // Free users (PAYG): daily free window first, then prepaid balance.
+  // Free users (PAYG): daily + monthly free budget first, then prepaid balance.
   if (subscription === "free") {
     const requestCost = isAgentMode(mode)
       ? FREE_AGENT_REQUEST_COST
       : FREE_ASK_REQUEST_COST;
 
-    // Peek/consume the free window WITHOUT throwing on exhaustion, so we can
-    // fall through to the prepaid balance when the user has tokens.
-    const free = await checkFreeUserRateLimit(userId, requestCost, {
+    // Peek the monthly free-cost cap WITHOUT throwing or consuming, so an
+    // exhausted month falls through to the prepaid balance instead of a hard
+    // block — mirroring the daily-window fall-through below.
+    const monthly = await checkFreeMonthlyCostLimit(userId, {
       throwOnExhaustion: false,
     });
 
-    if (!free.freeExhausted) {
-      // Served within the daily free allowance — no balance charge.
-      return free;
+    if (!monthly.monthlyExhausted) {
+      // Monthly budget still has room — consume the daily free window WITHOUT
+      // throwing on exhaustion so we can still fall through to balance.
+      const free = await checkFreeUserRateLimit(userId, requestCost, {
+        throwOnExhaustion: false,
+      });
+
+      if (!free.freeExhausted) {
+        // Served within both the daily allowance and the monthly free cap —
+        // no balance charge.
+        return free;
+      }
     }
 
-    // Free allowance spent. Draw from the prepaid token balance; throws a
-    // "buy tokens" error when empty and auto-reload is off.
+    // Daily or monthly free budget spent. Draw from the prepaid token balance;
+    // throws a "buy tokens" error when empty and auto-reload is off.
     return checkBalanceLimit(
       userId,
       estimatedInputTokens || 0,
