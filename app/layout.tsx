@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Inter, Instrument_Serif } from "next/font/google";
+import {
+  JetBrains_Mono,
+  Geist,
+  Space_Grotesk,
+  Instrument_Serif,
+} from "next/font/google";
 import "./globals.css";
 import "./globals-terminal.css";
 
@@ -19,8 +24,16 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+// Geist = clean, readable body (UI default). Space Grotesk = geometric display
+// font for brand wordmark and headings (the bit of RIFT character).
+const geist = Geist({
+  variable: "--font-geist",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
   display: "swap",
 });
@@ -125,11 +138,7 @@ export default function RootLayout({
 
   return (
     <ConvexAuthNextjsServerProvider>
-      <html
-        lang="en"
-        className="dark h-full terminal-scanlines"
-        suppressHydrationWarning
-      >
+      <html lang="en" className="dark h-full" suppressHydrationWarning>
         <head>
           <meta
             name="viewport"
@@ -138,7 +147,7 @@ export default function RootLayout({
           <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         </head>
         <body
-          className={`${jetbrainsMono.variable} ${inter.variable} ${instrumentSerif.variable} antialiased h-full`}
+          className={`${jetbrainsMono.variable} ${geist.variable} ${spaceGrotesk.variable} ${instrumentSerif.variable} antialiased h-full`}
           suppressHydrationWarning
         >
           <ConvexClientProvider>{content}</ConvexClientProvider>

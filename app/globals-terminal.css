@@ -1,63 +1,60 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
-  /* === RIFT OS "Classified Hacker Terminal": pure-black void + phosphor green === */
-  --terminal-bg: #000000;
-  --terminal-primary: #000000;
-  --terminal-secondary: #020602;
-  --terminal-sidebar-bg: #000000;
-  --terminal-green: #00ff66; /* primary phosphor green */
-  --terminal-green-dim: #0a9d4a;
-  --terminal-green-glow: #00ff66;
-  --terminal-sky: #36f0ff; /* secondary terminal cyan */
-  --terminal-text: #c5f2d2;
-  --terminal-text-dim: #4f8a66;
-  --terminal-border: #10331f;
-  --terminal-scanline: rgba(0, 255, 102, 0.04);
-  --terminal-crt-flicker: rgba(0, 255, 102, 0.015);
+  /* === RIFT — refined dark SaaS: graphite canvas + cyan signal === */
+  --terminal-bg: #0f1011;
+  --terminal-primary: #0f1011;
+  --terminal-secondary: #17181b;
+  --terminal-sidebar-bg: #121315;
+  --terminal-green: #2bccdf; /* primary cyan (legacy name) */
+  --terminal-green-dim: #1c8b99;
+  --terminal-green-glow: #2bccdf;
+  --terminal-sky: #5ec8d8; /* secondary cyan */
+  --terminal-text: #ececed;
+  --terminal-text-dim: #a0a1a6;
+  --terminal-border: #232428;
+  --terminal-scanline: transparent;
+  --terminal-crt-flicker: transparent;
 
-  /* CRT effects ON — cinematic phosphor terminal. */
-  --terminal-scanline-opacity: 1;
-  --terminal-glow-intensity: 1;
+  /* CRT effects OFF — refined dark SaaS, no scanline/glow. */
+  --terminal-scanline-opacity: 0;
+  --terminal-glow-intensity: 0;
 
-  /* === Accent system → phosphor green signal === */
-  --primary: #00ff66;
-  --primary-foreground: #00220e;
-  --secondary: #020602;
-  --secondary-foreground: #c5f2d2;
-  --accent: #04140a;
-  --accent-foreground: #36f0ff;
-  --ring: #00ff66;
-  --chart-1: #00ff66;
-  --chart-2: #36f0ff;
-  --chart-3: #0a9d4a;
-  --chart-4: #063a20;
-  --chart-5: #ff3b1d;
-  --link-color: #36f0ff;
+  /* === Accent system → cyan signal === */
+  --primary: #2bccdf;
+  --primary-foreground: #04212a;
+  --secondary: #1e1f23;
+  --secondary-foreground: #ececed;
+  --accent: #1e1f23;
+  --accent-foreground: #ececed;
+  --ring: #2bccdf;
+  --chart-1: #2bccdf;
+  --chart-2: #5ec8d8;
+  --chart-3: #1c8b99;
+  --chart-4: #e8b339;
+  --chart-5: #f06a6a;
+  --link-color: #2bccdf;
 
-  --sidebar-primary: #00ff66;
-  --sidebar-primary-foreground: #00220e;
-  --sidebar-ring: #00ff66;
+  --sidebar-primary: #2bccdf;
+  --sidebar-primary-foreground: #04212a;
+  --sidebar-ring: #2bccdf;
 
-  /* Premium / Upgrade buttons → phosphor green */
-  --premium-bg: #04140a;
-  --premium-text: #36f0ff;
-  --premium-hover: #00ff66;
+  /* Premium / Upgrade buttons → cyan */
+  --premium-bg: #1e1f23;
+  --premium-text: #2bccdf;
+  --premium-hover: #5ee0f0;
 }
 
-/* RIFT typography: FULL terminal — everything is monospace. JetBrains Mono is
-   the single system face. Readability is preserved via tuned line-height and
-   letter-spacing rather than by switching to a sans face. */
+/* RIFT typography: Geist body (UI), Space Grotesk display (headings/brand),
+   JetBrains Mono for terminal/code only. */
 body {
   background-color: var(--terminal-bg) !important;
   color: var(--terminal-text) !important;
   overflow: hidden;
-  font-family:
-    "JetBrains Mono", var(--font-jetbrains-mono), ui-monospace,
-    "SFMono-Regular", Menlo, monospace;
+  font-family: var(--font-geist), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0;
+  letter-spacing: -0.011em;
 }
 
 /* Make every UI surface inherit the mono face (kills residual sans rendering
@@ -66,12 +63,6 @@ button,
 input,
 textarea,
 select,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
 p,
 span,
 div,
@@ -81,7 +72,8 @@ label {
   font-family: inherit;
 }
 
-/* Monospace where the terminal aesthetic matters. */
+/* Monospace ONLY for genuine terminal/code output. UI chrome (titlebars,
+   buttons, stats) now inherits the Geist body face. */
 code,
 pre,
 kbd,
@@ -90,13 +82,7 @@ samp,
 .terminal-input,
 .terminal-code,
 .terminal-ascii,
-.terminal-prompt,
-.terminal-stats,
-.terminal-titlebar,
-.terminal-dot ~ span,
-.terminal-glow,
-.terminal-glow-subtle,
-.terminal-btn {
+.terminal-prompt {
   font-family:
     "JetBrains Mono", var(--font-jetbrains-mono), ui-monospace, monospace !important;
 }
@@ -421,9 +407,9 @@ samp,
   background-color: var(--terminal-bg) !important;
 }
 
-.bg-primary {
-  background-color: var(--terminal-primary) !important;
-}
+/* .bg-primary intentionally NOT remapped to a surface here — it stays the cyan
+   accent fill (see "Primary buttons" rule above) so CTAs/send buttons read as
+   the accent, matching the refined design. */
 
 .text-foreground {
   color: var(--terminal-text) !important;
@@ -465,7 +451,7 @@ samp,
    like terminal windows. Kills the ChatGPT/RIFT-clone feel.
    ============================================================ */
 
-/* Content surfaces: zero radius + cyan hairline frame + dark fill */
+/* Overlay surfaces: rounded, hairline border, soft shadow (refined). */
 [data-slot="dialog-content"],
 [data-slot="dropdown-menu-content"],
 [data-slot="popover-content"],
@@ -473,132 +459,19 @@ samp,
 [data-slot="command"],
 [data-slot="command-dialog"] [data-slot="dialog-content"],
 [cmdk-root] {
-  border-radius: 0 !important;
-  border: 1px solid var(--terminal-green) !important;
-  background: var(--terminal-primary) !important;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.7),
-    0 0 28px rgba(34, 224, 255, 0.14) !important;
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--popover) !important;
+  box-shadow: 0 16px 48px -24px rgba(0, 0, 0, 0.8) !important;
 }
 
-/* Items inside menus/commands: square, sharp hover */
-[data-slot="dropdown-menu-item"],
-[data-slot="dropdown-menu-checkbox-item"],
-[data-slot="dropdown-menu-radio-item"],
-[data-slot="dropdown-menu-sub-trigger"],
-[data-slot="select-item"],
-[data-slot="command-item"],
-[cmdk-item] {
-  border-radius: 0 !important;
-}
+/* Menu/command items: subtle rounded hover, no green flood. */
 [data-slot="dropdown-menu-item"]:hover,
 [data-slot="command-item"][data-selected="true"],
 [cmdk-item][data-selected="true"] {
-  background: rgba(34, 224, 255, 0.12) !important;
-  color: var(--terminal-green) !important;
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
 }
 
-/* Square off rounded chrome buttons/badges/inputs inside these surfaces and
-   the settings/account panels, but keep avatars + the rift SVGs round. */
-[data-slot="dialog-content"] .rounded-2xl,
-[data-slot="dialog-content"] .rounded-xl,
-[data-slot="dialog-content"] .rounded-lg,
-[data-slot="dialog-content"] .rounded-md,
-[data-slot="dropdown-menu-content"] .rounded-2xl,
-[data-slot="dropdown-menu-content"] .rounded-xl,
-[data-slot="dropdown-menu-content"] .rounded-lg,
-[data-slot="dropdown-menu-content"] .rounded-md,
-[data-slot="popover-content"] .rounded-2xl,
-[data-slot="popover-content"] .rounded-xl,
-[data-slot="popover-content"] .rounded-lg,
-[data-slot="popover-content"] .rounded-md {
-  border-radius: 0 !important;
-}
-
-/* Dialog close button → square terminal control */
-[data-slot="dialog-content"] [data-slot="dialog-close"],
-[data-slot="dialog-content"] button[aria-label="Close"] {
-  border-radius: 0 !important;
-}
-
-/* =========================================================================
-   RIFT OS — Cinematic CRT overlay (global)
-   Scanlines + edge vignette + faint phosphor wash, applied to the whole
-   viewport so every screen (login, landing, chat) reads like a CRT monitor
-   in a classified workstation. Static (no per-frame repaint) to keep typing
-   responsive. pointer-events:none so it never intercepts input.
-   ========================================================================= */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2147483646;
-  /* horizontal scanlines */
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.22) 0,
-      rgba(0, 0, 0, 0.22) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
-    /* faint vertical aperture-grille */
-    repeating-linear-gradient(
-        90deg,
-        rgba(0, 255, 102, 0.02) 0,
-        rgba(0, 255, 102, 0.02) 1px,
-        transparent 1px,
-        transparent 3px
-      ),
-    /* edge vignette + center phosphor lift */
-    radial-gradient(
-        120% 120% at 50% 50%,
-        rgba(0, 255, 102, 0.025) 0%,
-        transparent 42%,
-        rgba(0, 0, 0, 0.55) 100%
-      );
-  mix-blend-mode: normal;
-}
-
-/* very slow CRT brightness flicker — animates ONLY this isolated overlay layer,
-   GPU-composited (opacity), so it doesn't repaint page content */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2147483645;
-  background: rgba(0, 255, 102, 0.012);
-  will-change: opacity;
-  animation: crt-flicker 5.2s steps(1) infinite;
-}
-@keyframes crt-flicker {
-  0%,
-  97%,
-  100% {
-    opacity: 0.5;
-  }
-  97.5% {
-    opacity: 0.9;
-  }
-  98% {
-    opacity: 0.35;
-  }
-  98.5% {
-    opacity: 0.8;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  body::before {
-    animation: none;
-  }
-}
-
-/* Phosphor text glow on the primary signal — re-enable a subtle bloom so
-   green readouts feel like emitted light, not painted pixels. */
-.text-primary,
-.terminal-prompt,
-.text-terminal-green {
-  text-shadow: 0 0 6px rgba(0, 255, 102, 0.28);
-}
+/* CRT scanline/vignette/flicker overlays and phosphor text glow retired for the
+   refined dark-SaaS theme — calm flat surfaces, no emitted-light effects. */

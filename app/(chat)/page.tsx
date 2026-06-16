@@ -65,7 +65,7 @@ const UnauthenticatedContent = () => {
               </div>
 
               {/* headline */}
-              <h1 className="animate-fade-in-up text-balance text-5xl font-normal leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl text-rift-glow">
+              <h1 className="font-display animate-fade-in-up text-balance text-5xl font-medium leading-[1.04] tracking-tight text-foreground sm:text-6xl md:text-7xl">
                 <span className="block">See everything.</span>
                 <span className="display-emphasis animate-hero-highlight block">
                   Miss nothing.
@@ -104,13 +104,10 @@ const UnauthenticatedContent = () => {
               <button
                 type="button"
                 onClick={launch}
-                className="group mt-9 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-7 py-3 font-semibold uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground rift-live"
+                className="mt-9 inline-flex items-center gap-2 rounded-lg bg-primary px-7 py-3 text-sm font-semibold tracking-wide text-primary-foreground transition hover:brightness-110"
               >
-                <span className="text-primary/70 group-hover:text-primary-foreground">
-                  $
-                </span>
                 Launch App
-                <span aria-hidden>▸</span>
+                <span aria-hidden>→</span>
               </button>
               <div className="hud-label mt-3 text-muted-foreground">
                 no setup · runs in the cloud

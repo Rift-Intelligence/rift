@@ -9,9 +9,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  /* RIFT is a full-terminal aesthetic: sans utilities resolve to mono too. */
-  --font-sans: var(--font-jetbrains-mono), ui-monospace, monospace;
+  /* Refined dark-SaaS type system: Geist body, Space Grotesk display, JetBrains
+     Mono for terminal/command output only. */
+  --font-sans: var(--font-geist), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-display: var(--font-space-grotesk), sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -56,102 +58,102 @@
      etc.). The legacy var names are kept so existing markup re-themes with zero
      edits; their VALUES are now cyan surveillance signal on true black.
      Literal values so utilities (incl. /opacity modifiers) always generate. */
-  --color-terminal-green: #00ff66; /* primary phosphor-green signal */
-  --color-terminal-green-dim: #0a9d4a; /* mid ramp */
-  --color-terminal-sky: #36f0ff; /* secondary terminal cyan */
-  --color-terminal-text: #c5f2d2; /* phosphor-tinted readout white */
-  --color-terminal-text-dim: #4f8a66;
-  --color-terminal-border: #10331f;
-  --color-terminal-bg: #000000;
-  --color-terminal-primary: #000000;
-  --color-terminal-secondary: #020602;
+  --color-terminal-green: #2bccdf; /* primary cyan signal (legacy name) */
+  --color-terminal-green-dim: #1c8b99; /* mid ramp */
+  --color-terminal-sky: #5ec8d8; /* secondary cyan */
+  --color-terminal-text: #ececed; /* readout white */
+  --color-terminal-text-dim: #a0a1a6;
+  --color-terminal-border: #232428;
+  --color-terminal-bg: #0f1011;
+  --color-terminal-primary: #0f1011;
+  --color-terminal-secondary: #17181b;
 
   /* Canonical RIFT tokens (preferred names for new components) */
-  --color-rift: #00ff66;
-  --color-rift-dim: #0a9d4a;
-  --color-rift-deep: #063a20;
-  --color-rift-hot: #9dffc4;
-  --color-alarm: #ff3b1d; /* reserved: target acquired / breach / critical */
+  --color-rift: #2bccdf;
+  --color-rift-dim: #1c8b99;
+  --color-rift-deep: #0c3d44;
+  --color-rift-hot: #7fe6f4;
+  --color-alarm: #f06a6a; /* reserved: target acquired / breach / critical */
 }
 
 :root {
-  --radius: 0rem;
-  /* RIFT OS — "Classified Hacker Terminal"
-     Pure-black void · phosphor-green primary signal · terminal cyan secondary
-     · red reserved for alarm. BIOS/CRT readout, no SaaS surfaces. */
-  --background: #000000;
-  --foreground: #c5f2d2;
-  --card: #000000;
-  --card-foreground: #c5f2d2;
-  --popover: #020602;
-  --popover-foreground: #c5f2d2;
-  --primary: #00ff66;
-  --primary-foreground: #00220e;
-  --secondary: #020602;
-  --secondary-foreground: #c5f2d2;
-  --muted: #030703;
-  --muted-foreground: #4f8a66;
-  --accent: #04140a;
-  --accent-foreground: #36f0ff;
-  --destructive: #ff3b1d;
-  --border: #10331f;
-  --input: #10331f;
-  --ring: #00ff66;
-  --chart-1: #00ff66;
-  --chart-2: #36f0ff;
-  --chart-3: #0a9d4a;
-  --chart-4: #063a20;
-  --chart-5: #ff3b1d;
-  --sidebar: #000000;
-  --sidebar-foreground: #c5f2d2;
-  --sidebar-primary: #00ff66;
-  --sidebar-primary-foreground: #00220e;
-  --sidebar-accent: #030703;
-  --sidebar-accent-foreground: #36f0ff;
-  --sidebar-border: #10331f;
-  --sidebar-ring: #00ff66;
+  --radius: 0.7rem;
+  /* RIFT — refined dark SaaS
+     Graphite canvas · cyan accent used sparingly · Space Grotesk display /
+     Geist body / JetBrains Mono terminal. Calm surfaces, hairline borders. */
+  --background: #0f1011;
+  --foreground: #ececed;
+  --card: #17181b;
+  --card-foreground: #ececed;
+  --popover: #17181b;
+  --popover-foreground: #ececed;
+  --primary: #2bccdf;
+  --primary-foreground: #04212a;
+  --secondary: #1e1f23;
+  --secondary-foreground: #ececed;
+  --muted: #1e1f23;
+  --muted-foreground: #a0a1a6;
+  --accent: #1e1f23;
+  --accent-foreground: #ececed;
+  --destructive: #f06a6a;
+  --border: #232428;
+  --input: #232428;
+  --ring: #2bccdf;
+  --chart-1: #2bccdf;
+  --chart-2: #5ec8d8;
+  --chart-3: #1c8b99;
+  --chart-4: #e8b339;
+  --chart-5: #f06a6a;
+  --sidebar: #121315;
+  --sidebar-foreground: #ececed;
+  --sidebar-primary: #2bccdf;
+  --sidebar-primary-foreground: #04212a;
+  --sidebar-accent: #1e1f23;
+  --sidebar-accent-foreground: #ececed;
+  --sidebar-border: #232428;
+  --sidebar-ring: #2bccdf;
 
   /* Surfaces & ramp (new RIFT names) */
-  --surface: #000000;
-  --border-strong: #1c5a36;
-  --rift-glow: rgba(0, 255, 102, 0.4);
+  --surface: #17181b;
+  --border-strong: #2e2f34;
+  --rift-glow: rgba(43, 204, 223, 0.22);
 
   /* Custom chat input */
-  --fill-input-chat: #000000;
+  --fill-input-chat: #17181b;
 
   /* Custom link colors */
-  --link-color: #36f0ff;
+  --link-color: #2bccdf;
 
   /* Premium/Upgrade colors */
-  --premium-bg: #030703;
-  --premium-text: #36f0ff;
-  --premium-hover: #00ff66;
+  --premium-bg: #1e1f23;
+  --premium-text: #2bccdf;
+  --premium-hover: #5ee0f0;
 
   /* Scrollbar colors */
-  --scrollbar-track: #000000;
-  --scrollbar-thumb: rgba(0, 255, 102, 0.28);
-  --scrollbar-thumb-hover: rgba(0, 255, 102, 0.5);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.08);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.14);
 
   /* Sidebar text mask for truncation */
   --sidebar-mask: linear-gradient(
     90deg,
-    #040404 0%,
-    #040404 95%,
+    #121315 0%,
+    #121315 95%,
     transparent 100%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #040404 0%,
-    #040404 88%,
+    #17181b 0%,
+    #17181b 88%,
     transparent 93%,
     transparent 100%
   );
 
-  /* Signal glow effect (cyan) */
-  --neon-glow: 0 0 10px rgba(0, 255, 102, 0.5), 0 0 20px rgba(0, 255, 102, 0.3);
-  --neon-glow-intense:
-    0 0 15px rgba(0, 255, 102, 0.7), 0 0 30px rgba(0, 255, 102, 0.5);
+  /* Glow retired in the refined dark-SaaS theme — kept as no-ops so any
+     legacy box-shadow:var(--neon-glow) references resolve to nothing. */
+  --neon-glow: none;
+  --neon-glow-intense: none;
 }
 
 @layer base {
@@ -159,7 +161,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
 }
 
@@ -614,18 +616,13 @@
 .hud {
   position: relative;
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   background: color-mix(in oklab, var(--surface) 92%, transparent);
 }
+/* Targeting-reticle corner brackets retired for the refined theme. */
 .hud::before,
 .hud::after {
-  content: "";
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  pointer-events: none;
-  border-color: var(--primary);
-  border-style: solid;
-  opacity: 0.85;
+  content: none;
 }
 /* top-left + bottom-right brackets via ::before/::after */
 .hud::before {
@@ -638,27 +635,9 @@
   right: -1px;
   border-width: 0 1px 1px 0;
 }
-/* opposite corners via an inner [data-hud-corners] helper element */
 .hud > .hud-corners::before,
 .hud > .hud-corners::after {
-  content: "";
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  pointer-events: none;
-  border-color: var(--primary);
-  border-style: solid;
-  opacity: 0.85;
-}
-.hud > .hud-corners::before {
-  top: -1px;
-  right: -1px;
-  border-width: 1px 1px 0 0;
-}
-.hud > .hud-corners::after {
-  bottom: -1px;
-  left: -1px;
-  border-width: 0 0 1px 1px;
+  content: none;
 }
 
 /* HUD micro-label (uppercase, tracked, dim) */
@@ -771,13 +750,12 @@
     box-shadow: 0 0 14px 0 rgba(0, 255, 102, 0.45);
   }
 }
+/* Neon pulse + headline glow retired for the refined dark-SaaS theme. */
 .rift-live {
-  animation: rift-pulse 2.4s ease-in-out infinite;
+  animation: none;
 }
 .text-rift-glow {
-  text-shadow:
-    0 0 8px rgba(0, 255, 102, 0.45),
-    0 0 22px rgba(0, 255, 102, 0.25);
+  text-shadow: none;
 }
 
 /* --- Outer page frame (inset hairline with corner ticks) --- */
