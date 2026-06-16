@@ -218,32 +218,9 @@ export const ChatInput = ({
         />
 
         <div
-          className={`order-2 sm:order-1 flex flex-col transition-[box-shadow,border-color] duration-200 relative bg-input-chat max-h-[300px] min-w-0 overflow-hidden terminal-panel terminal-border rounded-[0px] focus-within:border-primary/60 focus-within:shadow-[0_0_0_1px_rgba(34,224,255,0.25),0_0_26px_rgba(34,224,255,0.12)] ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
+          className={`order-2 sm:order-1 flex flex-col transition-[border-color] duration-200 relative bg-input-chat max-h-[300px] min-w-0 overflow-hidden border terminal-border rounded-2xl focus-within:border-primary/40 ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
         >
-          {/* cyan top accent */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
-          />
-          {/* Terminal window title bar */}
-          <div className="terminal-titlebar flex items-center gap-2 px-3 py-1.5 select-none">
-            <span className="text-xs text-primary">▸</span>
-            <span className="text-xs text-terminal-green/70 truncate">
-              {chatMode === "agent"
-                ? "root@rift: ~/exploit"
-                : "operator@rift: ~"}
-            </span>
-            <span className="ml-auto text-[10px] uppercase tracking-wider hidden sm:flex items-center gap-1.5">
-              <span
-                className={`inline-block size-1.5 rounded-full ${chatMode === "agent" ? "bg-primary rift-live" : "bg-muted-foreground"}`}
-              />
-              <span className="text-terminal-green/60">
-                {chatMode === "agent" ? "EXECUTOR" : "ASK"} MODE
-              </span>
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-3 py-3">
+          <div className="flex flex-col gap-2.5 px-1 py-2.5">
             <ChatInputTextarea
               draftId={draftId}
               chatMode={chatMode}
