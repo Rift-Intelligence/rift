@@ -367,7 +367,10 @@ export const createChatHandler = () => {
             organizationId,
           ),
           subscription === "free"
-            ? checkFreeMonthlyCostLimit(userId)
+            ? // Snapshot only — never throw. checkRateLimit already routes an
+              // exhausted month to the prepaid balance (servedFrom: balance);
+              // throwing here would block a funded PAYG user.
+              checkFreeMonthlyCostLimit(userId, { throwOnExhaustion: false })
             : Promise.resolve(null),
           moderationPromise,
         ])) as [
@@ -649,7 +652,11 @@ export const createChatHandler = () => {
             });
             const effectiveBudgetSnapshot =
               budgetSnapshot ??
-              (freeMonthlyBudgetSnapshot?.rateLimitSkipped
+              // When served from balance the monthly snapshot is exhausted
+              // (remaining 0, no cushion) — building a BudgetMonitor from it
+              // would spuriously abort a request the user is paying for.
+              (rateLimitInfo.servedFrom === "balance" ||
+              freeMonthlyBudgetSnapshot?.rateLimitSkipped
                 ? null
                 : freeMonthlyBudgetSnapshot);
             const budgetMonitor = effectiveBudgetSnapshot
