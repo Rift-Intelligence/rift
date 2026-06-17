@@ -16,6 +16,7 @@ import {
 import SidebarUserNav from "./SidebarUserNav";
 import SidebarHistory from "./SidebarHistory";
 import SidebarHeaderContent from "./SidebarHeader";
+import { PentestArsenal } from "./PentestArsenal";
 
 /** Chat list data lifted from parent so the subscription stays active when sidebar closes. */
 export type ChatListData = ReturnType<typeof useChats>;
@@ -27,17 +28,23 @@ const ChatListContent: FC<{ chatListData: ChatListData }> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div
-      className="h-full min-w-0 overflow-y-auto overflow-x-hidden terminal-scrollbar"
-      ref={scrollContainerRef}
-      data-testid="sidebar-chat-list-scroll-container"
-    >
-      <SidebarHistory
-        chats={chatListData.results || []}
-        paginationStatus={chatListData.status}
-        loadMore={chatListData.loadMore}
-        containerRef={scrollContainerRef}
-      />
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Operation templates — pinned above scrollable history */}
+      <PentestArsenal />
+
+      {/* Chat history — scrollable */}
+      <div
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden terminal-scrollbar"
+        ref={scrollContainerRef}
+        data-testid="sidebar-chat-list-scroll-container"
+      >
+        <SidebarHistory
+          chats={chatListData.results || []}
+          paginationStatus={chatListData.status}
+          loadMore={chatListData.loadMore}
+          containerRef={scrollContainerRef}
+        />
+      </div>
     </div>
   );
 };
