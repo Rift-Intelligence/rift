@@ -544,7 +544,7 @@ export const agentLongTask = task({
   // Provider errors are handled internally via the fallback-model path.
   retry: { maxAttempts: 1 },
   // Right-sized from observed production CPU/memory usage.
-  machine: { preset: "small-1x" },
+  machine: { preset: "medium-1x" },
 
   onCancel: async ({
     ctx,

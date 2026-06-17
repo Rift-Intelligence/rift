@@ -16,7 +16,7 @@ const BASH_SANDBOX_RESUME_TIMEOUT = 5 * 60 * 1000; // 5 minutes for resuming pau
 // now refreshes this timeout on every getSandbox() call (see SANDBOX_KEEPALIVE_MS),
 // so 20 min is the keep-alive window: commands within 20 min of each other keep
 // the box alive, and an idle box pauses ~20 min after the last command.
-export const SANDBOX_KEEPALIVE_MS = 20 * 60 * 1000; // 20 minutes
+export const SANDBOX_KEEPALIVE_MS = 2 * 60 * 60 * 1000; // 2 hours
 const BASH_SANDBOX_AUTOPAUSE_TIMEOUT = SANDBOX_KEEPALIVE_MS;
 // Retry config for E2B 429 rate limits
 const RATE_LIMIT_COOLDOWN_MS = 1_000;

@@ -182,7 +182,7 @@ const buildProviderMap = (or: OpenRouterInstance) =>
   ({
     "ask-model": or("google/gemini-3-flash-preview"),
     "ask-model-free": or("deepseek/deepseek-v4-flash"),
-    "agent-model": or("moonshotai/kimi-k2.6:exacto"),
+    "agent-model": or("moonshotai/kimi-k2.7-code"),
     "agent-model-free": or("deepseek/deepseek-v4-flash"),
     "model-sonnet-4.6": or("anthropic/claude-sonnet-4.6"),
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
