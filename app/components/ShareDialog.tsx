@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, Check, Loader2, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
-import { RiftLogo } from "@/components/icons/rift-logo";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 import { MessagePartHandler } from "@/app/components/MessagePartHandler";
 import { FilePartRenderer } from "@/app/components/FilePartRenderer";
 
@@ -339,10 +340,8 @@ export const ShareDialog = ({
 
                 {/* Floating RIFT Logo - bottom right corner */}
                 <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5">
-                  <RiftLogo size={20} className="text-terminal-green" glow />
-                  <span className="font-mono text-[12px] font-semibold tracking-[0.2em] text-terminal-green">
-                    RIFT
-                  </span>
+                  <RiftPixelMark size={18} />
+                  <RiftWordmark height={11} fill="#f5f5f2" />
                 </div>
               </div>
             </div>

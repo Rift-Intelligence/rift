@@ -1,6 +1,7 @@
 "use client";
 
 import { RiftMascot } from "./RiftMascot";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 
 interface RiftBrandBarProps {
   version?: string;
@@ -25,9 +26,7 @@ export function RiftBrandBar({
       </div>
       <div className="min-w-0 leading-tight">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[13px] font-semibold tracking-tight text-foreground">
-            RIFT
-          </span>
+          <RiftWordmark height={11} className="text-foreground" />
           <span className="text-[11px] font-normal text-muted-foreground">
             {version}
           </span>

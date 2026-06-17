@@ -117,7 +117,7 @@ export function RiftMascot({
         ? "rift-mascot-banner"
         : "rift-mascot-bob";
 
-  const headroom = variant === "banner" ? 10 : variant === "hero" ? 14 : 6;
+  const headroom = variant === "banner" ? 10 : variant === "hero" ? 24 : 6;
 
   return (
     <div

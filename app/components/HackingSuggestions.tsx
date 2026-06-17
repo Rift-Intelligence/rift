@@ -8,8 +8,8 @@ export const HackingSuggestions = () => {
         How can I help you today?
       </h1>
       <p className="mx-auto max-w-md text-[13px] text-muted-foreground">
-        Ask a security question, or pick an operation from the sidebar — RIFT
-        runs the tools in an isolated sandbox.
+        Ask a security question, or describe an operation — RIFT runs the tools
+        in an isolated sandbox.
       </p>
     </div>
   );

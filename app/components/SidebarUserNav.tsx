@@ -45,6 +45,9 @@ import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
 import { formatBalanceTokens } from "@/lib/billing/token-display";
 import { BuyExtraUsageDialog } from "./extra-usage/BuyExtraUsageDialog";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
+import { navigateToAuth } from "@/app/hooks/useTauri";
 import { toast } from "sonner";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
@@ -161,7 +164,7 @@ const XIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
 const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const { user } = useAuth();
   const { signOut } = useAuthActions();
-  const { isCheckingProPlan, subscription } = useGlobalState();
+  const { isCheckingProPlan, subscription, chatMode } = useGlobalState();
   const [rateLimitsExpanded, setRateLimitsExpanded] = useState(false);
   const [referralDialogOpen, setReferralDialogOpen] = useState(false);
   const [tokenUsage, setTokenUsage] = useState<{
@@ -333,6 +336,164 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
     return user.firstName || user.lastName || "User";
   };
 
+  const modeLabel = chatMode === "agent" ? "EXECUTOR" : "ASK";
+
+  const tokenBalanceLabel =
+    subscription === "team"
+      ? "Team · unlimited"
+      : extraUsageSettings === undefined
+        ? "··· tokens"
+        : subscription === "free"
+          ? "Upgrade plan"
+          : `${formatBalanceTokens(tokenBalancePoints)} tokens`;
+
+  const handleTokenClick = () => {
+    if (subscription === "free") {
+      navigateToAuth("/signup?intent=pricing", {
+        preferSignInForReturningUser: true,
+      });
+      return;
+    }
+    if (subscription !== "team") {
+      setShowBuyDialog(true);
+    }
+  };
+
+  const sessionDockMenu = (
+    <>
+      <DropdownMenuLabel className="font-normal py-1.5">
+        <div className="flex items-center space-x-2">
+          <CircleUserRound className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <p
+            data-testid="user-email"
+            className="leading-none text-muted-foreground truncate min-w-0 text-sm"
+          >
+            {user.email}
+          </p>
+        </div>
+      </DropdownMenuLabel>
+
+      <DropdownMenuSeparator />
+
+      {isPaidUser && (
+        <div>
+          <DropdownMenuItem
+            data-testid="referral-menu-item"
+            onSelect={() => setReferralDialogOpen(true)}
+            className="py-1.5"
+          >
+            <Gift className="mr-2 h-4 w-4 text-foreground" />
+            <span>Refer a friend</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              setRateLimitsExpanded(!rateLimitsExpanded);
+            }}
+            className="py-1.5"
+          >
+            <Gauge className="mr-2 h-4 w-4 text-foreground" />
+            <span className="flex-1">Usage</span>
+            {rateLimitsExpanded ? (
+              <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+            )}
+          </DropdownMenuItem>
+          {rateLimitsExpanded && (
+            <div className="px-3 pb-2 space-y-0.5">
+              {isLoadingUsage ? (
+                <div className="flex items-center gap-2 py-1.5 text-sm text-muted-foreground">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : tokenUsage ? (
+                <>
+                  <div className="flex items-center justify-between py-1.5 text-sm">
+                    <span className="text-muted-foreground">Monthly</span>
+                    <div className="flex items-center gap-3 tabular-nums text-muted-foreground">
+                      <span>{tokenUsage.monthly.usagePercentage}% used</span>
+                      {tokenUsage.monthly.resetTime && (
+                        <span>
+                          {new Date(
+                            tokenUsage.monthly.resetTime,
+                          ).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {extraUsageEnabled && (
+                    <>
+                      <div className="flex items-center justify-between py-1.5 text-sm">
+                        <span className="text-muted-foreground">
+                          Extra balance
+                        </span>
+                        <span className="min-w-0 text-right tabular-nums text-muted-foreground">
+                          ${extraUsageBalanceDollars.toFixed(2)} available
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between py-1.5 text-sm">
+                        <span className="text-muted-foreground">
+                          This month
+                        </span>
+                        <div className="ml-3 flex min-w-0 flex-wrap items-center justify-end gap-x-1.5 gap-y-0.5 text-right tabular-nums text-muted-foreground">
+                          <span>
+                            ${extraUsageMonthlySpentDollars.toFixed(2)} spent
+                          </span>
+                          <span className="text-muted-foreground/60">/</span>
+                          <span>{extraUsageMonthlyLimitLabel}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="py-1.5 text-sm text-muted-foreground">
+                  Unable to load usage
+                </div>
+              )}
+              <button
+                onClick={() => openSettingsDialog("Extra Usage")}
+                className="-mx-3 px-3 w-[calc(100%+1.5rem)] flex items-center gap-2.5 py-1.5 rounded-md text-left text-sm hover:bg-muted transition-colors"
+                aria-label="Open extra usage settings"
+                tabIndex={0}
+              >
+                <span className="flex-1">Extra usage</span>
+                <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {subscription !== "team" && (
+        <DropdownMenuItem
+          data-testid="buy-tokens-button"
+          onSelect={() => setShowBuyDialog(true)}
+          className="py-1.5 text-primary focus:text-primary"
+        >
+          <Zap className="mr-2 h-4 w-4 text-primary" />
+          <span>Buy tokens</span>
+        </DropdownMenuItem>
+      )}
+
+      <DropdownMenuSeparator />
+
+      <DropdownMenuItem
+        data-testid="logout-button"
+        onSelect={handleLogOut}
+        className="py-1.5"
+      >
+        <LogOut className="mr-2 h-4 w-4 text-foreground" />
+        <span>Log out</span>
+      </DropdownMenuItem>
+    </>
+  );
+
   return (
     <div className="relative">
       <ReferralRewardDialog
@@ -347,213 +508,104 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         isLoading={isPurchasing}
       />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          {isCollapsed ? (
-            /* Collapsed state - only show avatar */
-            <div className="mb-1">
-              <button
-                data-testid="user-menu-button-collapsed"
-                type="button"
-                className="flex items-center justify-center p-2 cursor-pointer hover:bg-sidebar-accent/50 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full"
-                aria-haspopup="menu"
-                aria-label={`Open user menu for ${getDisplayName()}`}
-              >
-                <Avatar data-testid="user-avatar" className="h-7 w-7">
-                  <AvatarImage
-                    src={user.profilePictureUrl || undefined}
-                    alt={getDisplayName()}
-                  />
-                  <AvatarFallback className="text-xs">
-                    {getUserInitials()}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-            </div>
-          ) : (
+      {isCollapsed ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <button
-              data-testid="user-menu-button"
+              data-testid="user-menu-button-collapsed"
               type="button"
-              className="group flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex w-full cursor-pointer items-center justify-center rounded-md p-2 transition-colors hover:bg-[#2a2d2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-haspopup="menu"
-              aria-label={`Open user menu for ${getDisplayName()}`}
+              aria-label={`Session menu — ${tokenBalanceLabel}`}
             >
-              <Avatar className="h-6 w-6 shrink-0">
-                <AvatarImage
-                  src={user.profilePictureUrl || undefined}
-                  alt={getDisplayName()}
-                />
-                <AvatarFallback className="text-[10px]">
-                  {getUserInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1 leading-tight">
-                <div className="truncate text-[12px] text-foreground">
-                  {getDisplayName()}
-                </div>
-                <div
-                  data-testid="subscription-badge"
-                  className="truncate text-[11px] text-muted-foreground"
-                >
-                  {subscription === "team" ? (
-                    "Team"
-                  ) : extraUsageSettings === undefined ? (
-                    <span className="tabular-nums">Pro · ··· tokens</span>
-                  ) : (
-                    <span className="tabular-nums">
-                      Pro · {formatBalanceTokens(tokenBalancePoints)} tokens
-                    </span>
-                  )}
-                </div>
-              </div>
-              <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+              <RiftPixelMark size={22} />
             </button>
-          )}
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent
-          className="w-[calc(var(--radix-dropdown-menu-trigger-width)-12px)] min-w-[240px] rounded-2xl py-1.5"
-          align="center"
-          side="top"
-          sideOffset={0}
-        >
-          <DropdownMenuLabel className="font-normal py-1.5">
-            <div className="flex items-center space-x-2">
-              <CircleUserRound className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <p
-                data-testid="user-email"
-                className="leading-none text-muted-foreground truncate min-w-0 text-sm"
-              >
-                {user.email}
-              </p>
-            </div>
-          </DropdownMenuLabel>
-
-          <DropdownMenuSeparator />
-
-          {isPaidUser && (
-            <div>
-              <DropdownMenuItem
-                data-testid="referral-menu-item"
-                onSelect={() => setReferralDialogOpen(true)}
-                className="py-1.5"
-              >
-                <Gift className="mr-2 h-4 w-4 text-foreground" />
-                <span>Refer a friend</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setRateLimitsExpanded(!rateLimitsExpanded);
-                }}
-                className="py-1.5"
-              >
-                <Gauge className="mr-2 h-4 w-4 text-foreground" />
-                <span className="flex-1">Usage</span>
-                {rateLimitsExpanded ? (
-                  <ChevronDown className="ml-auto h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
-                )}
-              </DropdownMenuItem>
-              {rateLimitsExpanded && (
-                <div className="px-3 pb-2 space-y-0.5">
-                  {isLoadingUsage ? (
-                    <div className="flex items-center gap-2 py-1.5 text-sm text-muted-foreground">
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                      <span>Loading...</span>
-                    </div>
-                  ) : tokenUsage ? (
-                    <>
-                      <div className="flex items-center justify-between py-1.5 text-sm">
-                        <span className="text-muted-foreground">Monthly</span>
-                        <div className="flex items-center gap-3 tabular-nums text-muted-foreground">
-                          <span>
-                            {tokenUsage.monthly.usagePercentage}% used
-                          </span>
-                          {tokenUsage.monthly.resetTime && (
-                            <span>
-                              {new Date(
-                                tokenUsage.monthly.resetTime,
-                              ).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                              })}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {extraUsageEnabled && (
-                        <>
-                          <div className="flex items-center justify-between py-1.5 text-sm">
-                            <span className="text-muted-foreground">
-                              Extra balance
-                            </span>
-                            <span className="min-w-0 text-right tabular-nums text-muted-foreground">
-                              ${extraUsageBalanceDollars.toFixed(2)} available
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between py-1.5 text-sm">
-                            <span className="text-muted-foreground">
-                              This month
-                            </span>
-                            <div className="ml-3 flex min-w-0 flex-wrap items-center justify-end gap-x-1.5 gap-y-0.5 text-right tabular-nums text-muted-foreground">
-                              <span>
-                                ${extraUsageMonthlySpentDollars.toFixed(2)}{" "}
-                                spent
-                              </span>
-                              <span className="text-muted-foreground/60">
-                                /
-                              </span>
-                              <span>{extraUsageMonthlyLimitLabel}</span>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <div className="py-1.5 text-sm text-muted-foreground">
-                      Unable to load usage
-                    </div>
-                  )}
-                  <button
-                    onClick={() => openSettingsDialog("Extra Usage")}
-                    className="-mx-3 px-3 w-[calc(100%+1.5rem)] flex items-center gap-2.5 py-1.5 rounded-md text-left text-sm hover:bg-muted transition-colors"
-                    aria-label="Open extra usage settings"
-                    tabIndex={0}
-                  >
-                    <span className="flex-1">Extra usage</span>
-                    <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {subscription !== "team" && (
-            <DropdownMenuItem
-              data-testid="buy-tokens-button"
-              onClick={() => setShowBuyDialog(true)}
-              className="py-1.5 text-primary focus:text-primary"
-            >
-              <Zap className="mr-2 h-4 w-4 text-primary" />
-              <span className="font-mono">▸ buy tokens</span>
-            </DropdownMenuItem>
-          )}
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem
-            data-testid="logout-button"
-            onClick={handleLogOut}
-            className="py-1.5"
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="min-w-[240px] rounded-2xl py-1.5"
+            align="center"
+            side="top"
+            sideOffset={4}
           >
-            <LogOut className="mr-2 h-4 w-4 text-foreground" />
-            <span>Log out</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            {sessionDockMenu}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <div className="rounded-md border border-[#2b2b2b] bg-[#252526]/80 p-2">
+          <div className="flex items-start gap-2.5">
+            <RiftPixelMark size={22} className="mt-0.5 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[12px] font-semibold text-[#e8e8e8]">
+                  <RiftWordmark
+                    height={10}
+                    className="inline-block align-middle"
+                  />{" "}
+                  <span className="font-normal text-[#858585]">v1.0</span>
+                </span>
+                <span
+                  className="size-1.5 shrink-0 rounded-full bg-[#89d185] shadow-[0_0_8px_rgba(137,209,133,0.55)]"
+                  title="Connected"
+                  aria-hidden
+                />
+              </div>
+
+              <button
+                type="button"
+                data-testid="sidebar-token-balance"
+                onClick={handleTokenClick}
+                disabled={subscription === "team"}
+                className="mt-1 flex w-full min-w-0 items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-[#858585] transition-colors hover:bg-[#2a2d2e] hover:text-[#cccccc] disabled:cursor-default disabled:hover:bg-transparent"
+                aria-label={
+                  subscription === "team"
+                    ? "Team plan"
+                    : `Buy tokens — ${tokenBalanceLabel}`
+                }
+              >
+                <span className="shrink-0 uppercase tracking-[0.04em]">
+                  {modeLabel}
+                </span>
+                <span aria-hidden>·</span>
+                <span
+                  data-testid="subscription-badge"
+                  className="min-w-0 truncate tabular-nums text-[#cccccc]"
+                >
+                  {tokenBalanceLabel}
+                </span>
+                {subscription !== "team" ? (
+                  <ChevronRight className="ml-auto size-3 shrink-0 opacity-50" />
+                ) : null}
+              </button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    data-testid="user-menu-button"
+                    type="button"
+                    className="mt-0.5 flex w-full min-w-0 cursor-pointer items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-[#6e6e6e] transition-colors hover:bg-[#2a2d2e] hover:text-[#858585] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-haspopup="menu"
+                    aria-label={`Account menu for ${getDisplayName()}`}
+                  >
+                    <span className="truncate text-[#858585]">
+                      {getDisplayName()}
+                    </span>
+                    <span className="shrink-0">· ~/session</span>
+                    <ChevronDown className="ml-auto size-3 shrink-0 opacity-60" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[240px] rounded-2xl py-1.5"
+                  align="center"
+                  side="top"
+                  sideOffset={4}
+                >
+                  {sessionDockMenu}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

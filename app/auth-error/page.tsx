@@ -73,13 +73,15 @@ export default async function AuthErrorPage({
 
   return (
     <ZauthPageShell header={false} center>
-      <Card className="w-full max-w-md border-white/10 bg-white/[0.03] backdrop-blur-sm">
+      <Card className="w-full max-w-md border-[#3c3c3c] bg-[#252526]">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-            <AlertCircle className="h-6 w-6 text-destructive" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#f48771]/10">
+            <AlertCircle className="h-6 w-6 text-[#f48771]" />
           </div>
-          <CardTitle className="text-xl">{errorInfo.title}</CardTitle>
-          <CardDescription className="mt-2">
+          <CardTitle className="text-xl text-[#e8e8e8]">
+            {errorInfo.title}
+          </CardTitle>
+          <CardDescription className="mt-2 text-[#858585]">
             {errorInfo.description}
           </CardDescription>
         </CardHeader>
@@ -94,14 +96,21 @@ export default async function AuthErrorPage({
           {errorInfo.autoRetry ? (
             <AutoRetryButton loginUrl="/login" />
           ) : (
-            <Button asChild className="flex-1 min-w-0">
+            <Button
+              asChild
+              className="flex-1 min-w-0 bg-[#e8e8e8] text-[#1e1e1e] hover:bg-[#e8e8e8]/90"
+            >
               <a href="/login">
                 <RefreshCw className="h-4 w-4" />
                 Try Again
               </a>
             </Button>
           )}
-          <Button asChild variant="outline" className="flex-1 min-w-0">
+          <Button
+            asChild
+            variant="outline"
+            className="flex-1 min-w-0 border-[#3c3c3c] bg-transparent text-[#cccccc] hover:bg-[#2a2d2e]"
+          >
             <Link href="/">
               <Home className="h-4 w-4" />
               Go Home

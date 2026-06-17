@@ -4,26 +4,24 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Header from "@/app/components/Header";
-import DottedWordmark from "@/app/components/DottedWordmark";
-import { RiftLogo } from "@/components/icons/rift-logo";
+import { LandingHeader } from "@/app/components/landing/LandingHeader";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 import { DownloadSection, useDetectedPlatform } from "./DownloadSection";
 import { downloadLinks } from "./constants";
 import { AppleIcon, WindowsIcon, LinuxIcon } from "./icons";
 
 function AuthenticatedHeader() {
   return (
-    <header className="w-full px-6 max-sm:px-4 flex-shrink-0">
-      <div className="py-[10px] flex gap-10 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <RiftLogo size={24} className="text-terminal-green" />
-          <DottedWordmark
-            word="RIFT"
-            animate={false}
-            fill="#f4f4f5"
-            className="h-[14px] w-auto"
-          />
-        </div>
+    <header className="sticky top-0 z-50 w-full shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <Link
+          href="/"
+          className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          <RiftPixelMark size={22} />
+          <RiftWordmark height={13} fill="#f5f5f2" />
+        </Link>
         <Button
           asChild
           variant="ghost"
@@ -113,14 +111,14 @@ function DownloadContent() {
 
 export function DownloadPageContent() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-transparent">
+    <div className="landing-grid-bg relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="relative z-10">
         <Authenticated>
           <AuthenticatedHeader />
           <DownloadContent />
         </Authenticated>
         <Unauthenticated>
-          <Header hideDownload />
+          <LandingHeader />
           <DownloadContent />
         </Unauthenticated>
       </div>

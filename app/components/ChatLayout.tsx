@@ -6,6 +6,7 @@ import { useGlobalState } from "../contexts/GlobalState";
 import { useChats } from "../hooks/useChats";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MainSidebar from "./Sidebar";
+import SidebarUserNav from "./SidebarUserNav";
 import { SettingsDialog } from "./SettingsDialog";
 import { ChatTitlebar } from "./ChatTitlebar";
 import { onOpenSettingsDialog } from "@/lib/utils/settings-dialog";
@@ -128,18 +129,39 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
         {isMobile === false && (
           <div
             data-testid="sidebar"
-            className={`relative z-10 min-w-0 shrink-0 overflow-hidden border-r border-sidebar-border bg-sidebar transition-all duration-300 ${
+            className={`relative flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ${
               chatSidebarOpen ? "w-[260px]" : "w-0 border-r-0"
             }`}
           >
-            <SidebarProvider
-              open={chatSidebarOpen}
-              onOpenChange={setChatSidebarOpen}
-              defaultOpen={true}
-              style={{ "--sidebar-width": "260px" } as React.CSSProperties}
-            >
-              <MainSidebar chatListData={chatListData} />
-            </SidebarProvider>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <SidebarProvider
+                open={chatSidebarOpen}
+                onOpenChange={setChatSidebarOpen}
+                defaultOpen={true}
+                className="h-full min-h-0"
+                style={{ "--sidebar-width": "260px" } as React.CSSProperties}
+              >
+                <MainSidebar chatListData={chatListData} />
+              </SidebarProvider>
+            </div>
+            {chatSidebarOpen ? (
+              <div
+                data-testid="sidebar-session-dock"
+                className="shrink-0 border-t border-sidebar-border bg-sidebar px-2 pb-2 pt-2"
+              >
+                <SidebarUserNav />
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {/* Session dock when sidebar column is hidden (w-0) — stays bottom-left */}
+        {isMobile === false && !chatSidebarOpen && (
+          <div
+            data-testid="sidebar-session-dock-floating"
+            className="fixed bottom-0 left-0 z-30 w-[260px] border-r border-t border-sidebar-border bg-sidebar px-2 pb-2 pt-2 shadow-lg"
+          >
+            <SidebarUserNav />
           </div>
         )}
 

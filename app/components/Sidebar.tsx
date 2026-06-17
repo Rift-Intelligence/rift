@@ -7,7 +7,6 @@ import { useChats } from "../hooks/useChats";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -65,17 +64,13 @@ const DesktopSidebarContent: FC<{
         />
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="min-h-0 flex-1">
         <SidebarGroup className="min-h-0 flex-1 overflow-hidden">
           <SidebarGroupContent className="h-full min-h-0">
             <ChatListContent chatListData={chatListData} />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="border-t border-sidebar-border pb-2 pt-2">
-        <SidebarUserNav isCollapsed={isCollapsed} />
-      </SidebarFooter>
     </Sidebar>
   );
 };

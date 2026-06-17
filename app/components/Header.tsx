@@ -13,8 +13,8 @@ import {
   Tag,
   type LucideIcon,
 } from "lucide-react";
-import { RiftLogo } from "@/components/icons/rift-logo";
-import DottedWordmark from "./DottedWordmark";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 
 interface HeaderProps {
   chatTitle?: string;
@@ -50,13 +50,8 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       {/* Desktop header */}
       <div className="relative py-[10px] flex items-center justify-between max-md:hidden">
         <div className="flex items-center gap-2">
-          <RiftLogo size={26} className="text-terminal-green" />
-          <DottedWordmark
-            word="RIFT"
-            animate={false}
-            fill="#f4f4f5"
-            className="h-[15px] w-auto"
-          />
+          <RiftPixelMark size={24} />
+          <RiftWordmark height={13} fill="#f5f5f2" />
         </div>
 
         {chatTitle ? (
@@ -129,13 +124,8 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       {/* Mobile header */}
       <div className="py-3 flex items-center justify-between md:hidden">
         <div className="flex items-center gap-2">
-          <RiftLogo size={22} className="text-terminal-green" />
-          <DottedWordmark
-            word="RIFT"
-            animate={false}
-            fill="#f4f4f5"
-            className="h-[13px] w-auto"
-          />
+          <RiftPixelMark size={22} />
+          <RiftWordmark height={12} fill="#f5f5f2" />
         </div>
         {!loading && !user && (
           <div className="flex items-center gap-2">

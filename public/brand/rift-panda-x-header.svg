@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-label="RIFT">
+  <defs>
+    <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#18181a"/>
+      <stop offset="55%" stop-color="#1e1e1e"/>
+      <stop offset="100%" stop-color="#121214"/>
+    </linearGradient>
+  </defs>
+  <rect width="1500" height="500" fill="url(#hdr)"/>
+  <g opacity="0.06" stroke="#ffffff" stroke-width="1">
+    <path d="M0 125H1500M0 250H1500M0 375H1500"/>
+    <path d="M187.5 0V500M375 0V500M562.5 0V500M750 0V500M937.5 0V500M1125 0V500M1312.5 0V500"/>
+  </g>
+  <g transform="translate(120 95) scale(9.5)" shape-rendering="crispEdges">
+  <rect x="8" y="0" width="4" height="4" fill="#161618"/>
+  <rect x="20" y="0" width="4" height="4" fill="#161618"/>
+  <rect x="4" y="4" width="20" height="4" fill="#f5f5f2"/>
+  <rect x="4" y="8" width="8" height="4" fill="#161618"/>
+  <rect x="12" y="8" width="8" height="4" fill="#f5f5f2"/>
+  <rect x="20" y="8" width="8" height="4" fill="#161618"/>
+  <rect x="0" y="12" width="28" height="4" fill="#f5f5f2"/>
+  <rect x="16" y="12" width="4" height="4" fill="#161618"/>
+  <rect x="4" y="16" width="20" height="4" fill="#f5f5f2"/>
+  <rect x="4" y="20" width="20" height="4" fill="#ebebe6"/>
+  <rect x="4" y="24" width="4" height="6" fill="#161618"/>
+  <rect x="8" y="24" width="4" height="6" fill="#161618"/>
+  <rect x="20" y="24" width="4" height="6" fill="#161618"/>
+  <rect x="24" y="24" width="4" height="6" fill="#161618"/>
+  </g>
+  <text x="430" y="250" fill="#f5f5f2" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="132" font-weight="650" letter-spacing="-3">RIFT</text>
+  <text x="435" y="310" fill="#8a8a8f" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="28" letter-spacing="0.5">autonomous offensive intelligence</text>
+</svg>

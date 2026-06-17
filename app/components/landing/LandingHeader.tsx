@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 import { navigateToAuth } from "@/app/hooks/useTauri";
 
 const NAV = [
@@ -26,9 +27,7 @@ export function LandingHeader() {
           aria-label="RIFT home"
         >
           <RiftPixelMark size={22} />
-          <span className="text-[13px] font-semibold tracking-tight text-foreground">
-            RIFT
-          </span>
+          <RiftWordmark height={13} className="text-foreground" />
         </button>
 
         <nav className="hidden items-center gap-6 md:flex">

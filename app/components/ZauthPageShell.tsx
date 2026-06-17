@@ -1,10 +1,9 @@
-import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
+import Link from "next/link";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 
 /**
- * Shared public-page shell. Transparent so the global RiftBackdrop (mounted in
- * the root layout) shows through, with optional header/footer chrome.
+ * Public auth shell — Cursor / landing-aligned dark layout.
  */
 export default function ZauthPageShell({
   children,
@@ -15,32 +14,51 @@ export default function ZauthPageShell({
 }: {
   children: React.ReactNode;
   header?: boolean;
-  footer?: boolean;
-  /** vertically + horizontally center the content (auth / error pages) */
   center?: boolean;
+  footer?: boolean;
   className?: string;
 }) {
+  const showAuthChrome = center || header;
+
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden bg-transparent">
-      {header && (
-        <div className="relative z-10 flex-shrink-0">
-          <Header />
-        </div>
-      )}
+    <div className="landing-grid-bg flex min-h-screen flex-col bg-background text-foreground">
+      {showAuthChrome ? (
+        <header className="sticky top-0 z-10 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md">
+          <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4 sm:px-6">
+            <Link
+              href="/"
+              className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <RiftPixelMark size={22} />
+              <RiftWordmark height={13} />
+            </Link>
+            <Link
+              href="/"
+              className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Back to home
+            </Link>
+          </div>
+        </header>
+      ) : null}
 
       <main
-        className={`relative z-10 flex-1 ${
-          center ? "flex items-center justify-center px-4 py-12" : ""
-        } ${className ?? ""}`}
+        className={`relative flex-1 ${center ? "flex items-center justify-center px-4 py-10 sm:py-14" : ""} ${className ?? ""}`}
       >
         {children}
       </main>
 
-      {footer && (
-        <div className="relative z-10 flex-shrink-0">
-          <Footer />
-        </div>
-      )}
+      {footer || center ? (
+        <footer className="shrink-0 border-t border-border/40 py-6 text-center text-[12px] text-muted-foreground">
+          <Link href="/terms-of-service" className="hover:text-foreground">
+            Terms
+          </Link>
+          {" · "}
+          <Link href="/privacy-policy" className="hover:text-foreground">
+            Privacy
+          </Link>
+        </footer>
+      ) : null}
     </div>
   );
 }

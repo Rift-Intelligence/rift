@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { RiftMascot } from "../rift/RiftMascot";
 import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 import { LandingHeader } from "./LandingHeader";
 import { navigateToAuth } from "@/app/hooks/useTauri";
 
@@ -104,16 +105,16 @@ export function LandingPage() {
     <div className="landing-grid-bg min-h-full bg-background text-foreground">
       <LandingHeader />
 
-      <section className="relative overflow-hidden border-b border-border/40">
+      <section className="relative overflow-x-hidden border-b border-border/40">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(255,255,255,0.08),transparent)]" />
 
         <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-20 pt-14 text-center sm:px-6 sm:pt-20 md:pb-28">
-          <div className="relative mb-8 sm:mb-10">
+          <div className="relative mb-8 pt-7 sm:mb-10 sm:pt-9 md:pt-11">
             <div
               className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl sm:h-64 sm:w-64"
               aria-hidden
             />
-            <div className="relative scale-[1.5] sm:scale-[2.1] md:scale-[2.6]">
+            <div className="relative origin-bottom translate-y-4 scale-[1.5] sm:translate-y-5 sm:scale-[2.1] md:translate-y-6 md:scale-[2.6]">
               <RiftMascot
                 cell={7}
                 variant="hero"
@@ -243,9 +244,7 @@ export function LandingPage() {
               <div className="flex items-center gap-2 border-b border-border/60 px-4 py-2.5">
                 <RiftMascot cell={2} />
                 <div className="text-left leading-tight">
-                  <div className="text-[12px] font-semibold text-foreground">
-                    RIFT
-                  </div>
+                  <RiftWordmark height={9} className="text-foreground" />
                   <div className="text-[10px] text-muted-foreground">
                     ~/session · Agent
                   </div>
@@ -443,7 +442,10 @@ export function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-center text-[12px] text-muted-foreground sm:flex-row sm:px-6 sm:text-left">
           <div className="flex items-center gap-2">
             <RiftPixelMark size={18} />
-            <span>RIFT · Autonomous pentest AI</span>
+            <RiftWordmark height={11} />
+            <span className="text-muted-foreground">
+              · Autonomous pentest AI
+            </span>
           </div>
           <p>
             <Link

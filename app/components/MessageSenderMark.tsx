@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/app/hooks/useAuth";
 import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function userInitials(name: string | null, email: string): string {
@@ -26,9 +27,11 @@ export function MessageSenderMark({ role }: { role: "user" | "assistant" }) {
         aria-hidden
       >
         <RiftPixelMark size={22} className="shrink-0" />
-        <span className="text-[10px] font-medium leading-none text-muted-foreground/80">
-          RIFT
-        </span>
+        <RiftWordmark
+          height={7}
+          fill="currentColor"
+          className="text-muted-foreground/80"
+        />
       </div>
     );
   }
