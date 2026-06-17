@@ -178,7 +178,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           existingShareId={chatData?.share_id}
           existingShareDate={chatData?.share_date}
         />
-        <div className="px-4 bg-background flex-shrink-0">
+        <div className="px-4 bg-background flex-shrink-0 md:hidden">
           <div className="flex flex-row items-center justify-between pt-3 pb-1 gap-1 sticky top-0 z-10 bg-background flex-shrink-0">
             <div className="flex items-center gap-2 min-w-0">
               {/* Only show sidebar toggle on mobile - desktop uses collapsed sidebar logo */}

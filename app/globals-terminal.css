@@ -1,48 +1,35 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
-  /* === RIFT — refined dark SaaS: graphite canvas + cyan signal === */
-  --terminal-bg: #0f1011;
-  --terminal-primary: #0f1011;
-  --terminal-secondary: #17181b;
-  --terminal-sidebar-bg: #121315;
-  --terminal-green: #2bccdf; /* primary cyan (legacy name) */
-  --terminal-green-dim: #1c8b99;
-  --terminal-green-glow: #2bccdf;
-  --terminal-sky: #5ec8d8; /* secondary cyan */
-  --terminal-text: #ececed;
-  --terminal-text-dim: #a0a1a6;
-  --terminal-border: #232428;
+  --terminal-bg: #1e1e1e;
+  --terminal-primary: #1e1e1e;
+  --terminal-secondary: #252526;
+  --terminal-sidebar-bg: #181818;
+  --terminal-green: #89d185;
+  --terminal-green-dim: #6a9955;
+  --terminal-green-glow: #89d185;
+  --terminal-sky: #4daafc;
+  --terminal-text: #cccccc;
+  --terminal-text-dim: #858585;
+  --terminal-border: #2b2b2b;
   --terminal-scanline: transparent;
   --terminal-crt-flicker: transparent;
-
-  /* CRT effects OFF — refined dark SaaS, no scanline/glow. */
   --terminal-scanline-opacity: 0;
   --terminal-glow-intensity: 0;
-
-  /* === Accent system → cyan signal === */
-  --primary: #2bccdf;
-  --primary-foreground: #04212a;
-  --secondary: #1e1f23;
-  --secondary-foreground: #ececed;
-  --accent: #1e1f23;
-  --accent-foreground: #ececed;
-  --ring: #2bccdf;
-  --chart-1: #2bccdf;
-  --chart-2: #5ec8d8;
-  --chart-3: #1c8b99;
-  --chart-4: #e8b339;
-  --chart-5: #f06a6a;
-  --link-color: #2bccdf;
-
-  --sidebar-primary: #2bccdf;
-  --sidebar-primary-foreground: #04212a;
-  --sidebar-ring: #2bccdf;
-
-  /* Premium / Upgrade buttons → cyan */
-  --premium-bg: #1e1f23;
-  --premium-text: #2bccdf;
-  --premium-hover: #5ee0f0;
+  --primary: #e8e8e8;
+  --primary-foreground: #1e1e1e;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #cccccc;
+  --accent: #37373d;
+  --accent-foreground: #e8e8e8;
+  --ring: #0078d4;
+  --link-color: #4daafc;
+  --sidebar-primary: #e8e8e8;
+  --sidebar-primary-foreground: #1e1e1e;
+  --sidebar-ring: #0078d4;
+  --premium-bg: #2d2d2d;
+  --premium-text: #e8e8e8;
+  --premium-hover: #cccccc;
 }
 
 /* RIFT typography: Geist body (UI), Space Grotesk display (headings/brand),
@@ -313,6 +300,8 @@ samp,
 }
 
 .terminal-message-user {
+  background: transparent !important;
+  border: none !important;
   border-left-color: var(--terminal-green-dim);
   background: rgba(34, 224, 255, 0.1);
 }

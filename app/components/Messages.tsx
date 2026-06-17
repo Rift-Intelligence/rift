@@ -20,7 +20,7 @@ import type { ChatStatus, ChatMessage } from "@/types";
 import type { FileDetails } from "@/types/file";
 import { toast } from "sonner";
 import { WandSparkles } from "lucide-react";
-import { RiftThinkingConsole } from "./rift/RiftThinkingConsole";
+import { CursorThinking } from "@/components/ui/cursor-thinking";
 import { hasTextContent } from "@/lib/utils/message-utils";
 import { useDataStreamState } from "./DataStreamProvider";
 
@@ -115,29 +115,14 @@ export const Messages = ({
     return hasText || hasFiles;
   }, [lastAssistantMessageIndex, visibleMessages]);
 
-  // Check if we should show loading dots (streaming with no content yet)
+  // Show thinking before the first assistant message exists; after that it
+  // renders inline at the bottom of the streaming assistant turn (mockup).
   const shouldShowLoadingDots = useMemo(() => {
-    // Show dots while resuming an interrupted stream until the first chunk arrives
-    if (isAutoResuming) return true;
     if (status !== "streaming" && status !== "submitted") return false;
     if (summarizationStatus?.status === "started") return false;
     if (uploadStatus?.isUploading) return false;
-
-    // Check if last assistant message has text content
-    const lastAssistantMsg =
-      lastAssistantMessageIndex !== undefined
-        ? visibleMessages[lastAssistantMessageIndex]
-        : undefined;
-    if (!lastAssistantMsg) return true; // No message yet, show dots
-    return !hasTextContent(lastAssistantMsg.parts);
-  }, [
-    isAutoResuming,
-    status,
-    summarizationStatus,
-    uploadStatus,
-    lastAssistantMessageIndex,
-    visibleMessages,
-  ]);
+    return lastAssistantMessageIndex === undefined;
+  }, [status, summarizationStatus, uploadStatus, lastAssistantMessageIndex]);
 
   // Determine if summarization status should be shown as a separate element vs inline
   // Upload status and loading dots ALWAYS show separately (they only appear when no content yet)
@@ -289,11 +274,11 @@ export const Messages = ({
     >
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto p-4 terminal-scrollbar"
+        className="flex-1 min-h-0 overflow-y-auto terminal-scrollbar"
       >
         <div
           ref={contentRef}
-          className="mx-auto w-full max-w-full sm:max-w-[768px] sm:min-w-[390px] flex flex-col space-y-4 pb-20"
+          className="mx-auto w-full max-w-[768px] flex flex-col space-y-7 px-5 pb-24 pt-6"
           data-testid="messages-container"
         >
           {/* Loading indicator at top when loading more messages */}
@@ -361,7 +346,7 @@ export const Messages = ({
               {uploadStatus?.isUploading && (
                 <Shimmer className="text-sm">{`${uploadStatus.message}...`}</Shimmer>
               )}
-              {shouldShowLoadingDots && <RiftThinkingConsole />}
+              {shouldShowLoadingDots && <CursorThinking />}
             </div>
           )}
 

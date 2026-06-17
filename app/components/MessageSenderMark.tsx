@@ -1,0 +1,58 @@
+"use client";
+
+import { useAuth } from "@/app/hooks/useAuth";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+function userInitials(name: string | null, email: string): string {
+  if (name) {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    if (parts[0]) return parts[0].slice(0, 2).toUpperCase();
+  }
+  if (email) return email.slice(0, 2).toUpperCase();
+  return "U";
+}
+
+export function MessageSenderMark({ role }: { role: "user" | "assistant" }) {
+  const { user } = useAuth();
+
+  if (role === "assistant") {
+    return (
+      <div
+        className="mt-0.5 flex w-7 shrink-0 flex-col items-center gap-1"
+        aria-hidden
+      >
+        <RiftPixelMark size={22} className="shrink-0" />
+        <span className="text-[10px] font-medium leading-none text-muted-foreground/80">
+          RIFT
+        </span>
+      </div>
+    );
+  }
+
+  const initials = userInitials(user?.name ?? null, user?.email ?? "");
+  const label =
+    user?.firstName?.trim() || user?.name?.trim()?.split(/\s+/)[0] || "You";
+
+  return (
+    <div
+      className="mt-0.5 flex w-7 shrink-0 flex-col items-center gap-1"
+      aria-hidden
+    >
+      <Avatar className="size-[22px] rounded-[6px]">
+        {user?.profilePictureUrl ? (
+          <AvatarImage src={user.profilePictureUrl} alt="" />
+        ) : null}
+        <AvatarFallback className="rounded-[6px] bg-[#252526] text-[9px] font-semibold text-muted-foreground">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      <span className="max-w-[52px] truncate text-[10px] font-medium leading-none text-muted-foreground/80">
+        {label}
+      </span>
+    </div>
+  );
+}

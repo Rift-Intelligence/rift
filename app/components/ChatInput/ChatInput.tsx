@@ -165,7 +165,9 @@ export const ChatInput = ({
   };
 
   return (
-    <div className={`relative px-4 min-w-0 ${isCentered ? "" : "pb-3"}`}>
+    <div
+      className={`relative min-w-0 px-4 ${isCentered ? "" : "pb-4 bg-gradient-to-b from-transparent via-background/80 to-background"}`}
+    >
       <div className="mx-auto w-full max-w-full min-w-0 sm:max-w-[768px] sm:min-w-[390px] flex flex-col flex-1">
         {rateLimitWarning && onDismissRateLimitWarning && (
           <RateLimitWarning
@@ -218,9 +220,9 @@ export const ChatInput = ({
         />
 
         <div
-          className={`order-2 sm:order-1 flex flex-col transition-[border-color] duration-200 relative bg-input-chat max-h-[300px] min-w-0 overflow-hidden border terminal-border rounded-2xl focus-within:border-primary/40 ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
+          className={`order-2 sm:order-1 flex max-h-[300px] min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-input-chat transition-[border-color] duration-200 focus-within:border-[#505050] ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
         >
-          <div className="flex flex-col gap-2.5 px-1 py-2.5">
+          <div className="flex flex-col gap-2 px-3 py-2.5 pb-2">
             <ChatInputTextarea
               draftId={draftId}
               chatMode={chatMode}
@@ -254,7 +256,7 @@ export const ChatInput = ({
             Mobile new chats with no messages: hidden (uses above-input placement). */}
         {isAgent && (!isMobile || !isNewChat || hasMessages) && (
           <div
-            className={`order-3 flex items-center px-1 pt-2 ${isNewChat && !hasMessages ? "absolute left-4 right-4 top-full" : ""}`}
+            className={`order-3 flex items-center px-1 pt-2 md:hidden ${isNewChat && !hasMessages ? "absolute left-4 right-4 top-full" : ""}`}
           >
             <SandboxSelector
               value={sandboxPreference}
@@ -263,6 +265,10 @@ export const ChatInput = ({
           </div>
         )}
 
+        <p className="mt-2 text-center text-[11px] text-muted-foreground/70">
+          RIFT runs real tools in an isolated sandbox. Review actions on
+          production targets.
+        </p>
         {onScrollToBottom && (
           <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-40">
             <ScrollToBottomButton

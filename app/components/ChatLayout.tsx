@@ -7,7 +7,7 @@ import { useChats } from "../hooks/useChats";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MainSidebar from "./Sidebar";
 import { SettingsDialog } from "./SettingsDialog";
-import { BiosStatusBar } from "./BiosStatusBar";
+import { ChatTitlebar } from "./ChatTitlebar";
 import { onOpenSettingsDialog } from "@/lib/utils/settings-dialog";
 
 /**
@@ -121,21 +121,22 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
   }, [isMobile, chatSidebarOpen, setChatSidebarOpen]);
 
   return (
-    <div className="flex min-h-0 flex-1 w-full flex-col overflow-hidden terminal-screen">
+    <div className="flex min-h-0 flex-1 w-full flex-col overflow-hidden bg-background">
+      <ChatTitlebar chatListData={chatListData} />
       <div className="flex min-h-0 flex-1 w-full overflow-hidden">
         {/* Chat Sidebar - Desktop: only mount once isMobile is resolved to avoid flash on mobile */}
         {isMobile === false && (
           <div
             data-testid="sidebar"
-            className={`relative z-10 min-w-0 shrink-0 overflow-hidden bg-sidebar terminal-sidebar terminal-border transition-all duration-300 ${
-              chatSidebarOpen ? "w-80" : "w-12"
+            className={`relative z-10 min-w-0 shrink-0 overflow-hidden border-r border-sidebar-border bg-sidebar transition-all duration-300 ${
+              chatSidebarOpen ? "w-[260px]" : "w-0 border-r-0"
             }`}
           >
             <SidebarProvider
               open={chatSidebarOpen}
               onOpenChange={setChatSidebarOpen}
               defaultOpen={true}
-              style={{ "--sidebar-width": "20rem" } as React.CSSProperties}
+              style={{ "--sidebar-width": "260px" } as React.CSSProperties}
             >
               <MainSidebar chatListData={chatListData} />
             </SidebarProvider>
@@ -143,7 +144,7 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
         )}
 
         {/* Main content slot - pages render here */}
-        <div className="flex min-h-0 flex-1 min-w-0 flex-col relative terminal-scrollbar">
+        <div className="rift-cursor-app flex min-h-0 flex-1 min-w-0 flex-col relative bg-background">
           {children}
         </div>
 
@@ -172,8 +173,6 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
           initialTab={settingsDialogTab}
         />
       </div>
-      {/* RIFT OS BIOS status strip */}
-      <BiosStatusBar />
     </div>
   );
 }

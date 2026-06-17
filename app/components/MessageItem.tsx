@@ -15,6 +15,7 @@ import {
   WorkedForTrigger,
 } from "@/components/ai-elements/worked-for";
 import { ChevronDown, ChevronUp, FileSearch, WandSparkles } from "lucide-react";
+import { CursorThinking } from "@/components/ui/cursor-thinking";
 import {
   extractMessageText,
   hasTextContent,
@@ -392,8 +393,8 @@ export const MessageItem = memo(function MessageItem({
                   data-testid="message-content"
                   className={`${
                     isUser
-                      ? "w-full text-[13px] leading-relaxed text-foreground"
-                      : "w-full prose space-y-3 max-w-none text-[13px] leading-relaxed dark:prose-invert min-w-0"
+                      ? "w-full text-[13px] leading-[1.65] text-[#e8e8e8]"
+                      : "w-full prose space-y-3 max-w-none text-[13px] leading-[1.65] text-[#cccccc] dark:prose-invert min-w-0"
                   } overflow-hidden`}
                 >
                   {isUser ? (
@@ -536,6 +537,7 @@ export const MessageItem = memo(function MessageItem({
                       )}
                     </>
                   )}
+                  {isStreamingThisMessage ? <CursorThinking /> : null}
                 </div>
               )}
 

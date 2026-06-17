@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RIFT — Landing</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #1e1e1e; --panel: #252526; --surface-hover: #2a2d2e;
+      --border: #3c3c3c; --border-subtle: #2b2b2b;
+      --text: #cccccc; --text-bright: #e8e8e8; --muted: #858585; --faint: #6e6e6e;
+      --success: #89d185; --emerald: #34d399; --r: 6px; --r-lg: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    .landing-grid-bg { background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 0); background-size: 28px 28px; min-height: 100vh; }
+    a, button { font: inherit; cursor: pointer; }
+    .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+    @media (min-width: 640px) { .wrap { padding: 0 1.5rem; } }
+    header { position: sticky; top: 0; z-index: 50; border-bottom: 1px solid rgba(60,60,60,.6); background: rgba(30,30,30,.8); backdrop-filter: blur(12px); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; height: 48px; max-width: 72rem; margin: 0 auto; padding: 0 1rem; }
+    .logo { display: flex; align-items: center; gap: 8px; border: none; background: none; color: var(--text-bright); }
+    nav { display: none; gap: 24px; }
+    @media (min-width: 768px) { nav { display: flex; } }
+    nav button { border: none; background: none; color: var(--muted); font-size: 13px; }
+    nav button:hover { color: var(--text-bright); }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .btn-ghost { border: none; background: none; color: var(--muted); padding: 6px 10px; border-radius: var(--r); font-size: 13px; }
+    .btn-primary-sm { border: none; background: var(--text-bright); color: var(--bg); padding: 6px 12px; border-radius: var(--r); font-size: 13px; font-weight: 500; }
+    .hero { position: relative; overflow: hidden; border-bottom: 1px solid rgba(60,60,60,.4); text-align: center; }
+    .hero-glow { pointer-events: none; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255,255,255,.08), transparent); }
+    .hero-inner { position: relative; padding: 56px 1rem 80px; max-width: 72rem; margin: 0 auto; }
+    @media (min-width: 640px) { .hero-inner { padding-top: 80px; padding-bottom: 112px; } }
+    .mascot-wrap { position: relative; display: inline-block; margin-bottom: 32px; transform: scale(2.1); }
+    @media (min-width: 768px) { .mascot-wrap { transform: scale(2.6); margin-bottom: 40px; } }
+    .mascot-glow { position: absolute; left: 50%; top: 50%; width: 256px; height: 256px; transform: translate(-50%,-50%); border-radius: 50%; background: rgba(255,255,255,.1); filter: blur(48px); }
+    .mascot { position: relative; width: 33px; height: 32px; animation: mascot-bob 1.8s ease-in-out infinite; transform-origin: center bottom; filter: drop-shadow(0 12px 48px rgba(255,255,255,.2)); }
+    .mascot .p { position: absolute; background: #f5f5f2; }
+    .mascot .e { background: #161618; }
+    .mascot .n { background: #ebebe6; }
+    .mascot .leg-l { animation: leg-l .9s ease-in-out infinite; }
+    .mascot .leg-r { animation: leg-r .9s ease-in-out infinite; }
+    @keyframes mascot-bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+    @keyframes leg-l { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+    @keyframes leg-r { 0%,100%{transform:translateY(-2px)} 50%{transform:translateY(0)} }
+    .eyebrow { font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: rgba(52,211,153,.9); margin-bottom: 16px; }
+    h1 { margin: 0 auto; max-width: 48rem; font-size: 2rem; font-weight: 600; line-height: 1.08; letter-spacing: -.02em; color: var(--text-bright); }
+    @media (min-width: 640px) { h1 { font-size: 3rem; } }
+    @media (min-width: 768px) { h1 { font-size: 3.25rem; } }
+    h1 .dim { color: var(--muted); font-weight: 600; }
+    .hero-desc { margin: 20px auto 0; max-width: 36rem; font-size: 15px; line-height: 1.6; color: var(--muted); }
+    .hero-ctas { margin-top: 32px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: var(--r-lg); background: var(--text-bright); color: var(--bg); padding: 10px 20px; font-size: 13px; font-weight: 500; }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: var(--r-lg); background: transparent; color: var(--text-bright); padding: 10px 20px; font-size: 13px; font-weight: 500; }
+    .btn-secondary:hover { background: var(--surface-hover); }
+    .hero-note { margin-top: 20px; font-size: 12px; color: rgba(133,133,133,.8); }
+    .tool-tags { margin-top: 48px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    .tool-tag { border: 1px solid rgba(60,60,60,.6); border-radius: var(--r); background: rgba(37,37,38,.5); padding: 4px 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    section { border-bottom: 1px solid rgba(60,60,60,.4); padding: 80px 0; scroll-margin-top: 64px; }
+    @media (min-width: 640px) { section { padding: 96px 0; } }
+    h2 { margin: 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: var(--text-bright); }
+    @media (min-width: 640px) { h2 { font-size: 1.875rem; } }
+    .sec-desc { margin-top: 8px; font-size: 15px; color: var(--muted); max-width: 32rem; }
+    .features-grid { margin-top: 40px; display: grid; gap: 16px; }
+    @media (min-width: 640px) { .features-grid { grid-template-columns: repeat(3, 1fr); } }
+    .card { border: 1px solid rgba(60,60,60,.6); border-radius: 12px; background: rgba(37,37,38,.4); padding: 20px; }
+    .card:hover { border-color: var(--border); background: rgba(37,37,38,.7); }
+    .card-icon { width: 36px; height: 36px; border-radius: var(--r-lg); background: var(--surface-hover); display: grid; place-items: center; color: var(--muted); margin-bottom: 12px; font-size: 16px; }
+    .card h3 { margin: 0; font-size: 15px; font-weight: 600; color: var(--text-bright); }
+    .card p { margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+    .how-grid { margin-top: 48px; display: grid; gap: 48px; align-items: start; }
+    @media (min-width: 1024px) { .how-grid { grid-template-columns: 1fr 1fr; gap: 64px; } }
+    .steps { list-style: none; margin: 32px 0 0; padding: 0; }
+    .steps li { display: flex; gap: 16px; margin-bottom: 24px; }
+    .steps .n { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--muted); }
+    .steps h3 { margin: 0; font-size: 15px; font-weight: 500; color: var(--text-bright); }
+    .steps p { margin: 4px 0 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+    .preview { border-radius: 12px; border: 1px solid var(--border); background: var(--panel); box-shadow: 0 25px 50px -12px rgba(0,0,0,.5); overflow: hidden; }
+    .preview-bar { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(60,60,60,.6); padding: 10px 16px; }
+    .preview-bar .title { font-size: 12px; font-weight: 600; color: var(--text-bright); }
+    .preview-bar .sub { font-size: 10px; color: var(--muted); }
+    .preview-bar .st { margin-left: auto; font-size: 10px; color: rgba(52,211,153,.9); }
+    .preview-body { padding: 16px; text-align: left; font-size: 13px; }
+    .preview-body code { font-family: var(--mono); font-size: 12px; background: rgba(30,30,30,.6); padding: 2px 6px; border-radius: 3px; color: #ce9178; }
+    .tool { margin-top: 16px; border: 1px solid var(--border-subtle); border-radius: var(--r); background: var(--panel); overflow: hidden; }
+    .tool-h { display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border-subtle); }
+    .tool-h .st { margin-left: auto; color: var(--success); }
+    .tool-body { padding: 12px; font-family: var(--mono); font-size: 11px; line-height: 1.7; color: var(--muted); background: rgba(30,30,30,.4); }
+    .tool-body .ok { color: var(--success); }
+    .tool-body .dim { color: var(--faint); }
+    .modes { margin-top: 64px; display: grid; gap: 16px; }
+    @media (min-width: 640px) { .modes { grid-template-columns: 1fr 1fr; } }
+    .mode-agent { border-color: rgba(52,211,153,.2); background: rgba(52,211,153,.05); }
+    .mode-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); display: inline-block; }
+    .pricing-grid { margin-top: 40px; display: grid; gap: 16px; max-width: 42rem; }
+    @media (min-width: 640px) { .pricing-grid { grid-template-columns: 1fr 1fr; } }
+    .price { margin-top: 8px; font-size: 2.25rem; font-weight: 600; letter-spacing: -.02em; color: var(--text-bright); }
+    .price-list { margin: 20px 0 0; padding: 0; list-style: none; }
+    .price-list li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    .price-card-muted { opacity: .8; background: rgba(37,37,38,.2); }
+    .price-card-muted .price { color: var(--muted); }
+    .cta-section { border-top: 1px solid rgba(60,60,60,.4); border-bottom: none; text-align: center; }
+    footer { border-top: 1px solid rgba(60,60,60,.4); padding: 32px 0; }
+    .footer-inner { max-width: 72rem; margin: 0 auto; padding: 0 1rem; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; font-size: 12px; color: var(--muted); }
+    @media (min-width: 640px) { .footer-inner { flex-direction: row; justify-content: space-between; text-align: left; padding: 0 1.5rem; } }
+    footer a { color: var(--muted); text-decoration: underline; }
+    footer a:hover { color: var(--text-bright); }
+  </style>
+</head>
+<body>
+<div class="landing-grid-bg">
+  <header>
+    <div class="header-inner">
+      <button class="logo" type="button"><span style="font-size:13px;font-weight:600">RIFT</span></button>
+      <nav>
+        <button type="button" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</button>
+        <button type="button" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
+        <button type="button" onclick="document.getElementById('security').scrollIntoView({behavior:'smooth'})">Security</button>
+        <button type="button" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Pricing</button>
+      </nav>
+      <div class="header-actions">
+        <button class="btn-ghost" type="button">Log in</button>
+        <button class="btn-primary-sm" type="button">Get started</button>
+      </div>
+    </div>
+  </header>
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+      <div class="mascot-wrap">
+        <div class="mascot-glow"></div>
+        <div class="mascot" aria-hidden="true">
+          <span class="p" style="left:8px;top:0;width:4px;height:4px"></span>
+          <span class="p" style="left:20px;top:0;width:4px;height:4px"></span>
+          <span class="p" style="left:4px;top:4px;width:20px;height:4px"></span>
+          <span class="e" style="left:4px;top:8px;width:8px;height:4px"></span>
+          <span class="p" style="left:12px;top:8px;width:8px;height:4px"></span>
+          <span class="e" style="left:20px;top:8px;width:8px;height:4px"></span>
+          <span class="p" style="left:0;top:12px;width:28px;height:4px"></span>
+          <span class="n" style="left:16px;top:12px;width:4px;height:4px"></span>
+          <span class="p" style="left:4px;top:16px;width:20px;height:4px"></span>
+          <span class="n" style="left:4px;top:20px;width:20px;height:4px"></span>
+          <span class="leg-l p" style="left:4px;top:24px;width:4px;height:6px"></span>
+          <span class="leg-l p" style="left:8px;top:24px;width:4px;height:6px"></span>
+          <span class="leg-r p" style="left:20px;top:24px;width:4px;height:6px"></span>
+          <span class="leg-r p" style="left:24px;top:24px;width:4px;height:6px"></span>
+        </div>
+      </div>
+      <p class="eyebrow">Autonomous pentest AI</p>
+      <h1>The agent that breaks in<span class="dim"> — so you don't have to</span></h1>
+      <p class="hero-desc">Point RIFT at a target. It runs recon, hunts vulnerabilities, and writes the report — on its own, inside an isolated cloud sandbox.</p>
+      <div class="hero-ctas">
+        <button class="btn-primary" type="button">Start for free <i class="ti ti-arrow-right"></i></button>
+        <button class="btn-secondary" type="button" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See how it works</button>
+      </div>
+      <p class="hero-note">No credit card · Cloud sandbox included · Beta access</p>
+      <div class="tool-tags">
+        <span class="tool-tag">subfinder</span><span class="tool-tag">httpx</span><span class="tool-tag">nuclei</span>
+        <span class="tool-tag">nmap</span><span class="tool-tag">ffuf</span><span class="tool-tag">sqlmap</span>
+      </div>
+    </div>
+  </section>
+  <section id="features"><div class="wrap">
+    <h2>Full offensive pipeline</h2>
+    <p class="sec-desc">From footprint to final report — one conversation, one sandbox, zero local setup.</p>
+    <div class="features-grid">
+      <div class="card"><div class="card-icon"><i class="ti ti-radar"></i></div><h3>Recon</h3><p>Subdomains, live hosts, port scan, tech fingerprint — mapped in minutes.</p></div>
+      <div class="card"><div class="card-icon"><i class="ti ti-bug"></i></div><h3>Exploit</h3><p>Targeted nuclei templates, fuzzing, and chained attacks on scoped hosts.</p></div>
+      <div class="card"><div class="card-icon"><i class="ti ti-file-text"></i></div><h3>Report</h3><p>Findings with severity, proof, and remediation — ready for your client.</p></div>
+    </div>
+  </div></section>
+  <section id="how"><div class="wrap">
+    <div class="how-grid">
+      <div>
+        <h2>How it works</h2>
+        <p class="sec-desc">Three steps. You scope it — RIFT executes.</p>
+        <ol class="steps">
+          <li><span class="n">01</span><div><h3>Describe the target</h3><p>Paste a domain, IP range, or describe what you need. RIFT scopes the operation.</p></div></li>
+          <li><span class="n">02</span><div><h3>Agent runs the tools</h3><p>Real pentest tooling executes in an isolated cloud sandbox — you watch live.</p></div></li>
+          <li><span class="n">03</span><div><h3>Review the report</h3><p>Structured output with evidence, CVSS context, and fix recommendations.</p></div></li>
+        </ol>
+      </div>
+      <div class="preview">
+        <div class="preview-bar"><div><div class="title">RIFT</div><div class="sub">~/session · Agent</div></div><span class="st">sandbox ready</span></div>
+        <div class="preview-body">
+          <p style="color:rgba(232,232,232,.9);margin:0">Do recon on <code>acme.com</code> — subdomains and web vulns, keep it fast.</p>
+          <div class="tool">
+            <div class="tool-h"><i class="ti ti-terminal-2"></i><span style="font-family:var(--mono)">Ran terminal command</span><span class="st">Done</span></div>
+            <div class="tool-body"><span class="ok">https://api.acme.com</span> [200] nginx, Express<br><span class="ok">https://staging.acme.com</span> [401] Restricted<br><span class="dim">4 live hosts · 1.8s</span></div>
+          </div>
+          <p style="color:var(--muted);margin:16px 0 0">Found outdated OpenVPN on <code>vpn.acme.com</code>. Running nuclei…</p>
+        </div>
+      </div>
+    </div>
+    <div class="modes">
+      <div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><i class="ti ti-bolt"></i><strong>Ask mode</strong></div><p style="margin:0;color:var(--muted)">Security Q&amp;A — CVE breakdowns, payload ideas, methodology. No execution.</p></div>
+      <div class="card mode-agent"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="mode-dot"></span><strong>Agent mode</strong></div><p style="margin:0;color:var(--muted)">Full autonomous operation — RIFT plans, runs tools, adapts, and delivers a report.</p></div>
+    </div>
+  </div></section>
+  <section id="security"><div class="wrap">
+    <h2>Isolated by design</h2>
+    <p class="sec-desc">Every operation runs in a disposable cloud sandbox. Nothing touches your machine.</p>
+    <div class="features-grid">
+      <div class="card"><h3>Sandboxed</h3><p>Per-run container. No persistence.</p></div>
+      <div class="card"><h3>Scoped</h3><p>Only targets you authorize.</p></div>
+      <div class="card"><h3>Auditable</h3><p>Every command logged for review.</p></div>
+    </div>
+  </div></section>
+  <section id="pricing"><div class="wrap">
+    <h2>Simple pricing</h2>
+    <p class="sec-desc">Full access during beta. No credit card.</p>
+    <div class="pricing-grid">
+      <div class="card"><p style="margin:0;font-size:12px;text-transform:uppercase;color:var(--muted)">Beta</p><p class="price">Free</p>
+        <ul class="price-list"><li>Ask &amp; Agent modes</li><li>Cloud sandbox included</li><li>Full reporting export</li></ul>
+        <button class="btn-primary" type="button" style="width:100%;margin-top:24px;justify-content:center">Get started</button></div>
+      <div class="card price-card-muted"><p style="margin:0;font-size:12px;text-transform:uppercase;color:var(--muted)">Team</p><p class="price">Soon</p></div>
+    </div>
+  </div></section>
+  <section class="cta-section"><div class="wrap">
+    <h2>Ready to run your first op?</h2>
+    <p class="sec-desc" style="margin:12px auto 0;text-align:center">Launch RIFT, point it at a target, and let the agent work.</p>
+    <button class="btn-primary" type="button" style="margin-top:32px">Start for free</button>
+  </div></section>
+  <footer><div class="footer-inner"><span>RIFT · Autonomous pentest AI</span><p style="margin:0"><a href="#">Terms</a> · <a href="#">Privacy</a></p></div></footer>
+</div>
+</body>
+</html>

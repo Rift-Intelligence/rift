@@ -7,10 +7,12 @@ import {
   PanelLeft,
   Sidebar as SidebarIcon,
   SquarePen,
+  Plus,
   Search,
+  History,
 } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { RiftLogo } from "@/components/icons/rift-logo";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
 import { useGlobalState } from "../contexts/GlobalState";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChats } from "../hooks/useChats";
@@ -123,7 +125,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
             role="button"
             aria-label="Expand sidebar"
           >
-            <RiftLogo size={26} className="text-terminal-green" glow />
+            <RiftPixelMark size={26} />
             {/* Sidebar icon shown on hover over entire collapsed sidebar */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-sidebar/80 rounded">
               <SidebarIcon className="w-5 h-5" />
@@ -171,70 +173,41 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
 
   return (
     <>
-      {/* Brand row + collapse */}
-      <div className="flex items-center justify-between px-3 pb-2 pt-3">
-        <button
-          type="button"
-          onClick={handleNewChat}
-          className="group flex items-center gap-2 focus-visible:outline-none"
-          aria-label="RIFT home"
-        >
-          <RiftLogo
-            size={20}
-            className="text-primary transition-transform group-hover:scale-110"
-            glow
-          />
-          <span className="font-mono text-sm font-semibold tracking-[0.2em] text-foreground">
-            RIFT
-          </span>
-          <span className="font-mono text-[10px] text-muted-foreground">
-            v1.0
-          </span>
-        </button>
-        <Button
-          data-testid="sidebar-toggle"
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-          onClick={handleCloseSidebar}
-          aria-label="Collapse sidebar"
-        >
-          <PanelLeft className="size-4" />
-        </Button>
-      </div>
-
-      {/* Terminal command actions */}
-      <div className="px-2 pb-1 font-mono text-[13px]">
+      <div className="flex items-center gap-1 px-2 pb-2 pt-2">
         <button
           type="button"
           onClick={handleNewChat}
           aria-label="Start new chat"
-          className="group flex w-full items-center gap-2 border border-transparent px-2 py-1.5 text-left text-foreground/85 transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+          className="flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md text-[12.5px] text-foreground transition-colors hover:bg-sidebar-accent"
         >
-          <span className="text-primary/70 group-hover:text-primary">▸</span>
-          <SquarePen className="size-3.5 opacity-70" />
-          <span className="flex-1">new session</span>
-          <kbd className="rounded-[2px] border border-sidebar-border px-1 text-[10px] text-muted-foreground">
-            ⏎
-          </kbd>
+          <Plus className="size-3.5" />
+          New Chat
         </button>
-
         <button
           type="button"
           onClick={handleSearchOpen}
-          aria-label="Search chats"
-          className="group flex w-full items-center gap-2 border border-transparent px-2 py-1.5 text-left text-foreground/85 transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+          aria-label="Search chat history"
+          className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
         >
-          <span className="text-primary/70 group-hover:text-primary">▸</span>
-          <Search className="size-3.5 opacity-70" />
-          <span className="flex-1">search logs</span>
-          <kbd className="rounded-[2px] border border-sidebar-border px-1 text-[10px] text-muted-foreground">
-            {modifierKey}K
-          </kbd>
+          <History className="size-4" />
         </button>
       </div>
 
-      {/* Search Dialog */}
+      <div className="px-2 pb-2">
+        <div className="flex h-7 items-center gap-2 rounded-md bg-input px-2 text-[12px] text-muted-foreground">
+          <Search className="size-3.5 shrink-0" />
+          <input
+            type="text"
+            readOnly
+            onFocus={handleSearchOpen}
+            onClick={handleSearchOpen}
+            placeholder="Search chats…"
+            aria-label="Search chats"
+            className="min-w-0 flex-1 bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+          />
+        </div>
+      </div>
+
       <MessageSearchDialog isOpen={isSearchOpen} onClose={handleSearchClose} />
     </>
   );

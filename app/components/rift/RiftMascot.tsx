@@ -1,193 +1,160 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-/**
- * RiftMascot — an 8-bit pixel creature with one big, living eye.
- *
- * Claude-Code-terminal-banner energy, but RIFT-themed: a chunky cyan pixel body
- * (antenna + frame + little feet) wrapped around a large central eye whose iris
- * smoothly tracks the cursor and blinks on a natural cadence. Rendered as SVG so
- * it stays crisp and scales by a single `cell` size. Respects reduced-motion.
- */
+/** RIFT pixel panda — Claude-style grid, white & black palette. */
 
-// 1 = lit pixel. The hollow center (0s in the middle band) is the eye window.
-const BODY: number[][] = [
-  [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-  [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-  [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
-  [0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0],
+const MASCOT = {
+  body: "#f5f5f2",
+  belly: "#ebebe6",
+  patch: "#161618",
+} as const;
+
+type PixelKind =
+  | "body"
+  | "belly"
+  | "patch"
+  | "eye-patch"
+  | "nose"
+  | "leg-l"
+  | "leg-r";
+
+const PIXELS: Array<{
+  l: number;
+  t: number;
+  w: number;
+  h: number;
+  kind: PixelKind;
+}> = [
+  { l: 8, t: 0, w: 4, h: 4, kind: "patch" },
+  { l: 20, t: 0, w: 4, h: 4, kind: "patch" },
+  { l: 4, t: 4, w: 20, h: 4, kind: "body" },
+  { l: 4, t: 8, w: 8, h: 4, kind: "eye-patch" },
+  { l: 12, t: 8, w: 8, h: 4, kind: "body" },
+  { l: 20, t: 8, w: 8, h: 4, kind: "eye-patch" },
+  { l: 0, t: 12, w: 28, h: 4, kind: "body" },
+  { l: 16, t: 12, w: 4, h: 4, kind: "nose" },
+  { l: 4, t: 16, w: 20, h: 4, kind: "body" },
+  { l: 4, t: 20, w: 20, h: 4, kind: "belly" },
+  { l: 4, t: 24, w: 4, h: 6, kind: "leg-l" },
+  { l: 8, t: 24, w: 4, h: 6, kind: "leg-l" },
+  { l: 20, t: 24, w: 4, h: 6, kind: "leg-r" },
+  { l: 24, t: 24, w: 4, h: 6, kind: "leg-r" },
 ];
 
-export function RiftMascot({ cell = 12 }: { cell?: number }) {
-  const cols = BODY[0].length;
-  const rows = BODY.length;
-  const W = cols * cell;
-  const H = rows * cell;
+const BASE_W = 33;
+const BASE_H = 32;
 
-  // eye window center (cols 2..9, rows 4..7) → center ≈ (6, 6) in cells
-  const eyeCX = 6 * cell;
-  const eyeCY = 6 * cell;
-  const eyeRX = 3.4 * cell;
-  const eyeRY = 2.0 * cell;
-  const irisR = 1.5 * cell;
+function fillFor(kind: PixelKind, blink: boolean) {
+  switch (kind) {
+    case "eye-patch":
+      return blink ? MASCOT.body : MASCOT.patch;
+    case "nose":
+    case "patch":
+    case "leg-l":
+    case "leg-r":
+      return MASCOT.patch;
+    case "belly":
+      return MASCOT.belly;
+    default:
+      return MASCOT.body;
+  }
+}
 
-  const ref = useRef<SVGSVGElement>(null);
-  const [pupil, setPupil] = useState({ x: 0, y: 0 });
-  const [closed, setClosed] = useState(false);
-  const targetRef = useRef({ x: 0, y: 0 });
-  const reduceRef = useRef(false);
+export function RiftMascot({
+  className = "",
+  variant = "default",
+  scale: scaleProp,
+  /** @deprecated use `scale` — old API: cell 4 ≈ scale 1 */
+  cell,
+}: {
+  className?: string;
+  variant?: "default" | "hero" | "banner";
+  scale?: number;
+  cell?: number;
+}) {
+  const [blink, setBlink] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
   useEffect(() => {
-    reduceRef.current =
-      typeof matchMedia !== "undefined" &&
-      matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mq = matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduceMotion(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
   }, []);
 
   useEffect(() => {
-    if (reduceRef.current) return;
-    const onMove = (e: PointerEvent) => {
-      const el = ref.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
-      const dx = e.clientX - cx;
-      const dy = e.clientY - cy;
-      const dist = Math.hypot(dx, dy) || 1;
-      const k = Math.min(1, dist / 320);
-      targetRef.current = {
-        x: (dx / dist) * (eyeRX - irisR) * k,
-        y: (dy / dist) * (eyeRY - irisR) * k,
-      };
-    };
-    window.addEventListener("pointermove", onMove);
-    return () => window.removeEventListener("pointermove", onMove);
-  }, [eyeRX, eyeRY, irisR]);
-
-  useEffect(() => {
-    if (reduceRef.current) return;
-    let raf = 0;
-    const tick = () => {
-      setPupil((p) => ({
-        x: p.x + (targetRef.current.x - p.x) * 0.16,
-        y: p.y + (targetRef.current.y - p.y) * 0.16,
-      }));
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  useEffect(() => {
-    if (reduceRef.current) return;
-    let to: ReturnType<typeof setTimeout>;
+    if (reduceMotion) return;
+    let timeout: ReturnType<typeof setTimeout>;
     const loop = () => {
-      to = setTimeout(
+      timeout = setTimeout(
         () => {
-          setClosed(true);
-          setTimeout(() => setClosed(false), 150);
+          setBlink(true);
+          setTimeout(() => setBlink(false), 120);
           loop();
         },
-        2400 + Math.random() * 3600,
+        2800 + Math.random() * 3200,
       );
     };
     loop();
-    return () => clearTimeout(to);
-  }, []);
+    return () => clearTimeout(timeout);
+  }, [reduceMotion]);
+
+  const scale =
+    scaleProp ??
+    (cell != null ? cell / 4 : undefined) ??
+    (variant === "hero" ? 2.4 : variant === "banner" ? 1.55 : 1.35);
+
+  const motionClass = reduceMotion
+    ? ""
+    : variant === "hero"
+      ? "rift-mascot-hero"
+      : variant === "banner"
+        ? "rift-mascot-banner"
+        : "rift-mascot-bob";
+
+  const headroom = variant === "banner" ? 10 : variant === "hero" ? 14 : 6;
 
   return (
-    <svg
-      ref={ref}
-      width={W}
-      height={H}
-      viewBox={`0 0 ${W} ${H}`}
-      shapeRendering="crispEdges"
+    <div
       role="img"
-      aria-label="RIFT"
-      className="select-none"
+      aria-label="RIFT panda mascot"
+      className={`rift-mascot relative shrink-0 overflow-visible ${motionClass} ${className}`}
+      style={{
+        width: BASE_W * scale,
+        height: BASE_H * scale + headroom,
+        transformOrigin: "center bottom",
+      }}
     >
-      {/* 8-bit body pixels */}
-      {BODY.flatMap((row, r) =>
-        row.map((v, c) =>
-          v ? (
-            <rect
-              key={`${r}-${c}`}
-              x={c * cell}
-              y={r * cell}
-              width={cell}
-              height={cell}
-              fill="#22e0ff"
-              opacity={0.92}
-            />
-          ) : null,
-        ),
-      )}
-
-      {/* eye window backdrop */}
-      <rect
-        x={2 * cell}
-        y={4 * cell}
-        width={8 * cell}
-        height={4 * cell}
-        fill="#02080a"
-      />
-
-      {/* the big living eye */}
-      {!closed ? (
-        <g>
-          {/* sclera glow */}
-          <ellipse
-            cx={eyeCX}
-            cy={eyeCY}
-            rx={eyeRX}
-            ry={eyeRY}
-            fill="rgba(34,224,255,0.10)"
-          />
-          {/* iris + pupil track the cursor */}
-          <g
+      <div
+        className="absolute left-0 origin-bottom-left"
+        style={{
+          top: headroom,
+          transform: `scale(${scale})`,
+          width: BASE_W,
+          height: BASE_H,
+        }}
+      >
+        {PIXELS.map(({ l, t, w, h, kind }, i) => (
+          <span
+            key={i}
+            className={`absolute ${kind === "leg-l" && !reduceMotion ? "rift-mascot-leg-l" : ""} ${
+              kind === "leg-r" && !reduceMotion ? "rift-mascot-leg-r" : ""
+            }`}
             style={{
-              transform: `translate(${pupil.x}px, ${pupil.y}px)`,
-              transition: "transform 40ms linear",
+              left: l,
+              top: t,
+              width: w,
+              height: h,
+              backgroundColor: fillFor(kind, blink),
             }}
-          >
-            <circle cx={eyeCX} cy={eyeCY} r={irisR} fill="#0e9fc4" />
-            <circle
-              cx={eyeCX}
-              cy={eyeCY}
-              r={irisR}
-              fill="none"
-              stroke="#6df4ff"
-              strokeWidth={Math.max(1, cell * 0.18)}
-            />
-            <circle cx={eyeCX} cy={eyeCY} r={irisR * 0.42} fill="#02080a" />
-            <rect
-              x={eyeCX + irisR * 0.2}
-              y={eyeCY - irisR * 0.55}
-              width={cell * 0.5}
-              height={cell * 0.5}
-              fill="#c8faff"
-            />
-          </g>
-        </g>
-      ) : (
-        /* blink: a bright pixel lid line */
-        <rect
-          x={2.4 * cell}
-          y={eyeCY - cell * 0.25}
-          width={7.2 * cell}
-          height={cell * 0.5}
-          fill="#22e0ff"
-        />
-      )}
-    </svg>
+          />
+        ))}
+      </div>
+    </div>
   );
 }

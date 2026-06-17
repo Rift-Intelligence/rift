@@ -46,7 +46,6 @@ import { ReferralRewardDialog } from "./ReferralRewardDialog";
 import { formatBalanceTokens } from "@/lib/billing/token-display";
 import { BuyExtraUsageDialog } from "./extra-usage/BuyExtraUsageDialog";
 import { toast } from "sonner";
-import { RiftLogo } from "@/components/icons/rift-logo";
 
 const NEXT_PUBLIC_HELP_CENTER_URL =
   process.env.NEXT_PUBLIC_HELP_CENTER_URL || "https://help.rift.co/en/";
@@ -162,7 +161,7 @@ const XIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
 const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const { user } = useAuth();
   const { signOut } = useAuthActions();
-  const { isCheckingProPlan, subscription, chatMode } = useGlobalState();
+  const { isCheckingProPlan, subscription } = useGlobalState();
   const [rateLimitsExpanded, setRateLimitsExpanded] = useState(false);
   const [referralDialogOpen, setReferralDialogOpen] = useState(false);
   const [tokenUsage, setTokenUsage] = useState<{
@@ -348,14 +347,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         isLoading={isPurchasing}
       />
 
-      {/* Referral card for paid users */}
-      {isPaidUser && !isCheckingProPlan && (
-        <ReferralSidebarCard
-          isCollapsed={isCollapsed}
-          onOpen={() => setReferralDialogOpen(true)}
-        />
-      )}
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           {isCollapsed ? (
@@ -380,48 +371,42 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
               </button>
             </div>
           ) : (
-            /* Expanded state — Claude-Code-style live status banner */
             <button
               data-testid="user-menu-button"
               type="button"
-              className="group flex w-full cursor-pointer items-center gap-3 rounded-md border border-sidebar-border/70 bg-background/40 p-3 text-left font-mono transition-colors hover:border-primary/50 hover:bg-sidebar-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="group flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-haspopup="menu"
               aria-label={`Open user menu for ${getDisplayName()}`}
             >
-              <RiftLogo size={30} className="text-terminal-green" glow />
+              <Avatar className="h-6 w-6 shrink-0">
+                <AvatarImage
+                  src={user.profilePictureUrl || undefined}
+                  alt={getDisplayName()}
+                />
+                <AvatarFallback className="text-[10px]">
+                  {getUserInitials()}
+                </AvatarFallback>
+              </Avatar>
               <div className="min-w-0 flex-1 leading-tight">
-                <div className="flex items-baseline gap-1.5 truncate">
-                  <span className="text-sm font-semibold tracking-wide text-foreground">
-                    RIFT
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    v1.0
-                  </span>
+                <div className="truncate text-[12px] text-foreground">
+                  {getDisplayName()}
                 </div>
                 <div
                   data-testid="subscription-badge"
-                  className="truncate text-[11px] text-primary"
+                  className="truncate text-[11px] text-muted-foreground"
                 >
-                  {chatMode === "agent" ? "EXECUTOR" : "ASK"} ·{" "}
                   {subscription === "team" ? (
                     "Team"
                   ) : extraUsageSettings === undefined ? (
-                    // Still loading — never flash "0 tokens" (worst possible
-                    // trust signal in a billing-sensitive product).
-                    <span className="tabular-nums text-muted-foreground/60">
-                      ··· tokens
-                    </span>
+                    <span className="tabular-nums">Pro · ··· tokens</span>
                   ) : (
                     <span className="tabular-nums">
-                      {formatBalanceTokens(tokenBalancePoints)} tokens
+                      Pro · {formatBalanceTokens(tokenBalancePoints)} tokens
                     </span>
                   )}
                 </div>
-                <div className="truncate text-[10px] text-muted-foreground">
-                  ~/session
-                </div>
               </div>
-              <span className="inline-block size-1.5 shrink-0 rounded-full bg-primary rift-live" />
+              <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
             </button>
           )}
         </DropdownMenuTrigger>

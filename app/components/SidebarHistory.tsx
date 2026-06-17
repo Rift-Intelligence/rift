@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from "react";
 import { MessageSquare } from "lucide-react";
 import ChatItem from "./ChatItem";
 import Loading from "@/components/ui/loading";
+import { groupChatsByDate } from "@/lib/utils/chat-date-groups";
 
 interface SidebarHistoryProps {
   chats: any[];
@@ -66,8 +67,8 @@ const SidebarHistory: React.FC<SidebarHistoryProps> = ({
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 bg-terminal-green/20 rounded w-3/4 mb-2 terminal-glow-subtle"></div>
-              <div className="h-3 bg-terminal-green/20 rounded w-1/2 terminal-glow-subtle"></div>
+              <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-1/2"></div>
             </div>
           ))}
         </div>
@@ -82,32 +83,36 @@ const SidebarHistory: React.FC<SidebarHistoryProps> = ({
         className="flex flex-col items-center justify-center h-full p-6 text-center"
         data-testid="sidebar-chat-empty"
       >
-        <MessageSquare className="w-12 h-12 text-terminal-green mb-4 terminal-glow" />
-        <h3 className="text-lg font-medium text-foreground mb-2 terminal-glow-subtle">
-          [NO TERMINAL SESSIONS]
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Initiate a command to begin session history
-        </p>
+        <p className="text-sm text-muted-foreground">No chats yet</p>
       </div>
     );
   }
 
-  // Chat list with buttons (same for mobile and desktop)
+  const groups = groupChatsByDate(chats);
+
   return (
-    <div className="p-2 space-y-1" data-testid="sidebar-chat-list">
-      {chats.map((chat: any) => (
-        <ChatItem
-          key={chat._id}
-          id={chat.id}
-          title={chat.title}
-          isBranched={!!chat.branched_from_chat_id}
-          branchedFromTitle={chat.branched_from_title}
-          shareId={chat.share_id}
-          shareDate={chat.share_date}
-          isPinned={chat.pinned_at != null}
-          isStreaming={!!chat.active_stream_id}
-        />
+    <div className="px-1 py-0.5" data-testid="sidebar-chat-list">
+      {groups.map((group) => (
+        <div key={group.label} className="mb-1">
+          <div className="px-2 py-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground/70">
+            {group.label}
+          </div>
+          <div className="space-y-0.5">
+            {group.chats.map((chat: any) => (
+              <ChatItem
+                key={chat._id}
+                id={chat.id}
+                title={chat.title}
+                isBranched={!!chat.branched_from_chat_id}
+                branchedFromTitle={chat.branched_from_title}
+                shareId={chat.share_id}
+                shareDate={chat.share_date}
+                isPinned={chat.pinned_at != null}
+                isStreaming={!!chat.active_stream_id}
+              />
+            ))}
+          </div>
+        </div>
       ))}
 
       {/* Loading indicator when loading more */}

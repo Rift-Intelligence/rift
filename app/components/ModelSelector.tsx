@@ -219,7 +219,11 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
   const selected =
     options.find((opt) => opt.id === effectiveValue) ?? options[0];
 
-  const triggerLabel = isAuto ? "Auto" : selected.label;
+  const triggerLabel = isAuto
+    ? isAgentMode(mode)
+      ? "Strike"
+      : "Auto"
+    : selected.label;
 
   const handleAutoSelect = () => {
     onChange("auto");
@@ -260,7 +264,7 @@ export function ModelSelector({ value, onChange, mode }: ModelSelectorProps) {
       onClick={isMobile ? () => setOpen(true) : undefined}
       aria-expanded={isMobile ? open : undefined}
       aria-haspopup={isMobile ? "dialog" : undefined}
-      className="h-7 px-2 gap-1 text-sm font-medium rounded-md bg-transparent hover:bg-muted/30 focus-visible:ring-1 min-w-0 shrink"
+      className="h-6 shrink min-w-0 gap-1 rounded-md bg-transparent px-2 text-[11.5px] font-normal text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-1"
     >
       <span className="truncate">{triggerLabel}</span>
       <ChevronDown className="h-3 w-3 ml-0.5 shrink-0" />

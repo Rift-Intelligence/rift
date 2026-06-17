@@ -77,83 +77,86 @@
 }
 
 :root {
-  --radius: 0.7rem;
-  /* RIFT — refined dark SaaS
-     Graphite canvas · cyan accent used sparingly · Space Grotesk display /
-     Geist body / JetBrains Mono terminal. Calm surfaces, hairline borders. */
-  --background: #0f1011;
-  --foreground: #ececed;
-  --card: #17181b;
-  --card-foreground: #ececed;
-  --popover: #17181b;
-  --popover-foreground: #ececed;
-  --primary: #2bccdf;
-  --primary-foreground: #04212a;
-  --secondary: #1e1f23;
-  --secondary-foreground: #ececed;
-  --muted: #1e1f23;
-  --muted-foreground: #a0a1a6;
-  --accent: #1e1f23;
-  --accent-foreground: #ececed;
-  --destructive: #f06a6a;
-  --border: #232428;
-  --input: #232428;
-  --ring: #2bccdf;
-  --chart-1: #2bccdf;
-  --chart-2: #5ec8d8;
-  --chart-3: #1c8b99;
-  --chart-4: #e8b339;
-  --chart-5: #f06a6a;
-  --sidebar: #121315;
-  --sidebar-foreground: #ececed;
-  --sidebar-primary: #2bccdf;
-  --sidebar-primary-foreground: #04212a;
-  --sidebar-accent: #1e1f23;
-  --sidebar-accent-foreground: #ececed;
-  --sidebar-border: #232428;
-  --sidebar-ring: #2bccdf;
+  --radius: 0.5rem;
+  /* Cursor / VS Code dark — warm mascot, neutral UI */
+  --background: #1e1e1e;
+  --foreground: #cccccc;
+  --card: #252526;
+  --card-foreground: #cccccc;
+  --popover: #252526;
+  --popover-foreground: #cccccc;
+  --primary: #e8e8e8;
+  --primary-foreground: #1e1e1e;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #cccccc;
+  --muted: #2d2d2d;
+  --muted-foreground: #858585;
+  --accent: #37373d;
+  --accent-foreground: #e8e8e8;
+  --destructive: #f48771;
+  --border: #3c3c3c;
+  --input: #3c3c3c;
+  --ring: #0078d4;
+  --chart-1: #0078d4;
+  --chart-2: #4daafc;
+  --chart-3: #89d185;
+  --chart-4: #cca700;
+  --chart-5: #f48771;
+  --sidebar: #181818;
+  --sidebar-foreground: #cccccc;
+  --sidebar-primary: #e8e8e8;
+  --sidebar-primary-foreground: #1e1e1e;
+  --sidebar-accent: #37373d;
+  --sidebar-accent-foreground: #e8e8e8;
+  --sidebar-border: #2b2b2b;
+  --sidebar-ring: #0078d4;
 
-  /* Surfaces & ramp (new RIFT names) */
-  --surface: #17181b;
-  --border-strong: #2e2f34;
-  --rift-glow: rgba(43, 204, 223, 0.22);
+  --surface: #252526;
+  --border-strong: #505050;
+  --rift-glow: rgba(232, 232, 232, 0.08);
 
-  /* Custom chat input */
-  --fill-input-chat: #17181b;
+  --fill-input-chat: #252526;
+  --link-color: #4daafc;
 
-  /* Custom link colors */
-  --link-color: #2bccdf;
+  --premium-bg: #2d2d2d;
+  --premium-text: #e8e8e8;
+  --premium-hover: #cccccc;
 
-  /* Premium/Upgrade colors */
-  --premium-bg: #1e1f23;
-  --premium-text: #2bccdf;
-  --premium-hover: #5ee0f0;
-
-  /* Scrollbar colors */
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(255, 255, 255, 0.08);
-  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb: rgba(121, 121, 121, 0.4);
+  --scrollbar-thumb-hover: rgba(121, 121, 121, 0.6);
 
-  /* Sidebar text mask for truncation */
   --sidebar-mask: linear-gradient(
     90deg,
-    #121315 0%,
-    #121315 95%,
-    transparent 100%,
+    #181818 0%,
+    #181818 95%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #17181b 0%,
-    #17181b 88%,
+    #37373d 0%,
+    #37373d 88%,
     transparent 93%,
     transparent 100%
   );
 
-  /* Glow retired in the refined dark-SaaS theme — kept as no-ops so any
-     legacy box-shadow:var(--neon-glow) references resolve to nothing. */
   --neon-glow: none;
   --neon-glow-intense: none;
+
+  --color-terminal-green: #89d185;
+  --color-terminal-green-dim: #6a9955;
+  --color-terminal-sky: #4daafc;
+  --color-terminal-text: #cccccc;
+  --color-terminal-text-dim: #858585;
+  --color-terminal-border: #3c3c3c;
+  --color-terminal-bg: #1e1e1e;
+  --color-terminal-primary: #1e1e1e;
+  --color-terminal-secondary: #252526;
+  --color-rift: #f5f5f2;
+  --color-rift-dim: #ebebe6;
+  --color-rift-deep: #161618;
+  --color-rift-hot: #ffffff;
+  --color-alarm: #f48771;
 }
 
 @layer base {
@@ -163,6 +166,97 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+}
+
+/* RIFT pixel mascot — Claude Code–style idle bob + leg shuffle */
+@keyframes rift-mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes rift-mascot-leg-l {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes rift-mascot-leg-r {
+  0%,
+  100% {
+    transform: translateY(-1.5px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+}
+.rift-mascot-bob {
+  animation: rift-mascot-bob 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+@keyframes rift-mascot-banner-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+.rift-mascot-banner {
+  animation: rift-mascot-banner-bob 1.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+.rift-mascot-glow {
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.28))
+    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+.rift-mascot-leg-l {
+  animation: rift-mascot-leg-l 0.9s ease-in-out infinite;
+}
+.rift-mascot-leg-r {
+  animation: rift-mascot-leg-r 0.9s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rift-mascot-bob,
+  .rift-mascot-banner,
+  .rift-mascot-leg-l,
+  .rift-mascot-leg-r,
+  .rift-mascot-hero {
+    animation: none !important;
+  }
+}
+
+@keyframes rift-mascot-hero-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-1deg);
+  }
+  75% {
+    transform: translateY(-2px) rotate(1deg);
+  }
+}
+.rift-mascot-hero {
+  animation: rift-mascot-hero-bob 2.4s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.landing-grid-bg {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(255, 255, 255, 0.035) 1px,
+    transparent 0
+  );
+  background-size: 28px 28px;
 }
 
 @keyframes shimmer {
@@ -789,5 +883,56 @@
   }
   .rift-glitch-in {
     animation: none !important;
+  }
+}
+
+/* Cursor mockup layout — authenticated chat shell */
+.rift-cursor-app {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rift-cursor-app code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: #252526;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #ce9178;
+}
+
+/* Cursor mockup — "Planning next moves" indicator */
+@keyframes cursor-thinking-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.rift-cursor-app .cursor-thinking-dots span {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #858585;
+  animation: cursor-thinking-pulse 1.2s infinite;
+}
+
+.rift-cursor-app .cursor-thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.rift-cursor-app .cursor-thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rift-cursor-app .cursor-thinking-dots span {
+    animation: none;
+    opacity: 0.6;
   }
 }

@@ -1,19 +1,35 @@
-import React, { memo, useMemo, useRef, useEffect } from "react";
+import React, { memo, useMemo } from "react";
 import { UIMessage } from "@ai-sdk/react";
-import ToolBlock from "@/components/ui/tool-block";
-import { Terminal, Maximize2 } from "lucide-react";
+import { CursorToolBlock } from "@/components/ui/cursor-tool-block";
 import type { ChatStatus } from "@/types/chat";
 import { isSidebarTerminal, type SidebarTerminal } from "@/types/chat";
 import { useToolSidebar } from "../../hooks/useToolSidebar";
-import { TerminalCodeBlock } from "../TerminalCodeBlock";
 import {
   computeShellTerminalBlock,
   getShellDisplayCommand,
   getStreamingTerminalOutput,
+  isInteractiveShellAction,
   type ShellToolInput,
   type ShellToolOutput,
 } from "./shell-tool-utils";
 import { isUserStoppedToolError } from "@/lib/chat/tool-abort-utils";
+
+function getCursorToolLabel(
+  isShellTool: boolean,
+  shellAction: string | undefined,
+  isActive: boolean,
+  blockAction: (active: boolean) => string,
+  blockTarget: string | undefined,
+  briefOnly: boolean,
+  briefText: string,
+): string {
+  if (briefOnly && briefText) return briefText;
+  if (isActive && blockTarget) return blockTarget;
+  if (!isActive && (shellAction === "exec" || !isShellTool)) {
+    return "Ran terminal command";
+  }
+  return blockAction(isActive);
+}
 
 interface TerminalToolHandlerProps {
   message: UIMessage;
@@ -38,61 +54,6 @@ function areTerminalPropsEqual(
     return false;
   return true;
 }
-
-/**
- * Live, auto-scrolling terminal tail rendered INLINE under the ToolBlock while a
- * command is executing. The server already streams the bytes; before this they
- * were only shown as a frozen one-line chip with the real output hidden in a
- * sidebar that auto-opens at most once per page — so after the first command the
- * user "waited empty" with no visible progress. This keeps the running output in
- * view, capped to a short tail, with an affordance to expand the full sidebar.
- */
-const LiveTerminalTail = memo(function LiveTerminalTail({
-  content,
-  onExpand,
-  onExpandKeyDown,
-}: {
-  content: SidebarTerminal;
-  onExpand: () => void;
-  onExpandKeyDown: (e: React.KeyboardEvent) => void;
-}) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Pin to the bottom as new output streams in (the "watch it work" behaviour).
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [content.output, content.rawBytes]);
-
-  return (
-    <div className="ml-[7px] mt-1 overflow-hidden rounded-md border border-primary/15 bg-black/40">
-      <div
-        ref={scrollRef}
-        className="max-h-44 overflow-y-auto px-2.5 py-1.5 font-mono text-[11px] leading-relaxed"
-      >
-        <TerminalCodeBlock
-          command={content.command}
-          output={content.output}
-          isExecuting
-          status="streaming"
-          variant="default"
-          wrap
-          shellAction={content.shellAction}
-          rawBytes={content.rawBytes}
-        />
-      </div>
-      <button
-        type="button"
-        onClick={onExpand}
-        onKeyDown={onExpandKeyDown}
-        className="flex w-full items-center justify-end gap-1 border-t border-primary/10 px-2.5 py-1 text-[10px] text-muted-foreground transition-colors hover:text-primary"
-      >
-        <Maximize2 className="h-2.5 w-2.5" />
-        expand
-      </button>
-    </div>
-  );
-});
 
 export const TerminalToolHandler = memo(function TerminalToolHandler({
   message,
@@ -178,64 +139,96 @@ export const TerminalToolHandler = memo(function TerminalToolHandler({
       // label instead of "Generating command" which only applies to exec
       if (isShellTool && shellAction && shellAction !== "exec") {
         return (
-          <ToolBlock
+          <CursorToolBlock
             key={toolCallId}
-            icon={<Terminal />}
-            action={blockAction(true)}
-            target={blockTarget || undefined}
-            isShimmer={true}
+            label={blockAction(true)}
+            status="running"
+            command={blockTarget || undefined}
+            isShimmer
           />
         );
       }
       return (
-        <ToolBlock
+        <CursorToolBlock
           key={toolCallId}
-          icon={<Terminal />}
-          action="Generating command"
-          isShimmer={true}
+          label="Generating command"
+          status="running"
+          isShimmer
         />
       );
     }
-    case "input-available":
-      return (
-        <div key={toolCallId}>
-          <ToolBlock
-            icon={<Terminal />}
-            action={blockAction(status === "streaming")}
-            target={blockTarget}
-            isShimmer={status === "streaming"}
-            isClickable
-            onClick={handleOpenInSidebar}
-            onKeyDown={handleKeyDown}
-          />
-          {isExecuting && sidebarContent && (
-            <LiveTerminalTail
-              content={sidebarContent}
-              onExpand={handleOpenInSidebar}
-              onExpandKeyDown={handleKeyDown}
-            />
-          )}
-        </div>
+    case "input-available": {
+      const briefText = (input as { brief?: string })?.brief || "";
+      const useBriefOnly =
+        !!briefText &&
+        ((isShellTool && isInteractiveShellAction(shellAction)) ||
+          (!isInteractiveShellAction(shellAction) && false));
+      const label = getCursorToolLabel(
+        isShellTool,
+        shellAction,
+        status === "streaming",
+        blockAction,
+        blockTarget,
+        useBriefOnly,
+        briefText,
       );
-    case "output-available":
+      const output =
+        isExecuting && sidebarContent ? sidebarContent.output : undefined;
       return (
-        <ToolBlock
+        <CursorToolBlock
           key={toolCallId}
-          icon={<Terminal />}
-          action={blockAction(false)}
-          target={blockTarget}
+          label={label}
+          status={status === "streaming" ? "running" : "done"}
+          command={blockTarget || undefined}
+          output={output}
+          defaultOpen={isExecuting}
+          isShimmer={status === "streaming"}
           isClickable
           onClick={handleOpenInSidebar}
           onKeyDown={handleKeyDown}
         />
       );
+    }
+    case "output-available": {
+      const briefTextOut = (input as { brief?: string })?.brief || "";
+      const labelOut = getCursorToolLabel(
+        isShellTool,
+        shellAction,
+        false,
+        blockAction,
+        blockTarget,
+        !!briefTextOut,
+        briefTextOut,
+      );
+      const outputText =
+        sidebarContent?.output ||
+        (typeof terminalOutput === "object"
+          ? terminalOutput?.result?.stdout ||
+            terminalOutput?.result?.output ||
+            terminalOutput?.output
+          : "") ||
+        "";
+      return (
+        <CursorToolBlock
+          key={toolCallId}
+          label={labelOut}
+          status="done"
+          command={blockTarget || undefined}
+          output={outputText || undefined}
+          defaultOpen={Boolean(outputText)}
+          isClickable
+          onClick={handleOpenInSidebar}
+          onKeyDown={handleKeyDown}
+        />
+      );
+    }
     case "output-error":
       return (
-        <ToolBlock
+        <CursorToolBlock
           key={toolCallId}
-          icon={<Terminal />}
-          action={isStoppedByUser ? "Stopped command" : blockAction(false)}
-          target={blockTarget}
+          label={isStoppedByUser ? "Stopped command" : blockAction(false)}
+          status={isStoppedByUser ? "stopped" : "error"}
+          command={blockTarget || undefined}
           isClickable
           onClick={handleOpenInSidebar}
           onKeyDown={handleKeyDown}

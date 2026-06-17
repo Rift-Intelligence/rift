@@ -6,7 +6,6 @@ import {
   Instrument_Serif,
 } from "next/font/google";
 import "./globals.css";
-import "./globals-terminal.css";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";

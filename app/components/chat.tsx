@@ -58,6 +58,7 @@ import { parseRateLimitWarning } from "@/lib/utils/parse-rate-limit-warning";
 import Loading from "@/components/ui/loading";
 
 import { HackingSuggestions } from "./HackingSuggestions";
+import { RiftBrandBar } from "./rift/RiftBrandBar";
 
 // --- Streaming ephemeral state reducer ---
 // Consolidates high-frequency streaming state updates into a single dispatch
@@ -1189,7 +1190,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             : !!chatData?.active_stream_id || !!chatData?.active_trigger_run_id
         }
       />
-      <div className="flex min-h-0 flex-1 w-full flex-col bg-transparent overflow-hidden">
+      <div className="flex min-h-0 flex-1 w-full flex-col bg-transparent overflow-x-hidden">
         <div className="flex min-h-0 flex-1 min-w-0 relative">
           {/* Left side - Chat content */}
           <div className="flex min-h-0 flex-col flex-1 min-w-0">
@@ -1211,41 +1212,14 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
               {/* Terminal titlebar with the mascot RIFT — pinned to the top of
                   the terminal; messages scroll beneath it and never overlap. */}
               {!isChatNotFound && (
-                <div className="terminal-titlebar terminal-border relative z-20 mx-auto mt-2 flex h-10 w-full max-w-full items-center gap-2.5 overflow-hidden px-3 sm:max-w-[768px]">
-                  <span className="text-xs text-primary">▸</span>
-                  <span className="truncate text-xs text-terminal-green/80">
-                    root@rift: ~/session
-                  </span>
-                  {/* session mode: normal vs incognito (new chats only) */}
-                  {!isExistingChat && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setTemporaryChatsEnabled(!temporaryChatsEnabled)
-                      }
-                      className="ml-auto flex items-center gap-1.5 border border-sidebar-border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-                      aria-pressed={temporaryChatsEnabled}
-                      title="Toggle incognito (temporary) session"
-                    >
-                      <span
-                        className={`inline-block size-1.5 rounded-full ${
-                          temporaryChatsEnabled
-                            ? "bg-muted-foreground"
-                            : "bg-primary rift-live"
-                        }`}
-                      />
-                      {temporaryChatsEnabled ? "incognito" : "normal"}
-                    </button>
-                  )}
-                  <span
-                    className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary ${
-                      isExistingChat ? "ml-auto" : ""
-                    }`}
-                  >
-                    <span className="inline-block size-1.5 rounded-full bg-primary rift-live" />
-                    watching
-                  </span>
-                </div>
+                <RiftBrandBar
+                  cwd="~/session"
+                  status={
+                    !isExistingChat && temporaryChatsEnabled
+                      ? { label: "incognito", tone: "muted" }
+                      : { label: "sandbox ready", tone: "ok" }
+                  }
+                />
               )}
               {/* Messages area */}
               {isChatNotFound ? (
