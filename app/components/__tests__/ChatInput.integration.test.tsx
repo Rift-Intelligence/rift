@@ -78,7 +78,9 @@ describe("ChatInput - Integration Tests", () => {
         </TestWrapper>,
       );
 
-      expect(screen.getByPlaceholderText("enter query...")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
+      ).toBeInTheDocument();
       expect(screen.getByText("Ask")).toBeInTheDocument();
     });
 
@@ -164,7 +166,9 @@ describe("ChatInput - Integration Tests", () => {
       );
 
       // Component should render in default ask mode
-      expect(screen.getByPlaceholderText("enter query...")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
+      ).toBeInTheDocument();
     });
   });
 
@@ -185,7 +189,9 @@ describe("ChatInput - Integration Tests", () => {
       );
 
       // Should render in ask mode by default
-      expect(screen.getByPlaceholderText("enter query...")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
+      ).toBeInTheDocument();
 
       // Re-render with different status
       rerender(
@@ -199,7 +205,9 @@ describe("ChatInput - Integration Tests", () => {
       );
 
       // Should still show ask mode placeholder
-      expect(screen.getByPlaceholderText("enter query...")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
+      ).toBeInTheDocument();
     });
   });
 
@@ -231,7 +239,9 @@ describe("ChatInput - Integration Tests", () => {
       );
 
       // Component should render without errors in submitted status
-      expect(screen.getByPlaceholderText("enter query...")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
+      ).toBeInTheDocument();
     });
 
     it("should handle enter key to submit", () => {
@@ -245,7 +255,9 @@ describe("ChatInput - Integration Tests", () => {
         </TestWrapper>,
       );
 
-      const textarea = screen.getByPlaceholderText("enter query...");
+      const textarea = screen.getByPlaceholderText(
+        "Plan, @ for context, / for commands",
+      );
 
       // Type some text
       fireEvent.change(textarea, { target: { value: "Test message" } });
@@ -267,7 +279,9 @@ describe("ChatInput - Integration Tests", () => {
         </TestWrapper>,
       );
 
-      const textarea = screen.getByPlaceholderText("enter query...");
+      const textarea = screen.getByPlaceholderText(
+        "Plan, @ for context, / for commands",
+      );
 
       // Type some text
       fireEvent.change(textarea, { target: { value: "Test message" } });
