@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "identifier": "app.riftsys.desktop",
   "build": {
+    "frontendDist": "./dist",
     "devUrl": "http://localhost:3010",
     "beforeDevCommand": "pnpm dev:next"
   },
