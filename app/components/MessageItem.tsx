@@ -393,7 +393,7 @@ export const MessageItem = memo(function MessageItem({
                   data-testid="message-content"
                   className={`${
                     isUser
-                      ? "w-full text-[15px] leading-[1.65] text-[#e8e8e8]"
+                      ? "w-full text-[15px] leading-[1.65] text-[#e8e8e8] bg-[#2a2a2a] rounded-2xl px-4 py-3 border border-[#333333]"
                       : "w-full prose space-y-3 max-w-none text-[15px] leading-[1.65] text-[#cccccc] dark:prose-invert min-w-0"
                   } overflow-hidden`}
                 >
