@@ -40,6 +40,26 @@ export async function POST(req: NextRequest) {
   const rawBody = await req.text();
   const signature = req.headers.get("x-nowpayments-sig");
 
+  // Forward to the other product's webhook FIRST — fire-and-forget, before any
+  // RIFT-side verification. The receiving system (qed.llc) re-verifies the
+  // HMAC with its own copy of the shared account secret, so we deliberately do
+  // NOT gate forwarding on RIFT's own verification: a misconfigured RIFT secret
+  // must never be able to starve the other product of its payment webhooks.
+  // The original raw body + signature are passed through unchanged.
+  const relayUrl = process.env.NOWPAYMENTS_RELAY_URL;
+  if (relayUrl && signature) {
+    fetch(relayUrl, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-nowpayments-sig": signature,
+      },
+      body: rawBody,
+    }).catch((err) =>
+      console.error("[NowPayments Relay] Forward failed:", relayUrl, err),
+    );
+  }
+
   if (!signature) {
     console.error("[NowPayments Relay] Missing x-nowpayments-sig header");
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
@@ -74,23 +94,6 @@ export async function POST(req: NextRequest) {
   ) {
     console.error("[NowPayments Relay] Signature verification failed");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-  }
-
-  // Forward to the other product's webhook — fire-and-forget, never blocks
-  // RIFT's response. The original raw body + signature are passed through so
-  // the receiving system can re-verify the HMAC with the shared secret.
-  const relayUrl = process.env.NOWPAYMENTS_RELAY_URL;
-  if (relayUrl) {
-    fetch(relayUrl, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-nowpayments-sig": signature,
-      },
-      body: rawBody,
-    }).catch((err) =>
-      console.error("[NowPayments Relay] Forward failed:", relayUrl, err),
-    );
   }
 
   const status = String(payload.payment_status ?? "");
