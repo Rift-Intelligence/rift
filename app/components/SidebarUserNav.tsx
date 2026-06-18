@@ -190,9 +190,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const createCryptoInvoice = useAction(
     api.extraUsageActions.createCryptoInvoice,
   );
-  const createPurchaseSession = useAction(
-    api.extraUsageActions.createPurchaseSession,
-  );
   const [showBuyDialog, setShowBuyDialog] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
 
@@ -216,28 +213,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
       }
     },
     [createCryptoInvoice],
-  );
-
-  const handleBuyWithCard = useCallback(
-    async (amountDollars: number) => {
-      setIsPurchasing(true);
-      try {
-        const result = await createPurchaseSession({
-          amountDollars,
-          baseUrl: window.location.origin,
-        });
-        if (result.url) {
-          window.location.href = result.url;
-        } else {
-          toast.error(result.error || "Could not start checkout");
-          setIsPurchasing(false);
-        }
-      } catch {
-        toast.error("Could not start checkout");
-        setIsPurchasing(false);
-      }
-    },
-    [createPurchaseSession],
   );
 
   const extraUsageSettings = useQuery(api.extraUsage.getExtraUsageSettings);
@@ -522,7 +497,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         open={showBuyDialog}
         onOpenChange={setShowBuyDialog}
         onPurchase={handleBuyTokens}
-        onCardPurchase={handleBuyWithCard}
         isLoading={isPurchasing}
       />
 
