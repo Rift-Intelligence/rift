@@ -18,7 +18,10 @@ import {
   Gift,
   X,
   Zap,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useGlobalState } from "@/app/contexts/GlobalState";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -165,6 +168,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const { user } = useAuth();
   const { signOut } = useAuthActions();
   const { isCheckingProPlan, subscription, chatMode } = useGlobalState();
+  const { theme, setTheme } = useTheme();
   const [rateLimitsExpanded, setRateLimitsExpanded] = useState(false);
   const [referralDialogOpen, setReferralDialogOpen] = useState(false);
   const [tokenUsage, setTokenUsage] = useState<{
@@ -506,7 +510,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
             <button
               data-testid="user-menu-button-collapsed"
               type="button"
-              className="flex w-full cursor-pointer items-center justify-center rounded-md p-2 transition-colors hover:bg-[#2a2d2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex w-full cursor-pointer items-center justify-center rounded-md p-2 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-haspopup="menu"
               aria-label={`Session menu — ${tokenBalanceLabel}`}
             >
@@ -523,18 +527,32 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <div className="rounded-md border border-[#2b2b2b] bg-[#252526]/80 p-2">
+        <div className="rounded-md border border-border bg-card/80 p-2">
           <div className="flex items-start gap-2.5">
             <RiftPixelMark size={22} className="mt-0.5 shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[12px] font-semibold text-[#e8e8e8]">
+                <span className="text-[12px] font-semibold text-foreground">
                   <RiftWordmark
                     height={10}
                     className="inline-block align-middle"
                   />{" "}
-                  <span className="font-normal text-[#858585]">v1.0</span>
+                  <span className="font-normal text-muted-foreground">
+                    v1.0
+                  </span>
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="flex items-center justify-center size-5 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  aria-label="Toggle theme"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="size-3.5" />
+                  ) : (
+                    <Moon className="size-3.5" />
+                  )}
+                </button>
               </div>
 
               <button
@@ -542,7 +560,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                 data-testid="sidebar-token-balance"
                 onClick={handleTokenClick}
                 disabled={subscription === "team"}
-                className="mt-1 flex w-full min-w-0 items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-[#858585] transition-colors hover:bg-[#2a2d2e] hover:text-[#cccccc] disabled:cursor-default disabled:hover:bg-transparent"
+                className="mt-1 flex w-full min-w-0 items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:hover:bg-transparent"
                 aria-label={
                   subscription === "team"
                     ? "Team plan"
@@ -555,7 +573,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                 <span aria-hidden>·</span>
                 <span
                   data-testid="subscription-badge"
-                  className="min-w-0 truncate tabular-nums text-[#cccccc]"
+                  className="min-w-0 truncate tabular-nums text-foreground"
                 >
                   {tokenBalanceLabel}
                 </span>
@@ -569,11 +587,11 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                   <button
                     data-testid="user-menu-button"
                     type="button"
-                    className="mt-0.5 flex w-full min-w-0 cursor-pointer items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-[#6e6e6e] transition-colors hover:bg-[#2a2d2e] hover:text-[#858585] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="mt-0.5 flex w-full min-w-0 cursor-pointer items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     aria-haspopup="menu"
                     aria-label={`Account menu for ${getDisplayName()}`}
                   >
-                    <span className="truncate text-[#858585]">
+                    <span className="truncate text-muted-foreground">
                       {getDisplayName()}
                     </span>
                     <span className="shrink-0">· ~/session</span>

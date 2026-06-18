@@ -27,14 +27,9 @@ export function ModeSelectorTrigger({ chatMode }: ModeSelectorTriggerProps) {
         className={`${baseClasses} ${MODE_VARIANT_CLASSES[chatMode]}`}
       >
         {chatMode === "agent" ? (
-          <>
-            <span className="mr-1 inline-block size-1.5 rounded-full bg-emerald-400/90" />
-            <span className="hidden md:inline">Agent</span>
-          </>
+          <span className="hidden md:inline">Agent</span>
         ) : (
-          <>
-            <span className="hidden md:inline">Ask</span>
-          </>
+          <span className="hidden md:inline">Ask</span>
         )}
         <ChevronDown className="w-3 h-3 ml-1" />
       </Button>

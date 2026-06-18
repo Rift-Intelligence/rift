@@ -68,9 +68,6 @@ export function ChatModeSelector({ className }: ChatModeSelectorProps) {
             : "bg-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground"
         }`}
       >
-        {chatMode === "agent" ? (
-          <span className="size-1.5 rounded-full bg-emerald-400/90" />
-        ) : null}
         Agent
       </button>
       <button

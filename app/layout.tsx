@@ -16,6 +16,7 @@ import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { TodoBlockProvider } from "./contexts/TodoBlockContext";
 import { PostHogProvider } from "./providers";
 import { DataStreamProvider } from "./components/DataStreamProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
@@ -137,7 +138,7 @@ export default function RootLayout({
 
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang="en" className="dark h-full" suppressHydrationWarning>
+      <html lang="en" className="h-full" suppressHydrationWarning>
         <head>
           <meta
             name="viewport"
@@ -149,7 +150,9 @@ export default function RootLayout({
           className={`${jetbrainsMono.variable} ${geist.variable} ${spaceGrotesk.variable} ${instrumentSerif.variable} antialiased h-full`}
           suppressHydrationWarning
         >
-          <ConvexClientProvider>{content}</ConvexClientProvider>
+          <ThemeProvider>
+            <ConvexClientProvider>{content}</ConvexClientProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>

@@ -78,6 +78,88 @@
 
 :root {
   --radius: 0.5rem;
+  /* Light mode — clean white */
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #f5f5f5;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #1a1a1a;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f0f0;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f0f0f0;
+  --muted-foreground: #737373;
+  --accent: #e8e8e8;
+  --accent-foreground: #1a1a1a;
+  --destructive: #e53e3e;
+  --border: #e0e0e0;
+  --input: #e0e0e0;
+  --ring: #0078d4;
+  --chart-1: #0078d4;
+  --chart-2: #4daafc;
+  --chart-3: #48bb78;
+  --chart-4: #d69e2e;
+  --chart-5: #fc8181;
+  --sidebar: #f8f8f8;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #1a1a1a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ebebeb;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e0e0e0;
+  --sidebar-ring: #0078d4;
+
+  --surface: #f5f5f5;
+  --border-strong: #c0c0c0;
+  --rift-glow: rgba(0, 0, 0, 0.05);
+
+  --fill-input-chat: #f5f5f5;
+  --link-color: #0066cc;
+
+  --premium-bg: #f0f0f0;
+  --premium-text: #1a1a1a;
+  --premium-hover: #1a1a1a;
+
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+
+  --sidebar-mask: linear-gradient(
+    90deg,
+    #f8f8f8 0%,
+    #f8f8f8 95%,
+    transparent 100%
+  );
+  --sidebar-mask-active: linear-gradient(
+    90deg,
+    #ebebeb 0%,
+    #ebebeb 88%,
+    transparent 93%,
+    transparent 100%
+  );
+
+  --neon-glow: none;
+  --neon-glow-intense: none;
+
+  --color-terminal-green: #2bccdf;
+  --color-terminal-green-dim: #1c8b99;
+  --color-terminal-sky: #5ec8d8;
+  --color-terminal-text: #1a1a1a;
+  --color-terminal-text-dim: #737373;
+  --color-terminal-border: #e0e0e0;
+  --color-terminal-bg: #ffffff;
+  --color-terminal-primary: #ffffff;
+  --color-terminal-secondary: #f5f5f5;
+  --color-rift: #1a1a1a;
+  --color-rift-dim: #4a4a4a;
+  --color-rift-deep: #f0f0f0;
+  --color-rift-hot: #000000;
+  --color-alarm: #e53e3e;
+}
+
+.dark {
   /* Cursor / VS Code dark — warm mascot, neutral UI */
   --background: #1e1e1e;
   --foreground: #cccccc;
