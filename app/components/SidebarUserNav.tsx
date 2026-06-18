@@ -535,11 +535,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                   />{" "}
                   <span className="font-normal text-[#858585]">v1.0</span>
                 </span>
-                <span
-                  className="size-1.5 shrink-0 rounded-full bg-[#89d185] shadow-[0_0_8px_rgba(137,209,133,0.55)]"
-                  title="Connected"
-                  aria-hidden
-                />
               </div>
 
               <button

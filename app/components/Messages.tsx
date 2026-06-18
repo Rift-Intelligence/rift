@@ -278,7 +278,7 @@ export const Messages = ({
       >
         <div
           ref={contentRef}
-          className="mx-auto w-full max-w-[768px] flex flex-col space-y-7 px-3 pb-24 pt-6"
+          className="ml-0 w-full max-w-[900px] flex flex-col space-y-7 px-6 pb-24 pt-6"
           data-testid="messages-container"
         >
           {/* Loading indicator at top when loading more messages */}

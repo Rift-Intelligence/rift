@@ -168,7 +168,7 @@ export const ChatInput = ({
     <div
       className={`relative min-w-0 px-4 ${isCentered ? "" : "pb-4 bg-gradient-to-b from-transparent via-background/80 to-background"}`}
     >
-      <div className="mx-auto w-full max-w-full min-w-0 sm:max-w-[768px] sm:min-w-[390px] flex flex-col flex-1">
+      <div className="ml-0 w-full max-w-[900px] min-w-0 sm:min-w-[390px] flex flex-col flex-1">
         {rateLimitWarning && onDismissRateLimitWarning && (
           <RateLimitWarning
             data={rateLimitWarning}
