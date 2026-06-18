@@ -53,7 +53,7 @@ export const RiftPixelMark: FC<RiftPixelMarkProps> = ({
         y={0}
         width={size}
         height={size}
-        rx={size * 0.22}
+        rx={Math.round((size * 6) / 22)}
         fill="#252526"
       />
       {pixels.map(({ x, y, fill }, i) => (

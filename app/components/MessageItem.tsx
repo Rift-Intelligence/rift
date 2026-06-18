@@ -365,7 +365,7 @@ export const MessageItem = memo(function MessageItem({
             </div>
           </div>
         ) : (
-          <div className="flex w-full gap-3">
+          <div className="flex w-full items-start gap-3">
             <MessageSenderMark role={isUser ? "user" : "assistant"} />
             <div
               className={`min-w-0 flex-1 overflow-hidden ${
@@ -393,8 +393,8 @@ export const MessageItem = memo(function MessageItem({
                   data-testid="message-content"
                   className={`${
                     isUser
-                      ? "w-full text-[13px] leading-[1.65] text-[#e8e8e8]"
-                      : "w-full prose space-y-3 max-w-none text-[13px] leading-[1.65] text-[#cccccc] dark:prose-invert min-w-0"
+                      ? "w-full text-[14px] leading-[1.65] text-[#e8e8e8]"
+                      : "w-full prose space-y-3 max-w-none text-[14px] leading-[1.65] text-[#cccccc] dark:prose-invert min-w-0"
                   } overflow-hidden`}
                 >
                   {isUser ? (
