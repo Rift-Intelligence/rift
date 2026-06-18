@@ -78,6 +78,9 @@
 
 :root {
   --radius: 0.5rem;
+  --mascot-bg: #e8e8e8;
+  --mascot-face: #ffffff;
+  --mascot-detail: #1a1a1a;
   /* Light mode — clean white */
   --background: #ffffff;
   --foreground: #1a1a1a;
@@ -160,6 +163,9 @@
 }
 
 .dark {
+  --mascot-bg: #252526;
+  --mascot-face: #f5f5f2;
+  --mascot-detail: #161618;
   /* Cursor / VS Code dark — warm mascot, neutral UI */
   --background: #1e1e1e;
   --foreground: #cccccc;
