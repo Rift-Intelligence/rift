@@ -137,7 +137,7 @@ export const ComputerCodeBlock = ({
           >
             <ShikiHighlighter
               language={language}
-              theme="houston"
+              theme={{ light: "github-light", dark: "houston" }}
               delay={150}
               addDefaultStyles={false}
               showLanguage={false}
