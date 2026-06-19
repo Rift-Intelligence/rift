@@ -13,9 +13,22 @@ declare global {
 }
 
 function detectTauri(): boolean {
-  return (
-    typeof window !== "undefined" && window.__TAURI_INTERNALS__ !== undefined
-  );
+  if (typeof window === "undefined") {
+    return false;
+  }
+  // The RIFT Desktop "lite" wrapper is a thin native window around the cloud
+  // app. It injects this flag before page scripts run to opt out of native
+  // desktop features (local sandbox bridge, command server, desktop-only
+  // agent routing) and behave exactly like the web client — avoiding
+  // "desktop sandbox failed / update desktop" errors for a bridge it does not
+  // ship. Full native desktop builds simply don't set this flag.
+  if (
+    (window as unknown as { __RIFT_DESKTOP_LITE__?: boolean })
+      .__RIFT_DESKTOP_LITE__ === true
+  ) {
+    return false;
+  }
+  return window.__TAURI_INTERNALS__ !== undefined;
 }
 
 export function isTauriEnvironment(): boolean {
