@@ -42,18 +42,6 @@ export async function openInBrowser(url: string): Promise<boolean> {
   }
 }
 
-async function promptDesktopUpdate(): Promise<void> {
-  toast.error("Update RIFT Desktop to sign in", {
-    description:
-      "This version is missing the secure sign-in bridge. Opening the latest desktop download in your browser.",
-  });
-
-  const opened = await openInBrowser(DESKTOP_UPDATE_URL);
-  if (!opened) {
-    window.location.href = DESKTOP_UPDATE_URL;
-  }
-}
-
 type AuthFallbackPath =
   | "/login"
   | "/signup"
@@ -101,7 +89,9 @@ export async function navigateToAuth(
         ({ invoke } = await import("@tauri-apps/api/core"));
       } catch (err) {
         console.error("[Tauri] Failed to load Tauri invoke API:", err);
-        await promptDesktopUpdate();
+        // No Tauri invoke bridge in this build — sign in directly inside the
+        // app webview (Password auth needs no external redirect).
+        window.location.href = resolvedPath;
         return;
       }
 
@@ -112,7 +102,9 @@ export async function navigateToAuth(
         authSearchParams.set("desktop_state", desktopAuthState);
       } catch (err) {
         console.error("[Tauri] Failed to prepare desktop auth state:", err);
-        await promptDesktopUpdate();
+        // No desktop sign-in bridge available — fall back to signing in
+        // directly inside the app webview instead of prompting an update.
+        window.location.href = resolvedPath;
         return;
       }
 
