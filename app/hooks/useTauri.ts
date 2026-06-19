@@ -25,9 +25,19 @@ function detectTauri(): boolean {
   // bridge it does not ship. Full native desktop builds never signal lite.
   //
   // Signal channels, in order of reliability on remote URLs:
-  //   1. ?rift_desktop=lite query param (the wrapper loads this; persisted to
-  //      localStorage so the opt-out survives navigation + relaunch).
-  //   2. window.__RIFT_DESKTOP_LITE__ init-script flag (backup).
+  //   1. RIFTWrapperLite user-agent marker (present on every request, client
+  //      AND server, every navigation — the most deterministic signal).
+  //   2. ?rift_desktop=lite query param (persisted to localStorage so the
+  //      opt-out survives navigation + relaunch).
+  //   3. window.__RIFT_DESKTOP_LITE__ init-script flag (backup).
+  try {
+    if (window.navigator?.userAgent?.includes("RIFTWrapperLite")) {
+      return false;
+    }
+  } catch {
+    /* ignore UA access errors */
+  }
+
   try {
     const params = new URLSearchParams(window.location.search);
     if (params.get("rift_desktop") === "lite") {

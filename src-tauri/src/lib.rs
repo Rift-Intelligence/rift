@@ -41,11 +41,24 @@ pub fn run() {
       // desktop bridge this wrapper doesn't ship.
       url.query_pairs_mut().append_pair("rift_desktop", "lite");
 
+      // Most reliable lite signal: a custom user-agent marker. Unlike init
+      // scripts / query params, the UA is present on every request (client
+      // AND server) and on every navigation, so the web app can detect the
+      // lite wrapper deterministically. Realistic per-OS base + marker.
+      let user_agent = if cfg!(target_os = "macos") {
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15 RIFTWrapperLite/1.0"
+      } else if cfg!(target_os = "windows") {
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0 RIFTWrapperLite/1.0"
+      } else {
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 RIFTWrapperLite/1.0"
+      };
+
       WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url))
         .title("RIFT")
         .inner_size(1280.0, 800.0)
         .min_inner_size(900.0, 600.0)
         .resizable(true)
+        .user_agent(user_agent)
         .initialization_script("window.__RIFT_DESKTOP_LITE__ = true;")
         .build()?;
 
