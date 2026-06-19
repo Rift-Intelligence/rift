@@ -108,9 +108,14 @@ const AnsiCodeBlock = ({
         setIsRendering(true);
 
         try {
+          // Dual-theme output: emit CSS variables (--shiki-light/--shiki-dark)
+          // so the terminal text follows the active theme. globals.css maps
+          // these to `color` per .dark — keeps ANSI output legible in light
+          // mode instead of dark-theme colors on a light surface.
           const html = await codeToHtml(codeToRender, {
             lang: "ansi",
-            theme: theme,
+            themes: { light: "github-light", dark: theme },
+            defaultColor: false,
           });
 
           // Only update if this is still the current render request
