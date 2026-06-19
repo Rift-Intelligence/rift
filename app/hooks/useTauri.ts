@@ -12,22 +12,50 @@ declare global {
   }
 }
 
+const LITE_STORAGE_KEY = "rift_desktop_lite";
+
 function detectTauri(): boolean {
   if (typeof window === "undefined") {
     return false;
   }
   // The RIFT Desktop "lite" wrapper is a thin native window around the cloud
-  // app. It injects this flag before page scripts run to opt out of native
-  // desktop features (local sandbox bridge, command server, desktop-only
-  // agent routing) and behave exactly like the web client — avoiding
-  // "desktop sandbox failed / update desktop" errors for a bridge it does not
-  // ship. Full native desktop builds simply don't set this flag.
+  // app. It opts out of native desktop features (local sandbox bridge, command
+  // server, desktop-only agent routing) and behaves exactly like the web
+  // client — avoiding "desktop sandbox failed / update desktop" errors for a
+  // bridge it does not ship. Full native desktop builds never signal lite.
+  //
+  // Signal channels, in order of reliability on remote URLs:
+  //   1. ?rift_desktop=lite query param (the wrapper loads this; persisted to
+  //      localStorage so the opt-out survives navigation + relaunch).
+  //   2. window.__RIFT_DESKTOP_LITE__ init-script flag (backup).
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("rift_desktop") === "lite") {
+      try {
+        window.localStorage.setItem(LITE_STORAGE_KEY, "1");
+      } catch {
+        /* storage unavailable — query param already proves lite mode */
+      }
+      return false;
+    }
+    try {
+      if (window.localStorage.getItem(LITE_STORAGE_KEY) === "1") {
+        return false;
+      }
+    } catch {
+      /* ignore storage errors */
+    }
+  } catch {
+    /* ignore URL parse errors */
+  }
+
   if (
     (window as unknown as { __RIFT_DESKTOP_LITE__?: boolean })
       .__RIFT_DESKTOP_LITE__ === true
   ) {
     return false;
   }
+
   return window.__TAURI_INTERNALS__ !== undefined;
 }
 

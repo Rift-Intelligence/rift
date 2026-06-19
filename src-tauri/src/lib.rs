@@ -33,11 +33,14 @@ pub fn run() {
       }
 
       let url_str = resolve_app_url();
-      let url = tauri::Url::parse(&url_str).expect("invalid RIFT desktop URL");
+      let mut url = tauri::Url::parse(&url_str).expect("invalid RIFT desktop URL");
+      // Mark this as the lite wrapper via a query param. Unlike init scripts,
+      // query params are reliable on remote URLs — the web app reads it on
+      // first load, persists it to localStorage, and treats the session as a
+      // normal web client (cloud sandbox) instead of expecting a native
+      // desktop bridge this wrapper doesn't ship.
+      url.query_pairs_mut().append_pair("rift_desktop", "lite");
 
-      // Mark this as the lite wrapper so the web app treats it as a normal
-      // web client (cloud sandbox) instead of expecting a native desktop
-      // bridge it doesn't ship. Runs before the page's own scripts.
       WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url))
         .title("RIFT")
         .inner_size(1280.0, 800.0)
