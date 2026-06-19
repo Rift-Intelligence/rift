@@ -265,7 +265,7 @@ const BuyExtraUsageDialogContent = ({
         <Button
           onClick={handlePurchase}
           disabled={isLoading || !isValidAmount}
-          className="w-full h-11"
+          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-[15px] shadow-md hover:opacity-90 hover:bg-primary disabled:opacity-50"
         >
           {isLoading
             ? "Processing…"

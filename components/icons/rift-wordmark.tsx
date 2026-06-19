@@ -109,7 +109,10 @@ export interface RiftWordmarkProps {
 export const RiftWordmark: FC<RiftWordmarkProps> = ({
   height = 14,
   className,
-  fill = "#f5f5f2",
+  // Theme-aware by default: inherits the surrounding text color so the
+  // wordmark stays visible in both dark and light mode. Pass an explicit
+  // `fill` only when a fixed color is required (e.g. on a dark-only surface).
+  fill = "currentColor",
   showTagline = false,
   tagline = "autonomous offensive intelligence",
   taglineClassName,
