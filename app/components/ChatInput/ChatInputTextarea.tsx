@@ -124,7 +124,7 @@ export function ChatInputTextarea({
             ? placeholder
             : "Plan, @ for context, / for commands"
         }
-        className="flex w-full min-h-[22px] max-h-[200px] flex-1 resize-none overflow-hidden border-0 bg-transparent p-0 text-[13px] leading-normal text-foreground shadow-none placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full min-h-[22px] max-h-[200px] flex-1 resize-none overflow-hidden border-0 bg-transparent p-0 text-[16px] md:text-[13px] leading-normal text-foreground shadow-none placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
         minRows={minRows}
         autoFocus={autoFocus}
         disabled={disabled}
