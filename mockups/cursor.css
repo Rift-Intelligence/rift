@@ -263,6 +263,135 @@ body {
   font-size: 11px;
   color: var(--faint);
 }
+.user-row.on {
+  background: var(--surface-active);
+}
+
+.user-menu {
+  position: relative;
+}
+.user-menu-pop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 4px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--panel);
+  padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.user-menu-email {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.user-menu-sep {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 4px 0;
+}
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.user-menu-item:hover {
+  background: var(--surface-hover);
+}
+
+/* Session dock — sidebar bottom-left */
+.session-dock {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r);
+  background: rgba(37, 37, 38, 0.8);
+  padding: 8px;
+}
+.session-dock .top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.session-dock .brand {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+.session-dock .brand .ver {
+  font-weight: 400;
+  color: var(--muted);
+}
+.session-dock .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px rgba(137, 209, 133, 0.55);
+}
+.session-dock .tokens {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+.session-dock .tokens:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.session-dock .tokens .mode {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.session-dock .tokens .bal {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.session-dock .account {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  margin-top: 2px;
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+  color: var(--faint);
+  text-align: left;
+  cursor: pointer;
+}
+.session-dock .account:hover {
+  background: var(--surface-hover);
+  color: var(--muted);
+}
+
+.user-menu-item .ti {
+  font-size: 15px;
+  color: var(--muted);
+}
 
 .main {
   flex: 1;
