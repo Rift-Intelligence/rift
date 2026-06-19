@@ -1,9 +1,7 @@
-// Desktop builds are published as a public GitHub release so the binaries are
-// downloadable without exposing the (private) source repo.
-const GITHUB_RELEASE_BASE =
-  "https://github.com/cettocdx/rift-releases/releases/latest/download";
-
+// Desktop installers are served as static assets from the app's own public
+// folder (riftsys.app/downloads/...), so they're publicly downloadable
+// without exposing the private source repo or a separate releases repo.
 export const downloadLinks = {
-  macos: `${GITHUB_RELEASE_BASE}/RIFT-mac.dmg`,
-  windows: `${GITHUB_RELEASE_BASE}/RIFT-windows-x64-setup.exe`,
+  macos: "/downloads/RIFT-mac.dmg",
+  windows: "/downloads/RIFT-windows-x64-setup.exe",
 };
