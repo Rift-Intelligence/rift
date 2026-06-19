@@ -582,7 +582,7 @@ export const agentLongTask = task({
       organizationId,
       messages,
       localDesktopAttachmentsPrepared,
-      sandboxPreference,
+      sandboxPreference: _sandboxPreference,
       selectedModel: selectedModelOverride,
       userLocation,
       temporary,
@@ -684,7 +684,7 @@ export const agentLongTask = task({
         { isTemporary: !!temporary, regenerate },
       );
 
-      const uploadBasePath = getUploadBasePath(sandboxPreference);
+      const uploadBasePath = getUploadBasePath("e2b");
       const messagesForProcessing =
         localDesktopAttachmentsPrepared && messages.length > 0
           ? messages
@@ -701,7 +701,7 @@ export const agentLongTask = task({
           subscription,
           uploadBasePath,
           modelOverride: selectedModelOverride,
-          allowLocalDesktopFiles: sandboxPreference === "desktop",
+          allowLocalDesktopFiles: false,
         });
 
       if (!processedMessages.length) {
@@ -854,7 +854,7 @@ export const agentLongTask = task({
               memoryEnabled,
               !!temporary,
               assistantMessageId,
-              sandboxPreference,
+              "e2b",
               process.env.CONVEX_SERVICE_ROLE_KEY,
               userCustomization?.guardrails_config,
               false,

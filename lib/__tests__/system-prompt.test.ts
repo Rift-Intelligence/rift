@@ -45,7 +45,7 @@ Commands run directly on the host OS "workstation" without Docker isolation. Be 
       "For the default cloud sandbox, commands run in an isolated container",
     );
     expect(prompt).toContain(
-      "All tools operate in an isolated sandbox environment",
+      "All tools operate in an isolated cloud sandbox environment",
     );
   });
 
