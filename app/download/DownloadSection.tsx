@@ -66,34 +66,7 @@ export function detectPlatform(): DetectedPlatform {
     };
   }
 
-  if (
-    userAgent.includes("linux") ||
-    platform.includes("linux") ||
-    userAgent.includes("x11")
-  ) {
-    const isArm =
-      userAgent.includes("aarch64") ||
-      userAgent.includes("arm64") ||
-      platform.includes("aarch64") ||
-      platform.includes("arm");
-
-    if (isArm) {
-      return {
-        platform: "linux",
-        linuxArch: "arm64",
-        displayName: "Linux (ARM64)",
-        downloadUrl: downloadLinks.linuxArm64Deb,
-      };
-    }
-
-    return {
-      platform: "linux",
-      linuxArch: "x64",
-      displayName: "Linux",
-      downloadUrl: downloadLinks.linuxDeb,
-    };
-  }
-
+  // Linux is not supported; fall back to the macOS build for unknown OSes.
   return {
     platform: "unknown",
     displayName: "your platform",

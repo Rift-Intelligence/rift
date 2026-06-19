@@ -9,7 +9,7 @@ import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
 import { RiftWordmark } from "@/components/icons/rift-wordmark";
 import { DownloadSection, useDetectedPlatform } from "./DownloadSection";
 import { downloadLinks } from "./constants";
-import { AppleIcon, WindowsIcon, LinuxIcon } from "./icons";
+import { AppleIcon, WindowsIcon } from "./icons";
 
 function AuthenticatedHeader() {
   return (
@@ -67,7 +67,7 @@ function DownloadContent() {
             <div className="grid gap-4 sm:grid-cols-2">
               <DownloadCard
                 title="macOS"
-                subtitle="Universal (Intel & Apple Silicon)"
+                subtitle="Apple Silicon"
                 href={downloadLinks.macos}
                 icon={<AppleIcon />}
               />
@@ -76,30 +76,6 @@ function DownloadContent() {
                 subtitle="64-bit"
                 href={downloadLinks.windows}
                 icon={<WindowsIcon />}
-              />
-              <DownloadCard
-                title="Linux"
-                subtitle="x64 (.deb)"
-                href={downloadLinks.linuxDeb}
-                icon={<LinuxIcon />}
-              />
-              <DownloadCard
-                title="Linux"
-                subtitle="ARM64 (.deb)"
-                href={downloadLinks.linuxArm64Deb}
-                icon={<LinuxIcon />}
-              />
-              <DownloadCard
-                title="Linux"
-                subtitle="x64 (.AppImage)"
-                href={downloadLinks.linuxAppImage}
-                icon={<LinuxIcon />}
-              />
-              <DownloadCard
-                title="Linux"
-                subtitle="ARM64 (.AppImage)"
-                href={downloadLinks.linuxArm64AppImage}
-                icon={<LinuxIcon />}
               />
             </div>
           </div>

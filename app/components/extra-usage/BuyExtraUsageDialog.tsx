@@ -260,6 +260,16 @@ const BuyExtraUsageDialogContent = ({
               ? "You'll be redirected to Stripe for secure card payment."
               : "BTC, ETH, USDT… Tokens are credited after on-chain confirmation (usually a few minutes)."}
           </p>
+
+          {!hasCard && (
+            <div className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+              <CreditCard className="h-3.5 w-3.5" />
+              <span>
+                Credit card payments —{" "}
+                <span className="font-medium text-foreground">coming soon</span>
+              </span>
+            </div>
+          )}
         </div>
 
         <Button

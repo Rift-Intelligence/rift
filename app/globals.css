@@ -117,6 +117,7 @@
   --surface: #f5f5f5;
   --border-strong: #c0c0c0;
   --rift-glow: rgba(0, 0, 0, 0.05);
+  --grid-dot: rgba(0, 0, 0, 0.05);
 
   --fill-input-chat: #f5f5f5;
   --link-color: #0066cc;
@@ -202,6 +203,7 @@
   --surface: #252526;
   --border-strong: #505050;
   --rift-glow: rgba(232, 232, 232, 0.08);
+  --grid-dot: rgba(255, 255, 255, 0.035);
 
   --fill-input-chat: #252526;
   --link-color: #4daafc;
@@ -359,7 +361,7 @@
 .landing-grid-bg {
   background-image: radial-gradient(
     circle at 1px 1px,
-    rgba(255, 255, 255, 0.035) 1px,
+    var(--grid-dot, rgba(255, 255, 255, 0.035)) 1px,
     transparent 0
   );
   background-size: 28px 28px;
