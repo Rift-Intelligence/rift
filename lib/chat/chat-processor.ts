@@ -66,12 +66,13 @@ export function selectModel(
     return autoModel;
   }
 
-  // Paid ASK Standard mirrors the auto-route split, but uses the explicit
-  // `model-deepseek-v4-flash` / `model-gemini-3-flash` keys so any UI that
-  // reads `getModelDisplayName` shows the picked model rather than the
-  // auto-router label.
+  // Paid ASK Standard → Gemini 3 Flash (explicit key so getModelDisplayName
+  // shows the picked model). Previously routed text-only requests to DeepSeek
+  // V4 Flash, but DeepSeek is a Chinese model whose safety layer refuses
+  // security questions in Chinese — retired from every reachable route. Gemini
+  // is the same price ($0.5/$3) and does not Chinese-refuse.
   if (selectedModel === "rift-standard" && !isAgent) {
-    return askUsesDeepSeek ? "model-deepseek-v4-flash" : "model-gemini-3-flash";
+    return "model-gemini-3-flash";
   }
 
   const providerKey = resolveTierToProviderKey(selectedModel, mode);

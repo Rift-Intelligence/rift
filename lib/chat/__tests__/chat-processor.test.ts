@@ -191,13 +191,13 @@ describe("selectModel", () => {
       expect(selectModel("ask", "team", "rift-pro")).toBe("model-grok-4.3");
     });
 
-    it("should map RIFT Standard to DeepSeek V4 Flash when no image/PDF", () => {
+    it("should map RIFT Standard to Gemini 3 Flash (DeepSeek retired)", () => {
       expect(selectModel("ask", "pro", "rift-standard")).toBe(
-        "model-deepseek-v4-flash",
+        "model-gemini-3-flash",
       );
     });
 
-    it("should promote RIFT Standard to Gemini 3 Flash when an image/PDF is attached", () => {
+    it("should map RIFT Standard to Gemini 3 Flash with an image/PDF too", () => {
       expect(selectModel("ask", "pro", "rift-standard", true)).toBe(
         "model-gemini-3-flash",
       );
