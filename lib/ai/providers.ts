@@ -181,9 +181,13 @@ type OpenRouterInstance = typeof openrouter;
 const buildProviderMap = (or: OpenRouterInstance) =>
   ({
     "ask-model": or("google/gemini-3-flash-preview"),
-    "ask-model-free": or("deepseek/deepseek-v4-flash"),
+    // Free tiers route to Grok 4.3 (xAI). DeepSeek/Kimi are Chinese models whose
+    // built-in safety layer hard-refuses OSINT / offensive-security work with an
+    // un-overridable "你好，我无法给到相关内容。" — the system prompt cannot stop it.
+    // Grok 4.3 has no such cyber content-filter and actually serves the output.
+    "ask-model-free": or("x-ai/grok-4.3"),
     "agent-model": or("moonshotai/kimi-k2.7-code"),
-    "agent-model-free": or("moonshotai/kimi-k2.7-code"),
+    "agent-model-free": or("x-ai/grok-4.3"),
     "model-sonnet-4.6": or("anthropic/claude-sonnet-4.6"),
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
     "model-deepseek-v4-flash": or("deepseek/deepseek-v4-flash"),
@@ -210,9 +214,9 @@ export type ModelName = keyof typeof baseProviders;
 export const modelCutoffDates: Record<ModelName, string> &
   Record<string, string> = {
   "ask-model": "January 2025",
-  "ask-model-free": "May 2025",
+  "ask-model-free": "Late 2025",
   "agent-model": "April 2024",
-  "agent-model-free": "May 2025",
+  "agent-model-free": "Late 2025",
   "model-sonnet-4.6": "May 2025",
   "model-gemini-3-flash": "January 2025",
   "model-deepseek-v4-flash": "May 2025",
@@ -262,11 +266,9 @@ export function isAnthropicModel(modelName: string): boolean {
 }
 
 export function isDeepSeekModel(modelName: string): boolean {
-  return (
-    modelName === "ask-model-free" ||
-    modelName === "agent-model-free" ||
-    modelName === "model-deepseek-v4-flash"
-  );
+  // NOTE: ask-model-free / agent-model-free now route to Grok 4.3, not DeepSeek.
+  // Only the explicit DeepSeek key remains.
+  return modelName === "model-deepseek-v4-flash";
 }
 
 export function supportsMultimodalToolResults(modelName?: string): boolean {
@@ -276,6 +278,9 @@ export function supportsMultimodalToolResults(modelName?: string): boolean {
 
   return (
     normalized === "ask-model" ||
+    // Free tiers are Grok 4.3-backed (vision-capable) — see buildProviderMap.
+    normalized === "ask-model-free" ||
+    normalized === "agent-model-free" ||
     normalized.includes("gemini") ||
     normalized.includes("google/") ||
     isAnthropicModel(normalized) ||

@@ -120,7 +120,7 @@ describe("buildProviderOptions fallback chain", () => {
     });
   });
 
-  it("falls back from free DeepSeek agent model to Gemini", () => {
+  it("falls back from free Grok agent model to Gemini", () => {
     const opts = buildProviderOptions(false, "user-1", "agent-model-free");
     expect(opts.openrouter).toMatchObject({
       models: [GEMINI_SLUG],

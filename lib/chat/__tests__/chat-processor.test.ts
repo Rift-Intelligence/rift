@@ -160,7 +160,7 @@ describe("selectModel", () => {
       expect(selectModel("agent", "pro")).toBe("agent-model");
     });
 
-    it("should return ask-model-free (DeepSeek) for paid ask with no image/PDF", () => {
+    it("should return ask-model-free (Grok) for paid ask with no image/PDF", () => {
       expect(selectModel("ask", "pro")).toBe("ask-model-free");
     });
 
