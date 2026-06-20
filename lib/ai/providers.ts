@@ -186,7 +186,9 @@ const buildProviderMap = (or: OpenRouterInstance) =>
     // un-overridable "你好，我无法给到相关内容。" — the system prompt cannot stop it.
     // Grok 4.3 has no such cyber content-filter and actually serves the output.
     "ask-model-free": or("x-ai/grok-4.3"),
-    "agent-model": or("moonshotai/kimi-k2.7-code"),
+    // Paid auto agent path — Grok too (was Kimi K2.7-code, a Chinese model that
+    // refused OSINT). Every agent route now lands on the non-refusing Grok 4.3.
+    "agent-model": or("x-ai/grok-4.3"),
     "agent-model-free": or("x-ai/grok-4.3"),
     "model-sonnet-4.6": or("anthropic/claude-sonnet-4.6"),
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
@@ -215,7 +217,7 @@ export const modelCutoffDates: Record<ModelName, string> &
   Record<string, string> = {
   "ask-model": "January 2025",
   "ask-model-free": "Late 2025",
-  "agent-model": "April 2024",
+  "agent-model": "Late 2025",
   "agent-model-free": "Late 2025",
   "model-sonnet-4.6": "May 2025",
   "model-gemini-3-flash": "January 2025",
@@ -303,8 +305,15 @@ export function isGeminiModel(modelName: string): boolean {
 /**
  * Map a RIFT tier id to the underlying provider key for a given mode.
  * Returns `null` for `"auto"` (the caller routes to the auto-router model
- * key instead). The Pro/Max tiers map to the same model in both modes; only
- * Lite differs (Gemini 3 Flash for ask, Kimi K2.6 for agent).
+ * key instead).
+ *
+ * AGENT mode = live pentest/OSINT → ALL tiers use Grok 4.3. The Chinese models
+ * (Kimi K2.6 / K2.7-code, DeepSeek) have a built-in safety layer that hard-
+ * refuses OSINT/offensive-security work — empirically they reply "你好，我无法
+ * 给到相关内容。" (or, when told not to use Chinese, a generic refusal in another
+ * language) and the system prompt cannot override it. Grok 4.3 (xAI) has no such
+ * cyber content-filter and reliably serves the output, so every agent tier routes
+ * to it. Ask mode (conversational) keeps the cheaper Gemini for Recon.
  */
 export function resolveTierToProviderKey(
   tier: SelectedModel,
@@ -313,18 +322,16 @@ export function resolveTierToProviderKey(
   if (tier === "auto") return null;
   switch (tier) {
     case "rift-standard":
-      return isAgentMode(mode) ? "model-kimi-k2.6" : "model-gemini-3-flash";
+      // Recon: agent → Grok (no refusal); ask → Gemini 3 Flash (cheap, fine).
+      return isAgentMode(mode) ? "model-grok-4.3" : "model-gemini-3-flash";
     case "rift-pro":
-      // Strike → Kimi K2.7-code: top agentic-coding model that does NOT filter
-      // offensive output (Claude Sonnet did — content-filter on pentest text).
-      return "model-kimi-k2.7-code";
+      // Strike → Grok 4.3 (was Kimi K2.7-code, which refused OSINT in Chinese).
+      return "model-grok-4.3";
     case "rift-max":
       // Dominate → Grok 4.3: the best PRACTICAL pentest model. Frontier-tier
-      // cyber capability (xAI publishes Cybench results in its model cards) AND
-      // permissive — it actually serves offensive-security output. Claude/Opus
-      // top the raw benchmark but EMPTY OUT live exploit output via Anthropic's
-      // real-time cyber content-filter on every filtering upstream (direct,
-      // Vertex, Bedrock), so they're unusable here despite the higher score.
+      // cyber capability AND permissive — it actually serves offensive-security
+      // output, unlike Claude/Opus (real-time content-filter) or the Chinese
+      // models (Chinese safety refusal).
       return "model-grok-4.3";
   }
 }

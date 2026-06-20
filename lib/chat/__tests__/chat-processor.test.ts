@@ -183,16 +183,12 @@ describe("selectModel", () => {
 
   // Tier override — Pro/Max map to the same provider key in both modes
   describe("tier override for ask mode (paid users)", () => {
-    it("should map RIFT Pro to Kimi K2.7-code in ask mode", () => {
-      expect(selectModel("ask", "ultra", "rift-pro")).toBe(
-        "model-kimi-k2.7-code",
-      );
+    it("should map RIFT Pro to Grok 4.3 in ask mode", () => {
+      expect(selectModel("ask", "ultra", "rift-pro")).toBe("model-grok-4.3");
     });
 
-    it("should map RIFT Pro to Kimi K2.7-code for team users", () => {
-      expect(selectModel("ask", "team", "rift-pro")).toBe(
-        "model-kimi-k2.7-code",
-      );
+    it("should map RIFT Pro to Grok 4.3 for team users", () => {
+      expect(selectModel("ask", "team", "rift-pro")).toBe("model-grok-4.3");
     });
 
     it("should map RIFT Standard to DeepSeek V4 Flash when no image/PDF", () => {
@@ -212,18 +208,16 @@ describe("selectModel", () => {
     });
   });
 
-  // Agent mode — Lite resolves to Kimi instead of Gemini
+  // Agent mode — every tier resolves to Grok 4.3 (Chinese models refuse OSINT)
   describe("tier override in agent mode", () => {
-    it("should map RIFT Standard to Kimi K2.6 in agent mode", () => {
+    it("should map RIFT Standard to Grok 4.3 in agent mode", () => {
       expect(selectModel("agent", "pro", "rift-standard")).toBe(
-        "model-kimi-k2.6",
+        "model-grok-4.3",
       );
     });
 
-    it("should map RIFT Pro to Kimi K2.7-code in agent mode", () => {
-      expect(selectModel("agent", "pro", "rift-pro")).toBe(
-        "model-kimi-k2.7-code",
-      );
+    it("should map RIFT Pro to Grok 4.3 in agent mode", () => {
+      expect(selectModel("agent", "pro", "rift-pro")).toBe("model-grok-4.3");
     });
 
     it("should map RIFT Max to Grok 4.3 in agent mode", () => {
