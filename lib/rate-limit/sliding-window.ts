@@ -176,10 +176,20 @@ export const grantFreeReferralBonusUnits = async (
  * Check rate limit for free users using a fixed daily request-unit window.
  * Resets at midnight UTC each day.
  */
+/**
+ * Sentinel returned (instead of throwing) when the daily free window is
+ * exhausted AND the caller asked not to throw — so the caller can fall through
+ * to the prepaid balance (PAYG). `remaining` is the units left in the free
+ * window (0 on exhaustion).
+ */
+export type FreeWindowOutcome = RateLimitInfo & { freeExhausted?: boolean };
+
 export const checkFreeUserRateLimit = async (
   userId: string,
   requestCost = FREE_ASK_REQUEST_COST,
-): Promise<RateLimitInfo> => {
+  options?: { throwOnExhaustion?: boolean },
+): Promise<FreeWindowOutcome> => {
+  const throwOnExhaustion = options?.throwOnExhaustion ?? true;
   const redis = createRedisClient();
 
   const requestLimit = getFreeRequestLimit();
@@ -194,6 +204,7 @@ export const checkFreeUserRateLimit = async (
         resetTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
         limit: requestLimit,
         rateLimitSkipped: true,
+        servedFrom: "free",
       };
     }
     throw new ChatSDKError(
@@ -213,6 +224,15 @@ export const checkFreeUserRateLimit = async (
     });
 
     if (!success) {
+      if (!throwOnExhaustion) {
+        // Let the caller decide whether to draw from the prepaid balance.
+        return {
+          remaining: 0,
+          resetTime: new Date(reset),
+          limit: requestLimit,
+          freeExhausted: true,
+        };
+      }
       throw new ChatSDKError(
         "rate_limit:chat",
         `You've used all your daily requests. Daily requests reset at midnight UTC.\n\nUpgrade plan for higher usage limits and more features.`,
@@ -223,6 +243,7 @@ export const checkFreeUserRateLimit = async (
       remaining,
       resetTime: new Date(reset),
       limit: requestLimit,
+      servedFrom: "free",
     };
   } catch (error) {
     if (error instanceof ChatSDKError) throw error;

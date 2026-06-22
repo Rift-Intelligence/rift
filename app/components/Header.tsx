@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import { navigateToAuth } from "@/app/hooks/useTauri";
 import {
   Download,
@@ -13,19 +13,31 @@ import {
   Tag,
   type LucideIcon,
 } from "lucide-react";
-import { RiftLogo } from "@/components/icons/rift-logo";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 
 interface HeaderProps {
   chatTitle?: string;
   hideDownload?: boolean;
 }
 
-const NAV_ITEMS: { label: string; icon: LucideIcon }[] = [
-  { label: "Product", icon: Terminal },
-  { label: "Security", icon: ShieldCheck },
-  { label: "Docs", icon: FileText },
-  { label: "Pricing", icon: Tag },
+const NAV_ITEMS: { label: string; icon: LucideIcon; target: string }[] = [
+  { label: "Product", icon: Terminal, target: "top" },
+  { label: "Security", icon: ShieldCheck, target: "security" },
+  { label: "Docs", icon: FileText, target: "docs" },
+  { label: "Pricing", icon: Tag, target: "pricing" },
 ];
+
+function scrollToSection(target: string) {
+  if (target === "top") {
+    const scroller = document.querySelector(".flex-1.overflow-y-auto");
+    scroller?.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+  document
+    .getElementById(target)
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
   const { user, loading } = useAuth();
@@ -38,10 +50,8 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       {/* Desktop header */}
       <div className="relative py-[10px] flex items-center justify-between max-md:hidden">
         <div className="flex items-center gap-2">
-          <RiftLogo size={26} className="text-terminal-green" />
-          <span className="display-emphasis text-2xl leading-none text-foreground">
-            rift
-          </span>
+          <RiftPixelMark size={24} />
+          <RiftWordmark height={13} fill="#f5f5f2" />
         </div>
 
         {chatTitle ? (
@@ -54,10 +64,10 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
           !loading &&
           !user && (
             <nav className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-7">
-              {NAV_ITEMS.map(({ label, icon: Icon }) => (
+              {NAV_ITEMS.map(({ label, icon: Icon, target }) => (
                 <button
                   key={label}
-                  onClick={goToSignup}
+                  onClick={() => scrollToSection(target)}
                   className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -114,10 +124,8 @@ const Header: React.FC<HeaderProps> = ({ chatTitle, hideDownload = false }) => {
       {/* Mobile header */}
       <div className="py-3 flex items-center justify-between md:hidden">
         <div className="flex items-center gap-2">
-          <RiftLogo size={22} className="text-terminal-green" />
-          <span className="display-emphasis text-xl leading-none text-foreground">
-            rift
-          </span>
+          <RiftPixelMark size={22} />
+          <RiftWordmark height={12} fill="#f5f5f2" />
         </div>
         {!loading && !user && (
           <div className="flex items-center gap-2">

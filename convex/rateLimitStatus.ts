@@ -54,7 +54,7 @@ export const getAgentRateLimitStatus = action({
       throw new Error("Unauthenticated: User must be logged in");
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
     const subscription = args.subscription as SubscriptionTier;
 
     // Calculate limits using shared token-bucket logic

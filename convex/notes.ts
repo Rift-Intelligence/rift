@@ -564,7 +564,7 @@ export const getUserNotesPaginated = query({
       const result = await ctx.db
         .query("notes")
         .withIndex("by_user_and_updated", (q) =>
-          q.eq("user_id", identity.subject),
+          q.eq("user_id", identity.subject.split("|")[0]),
         )
         .order("desc")
         .paginate(args.paginationOpts);
@@ -631,14 +631,16 @@ export const getUserNotes = query({
         notes = await ctx.db
           .query("notes")
           .withIndex("by_user_and_category", (q) =>
-            q.eq("user_id", identity.subject).eq("category", args.category!),
+            q
+              .eq("user_id", identity.subject.split("|")[0])
+              .eq("category", args.category!),
           )
           .collect();
       } else {
         notes = await ctx.db
           .query("notes")
           .withIndex("by_user_and_updated", (q) =>
-            q.eq("user_id", identity.subject),
+            q.eq("user_id", identity.subject.split("|")[0]),
           )
           .order("desc")
           .collect();
@@ -687,7 +689,7 @@ export const deleteUserNote = mutation({
         return null; // Idempotent - treat as successful
       }
 
-      if (note.user_id !== identity.subject) {
+      if (note.user_id !== identity.subject.split("|")[0]) {
         throw new ConvexError({
           code: "ACCESS_DENIED",
           message: "Access denied: You don't own this note",
@@ -782,7 +784,7 @@ export const createUserNote = mutation({
 
     try {
       await ctx.db.insert("notes", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         note_id: noteId,
         title: args.title.trim(),
         content: args.content.trim(),
@@ -855,7 +857,7 @@ export const updateUserNote = mutation({
         return { success: false, error: `Note '${args.noteId}' not found` };
       }
 
-      if (note.user_id !== identity.subject) {
+      if (note.user_id !== identity.subject.split("|")[0]) {
         throw new ConvexError({
           code: "ACCESS_DENIED",
           message: "Access denied: You don't own this note",
@@ -991,7 +993,7 @@ export const searchUserNotes = query({
           .withSearchIndex("search_notes", (q) => {
             let searchQuery = q
               .search("content", args.search)
-              .eq("user_id", identity.subject);
+              .eq("user_id", identity.subject.split("|")[0]);
             if (args.category) {
               searchQuery = searchQuery.eq("category", args.category);
             }
@@ -1002,14 +1004,16 @@ export const searchUserNotes = query({
         notes = await ctx.db
           .query("notes")
           .withIndex("by_user_and_category", (q) =>
-            q.eq("user_id", identity.subject).eq("category", args.category!),
+            q
+              .eq("user_id", identity.subject.split("|")[0])
+              .eq("category", args.category!),
           )
           .collect();
       } else {
         notes = await ctx.db
           .query("notes")
           .withIndex("by_user_and_updated", (q) =>
-            q.eq("user_id", identity.subject),
+            q.eq("user_id", identity.subject.split("|")[0]),
           )
           .order("desc")
           .collect();
@@ -1052,7 +1056,7 @@ export const deleteAllUserNotes = mutation({
       const notes = await ctx.db
         .query("notes")
         .withIndex("by_user_and_updated", (q) =>
-          q.eq("user_id", identity.subject),
+          q.eq("user_id", identity.subject.split("|")[0]),
         )
         .collect();
 

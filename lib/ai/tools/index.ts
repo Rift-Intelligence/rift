@@ -33,7 +33,6 @@ import type {
   SandboxBootInfo,
   CaidoReadyInfo,
 } from "@/types";
-import { isAgentMode } from "@/lib/utils/mode-helpers";
 import type { Geo } from "@vercel/functions";
 import { FileAccumulator } from "./utils/file-accumulator";
 import { BackgroundProcessTracker } from "./utils/background-process-tracker";
@@ -79,14 +78,9 @@ export const createTools = (
     }
   };
 
-  // E2B protection: free agent users must never use DefaultSandboxManager (always E2B)
-  if (subscription === "free" && isAgentMode(mode)) {
-    if (!sandboxPreference || sandboxPreference === "e2b") {
-      throw new Error(
-        "Free agent mode requires a local sandbox. E2B is not available on the free plan.",
-      );
-    }
-  }
+  // Subscription tiers were removed, so cloud E2B Agent mode is available to
+  // every signed-in user. The old "free agent must use a local sandbox, E2B is
+  // paid-only" gate no longer applies.
 
   // Use HybridSandboxManager if sandboxPreference and serviceKey are provided
   const sandboxManager =

@@ -1,25 +1,23 @@
 import { describe, it, expect } from "@jest/globals";
 import { getSuspensionMessage } from "../suspensionMessage";
 
-const SUPPORT_URL = "https://help.hackerai.co/";
-
 describe("getSuspensionMessage", () => {
   it("uses the EFW label for early_fraud_warning reasons", () => {
     const msg = getSuspensionMessage("early_fraud_warning:fraudulent");
     expect(msg).toContain("a fraud warning from your card issuer");
-    expect(msg).toContain(SUPPORT_URL);
+    expect(msg).toContain("contact support");
   });
 
   it("uses the dispute label for dispute_fraudulent reasons", () => {
     const msg = getSuspensionMessage("dispute_fraudulent:dp_123");
     expect(msg).toContain("a fraudulent payment dispute (chargeback)");
-    expect(msg).toContain(SUPPORT_URL);
+    expect(msg).toContain("contact support");
   });
 
   it("uses the billing hold label for disputed-payment holds", () => {
     const msg = getSuspensionMessage("dispute_billing_hold:dp_123");
     expect(msg).toContain("a payment dispute under review");
-    expect(msg).toContain(SUPPORT_URL);
+    expect(msg).toContain("contact support");
   });
 
   it("falls back to the generic label when the reason is missing", () => {

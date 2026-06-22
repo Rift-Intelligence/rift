@@ -181,14 +181,27 @@ type OpenRouterInstance = typeof openrouter;
 const buildProviderMap = (or: OpenRouterInstance) =>
   ({
     "ask-model": or("google/gemini-3-flash-preview"),
-    "ask-model-free": or("deepseek/deepseek-v4-flash"),
-    "agent-model": or("moonshotai/kimi-k2.6:exacto"),
-    "agent-model-free": or("deepseek/deepseek-v4-flash"),
-    "model-sonnet-4.6": or("anthropic/claude-sonnet-4-6"),
+    // Free tiers route to Grok 4.3 (xAI). DeepSeek/Kimi are Chinese models whose
+    // built-in safety layer hard-refuses OSINT / offensive-security work with an
+    // un-overridable "你好，我无法给到相关内容。" — the system prompt cannot stop it.
+    // Grok 4.3 has no such cyber content-filter and actually serves the output.
+    "ask-model-free": or("x-ai/grok-4.3"),
+    // Paid auto agent path — Grok too (was Kimi K2.7-code, a Chinese model that
+    // refused OSINT). Every agent route now lands on the non-refusing Grok 4.3.
+    "agent-model": or("x-ai/grok-4.3"),
+    "agent-model-free": or("x-ai/grok-4.3"),
+    "model-sonnet-4.6": or("anthropic/claude-sonnet-4.6"),
     "model-gemini-3-flash": or("google/gemini-3-flash-preview"),
     "model-deepseek-v4-flash": or("deepseek/deepseek-v4-flash"),
     "model-opus-4.6": or("anthropic/claude-opus-4.6"),
+    "model-opus-4.8": or("anthropic/claude-opus-4.8"),
     "model-kimi-k2.6": or("moonshotai/kimi-k2.6:exacto"),
+    // Permissive, frontier-tier models that do NOT apply a cyber content-filter
+    // (unlike Claude/GPT/Gemini), so they actually serve offensive-security
+    // output. Grok 4.3 = the best practical pentest model; Kimi K2.7-code = top
+    // agentic-coding workhorse.
+    "model-grok-4.3": or("x-ai/grok-4.3"),
+    "model-kimi-k2.7-code": or("moonshotai/kimi-k2.7-code"),
     "fallback-agent-model": or("google/gemini-3-flash-preview"),
     "fallback-ask-model": or("google/gemini-3-flash-preview"),
     "fallback-gemini-3.5-flash": or("google/gemini-3.5-flash"),
@@ -203,14 +216,17 @@ export type ModelName = keyof typeof baseProviders;
 export const modelCutoffDates: Record<ModelName, string> &
   Record<string, string> = {
   "ask-model": "January 2025",
-  "ask-model-free": "May 2025",
-  "agent-model": "April 2024",
-  "agent-model-free": "May 2025",
+  "ask-model-free": "Late 2025",
+  "agent-model": "Late 2025",
+  "agent-model-free": "Late 2025",
   "model-sonnet-4.6": "May 2025",
   "model-gemini-3-flash": "January 2025",
   "model-deepseek-v4-flash": "May 2025",
   "model-opus-4.6": "May 2025",
+  "model-opus-4.8": "Early 2026",
   "model-kimi-k2.6": "April 2024",
+  "model-grok-4.3": "Late 2025",
+  "model-kimi-k2.7-code": "April 2024",
   "fallback-agent-model": "January 2025",
   "fallback-ask-model": "January 2025",
   "fallback-gemini-3.5-flash": "May 2026",
@@ -220,19 +236,22 @@ export const modelCutoffDates: Record<ModelName, string> &
 
 export const modelDisplayNames: Record<ModelName, string> &
   Record<string, string> = {
-  "ask-model": "Auto, an intelligent model router built by HackerAI",
-  "ask-model-free": "Auto, an intelligent model router built by HackerAI",
-  "agent-model": "Auto, an intelligent model router built by HackerAI",
-  "agent-model-free": "Auto, an intelligent model router built by HackerAI",
+  "ask-model": "Auto, an intelligent model router built by RIFT",
+  "ask-model-free": "Auto, an intelligent model router built by RIFT",
+  "agent-model": "Auto, an intelligent model router built by RIFT",
+  "agent-model-free": "Auto, an intelligent model router built by RIFT",
   "model-sonnet-4.6": "Anthropic Claude Sonnet 4.6",
   "model-gemini-3-flash": "Google Gemini 3 Flash",
   "model-deepseek-v4-flash": "DeepSeek V4 Flash",
   "model-opus-4.6": "Anthropic Claude Opus 4.6",
+  "model-opus-4.8": "Anthropic Claude Opus 4.8",
   "model-kimi-k2.6": "Moonshot Kimi K2.6",
-  "fallback-agent-model": "Auto, an intelligent model router built by HackerAI",
-  "fallback-ask-model": "Auto, an intelligent model router built by HackerAI",
+  "model-grok-4.3": "xAI Grok 4.3",
+  "model-kimi-k2.7-code": "Moonshot Kimi K2.7 Code",
+  "fallback-agent-model": "Auto, an intelligent model router built by RIFT",
+  "fallback-ask-model": "Auto, an intelligent model router built by RIFT",
   "fallback-gemini-3.5-flash": "Google Gemini 3.5 Flash",
-  "fallback-grok-4.3": "Auto, an intelligent model router built by HackerAI",
+  "fallback-grok-4.3": "Auto, an intelligent model router built by RIFT",
   "title-generator-model": "Google Gemini 2.5 Flash",
 };
 
@@ -249,11 +268,9 @@ export function isAnthropicModel(modelName: string): boolean {
 }
 
 export function isDeepSeekModel(modelName: string): boolean {
-  return (
-    modelName === "ask-model-free" ||
-    modelName === "agent-model-free" ||
-    modelName === "model-deepseek-v4-flash"
-  );
+  // NOTE: ask-model-free / agent-model-free now route to Grok 4.3, not DeepSeek.
+  // Only the explicit DeepSeek key remains.
+  return modelName === "model-deepseek-v4-flash";
 }
 
 export function supportsMultimodalToolResults(modelName?: string): boolean {
@@ -263,6 +280,9 @@ export function supportsMultimodalToolResults(modelName?: string): boolean {
 
   return (
     normalized === "ask-model" ||
+    // Free tiers are Grok 4.3-backed (vision-capable) — see buildProviderMap.
+    normalized === "ask-model-free" ||
+    normalized === "agent-model-free" ||
     normalized.includes("gemini") ||
     normalized.includes("google/") ||
     isAnthropicModel(normalized) ||
@@ -283,10 +303,17 @@ export function isGeminiModel(modelName: string): boolean {
 }
 
 /**
- * Map a HackerAI tier id to the underlying provider key for a given mode.
+ * Map a RIFT tier id to the underlying provider key for a given mode.
  * Returns `null` for `"auto"` (the caller routes to the auto-router model
- * key instead). The Pro/Max tiers map to the same model in both modes; only
- * Lite differs (Gemini 3 Flash for ask, Kimi K2.6 for agent).
+ * key instead).
+ *
+ * AGENT mode = live pentest/OSINT → ALL tiers use Grok 4.3. The Chinese models
+ * (Kimi K2.6 / K2.7-code, DeepSeek) have a built-in safety layer that hard-
+ * refuses OSINT/offensive-security work — empirically they reply "你好，我无法
+ * 给到相关内容。" (or, when told not to use Chinese, a generic refusal in another
+ * language) and the system prompt cannot override it. Grok 4.3 (xAI) has no such
+ * cyber content-filter and reliably serves the output, so every agent tier routes
+ * to it. Ask mode (conversational) keeps the cheaper Gemini for Recon.
  */
 export function resolveTierToProviderKey(
   tier: SelectedModel,
@@ -294,12 +321,18 @@ export function resolveTierToProviderKey(
 ): ModelName | null {
   if (tier === "auto") return null;
   switch (tier) {
-    case "hackerai-standard":
-      return isAgentMode(mode) ? "model-kimi-k2.6" : "model-gemini-3-flash";
-    case "hackerai-pro":
-      return "model-sonnet-4.6";
-    case "hackerai-max":
-      return "model-opus-4.6";
+    case "rift-standard":
+      // Recon: agent → Grok (no refusal); ask → Gemini 3 Flash (cheap, fine).
+      return isAgentMode(mode) ? "model-grok-4.3" : "model-gemini-3-flash";
+    case "rift-pro":
+      // Strike → Grok 4.3 (was Kimi K2.7-code, which refused OSINT in Chinese).
+      return "model-grok-4.3";
+    case "rift-max":
+      // Dominate → Grok 4.3: the best PRACTICAL pentest model. Frontier-tier
+      // cyber capability AND permissive — it actually serves offensive-security
+      // output, unlike Claude/Opus (real-time content-filter) or the Chinese
+      // models (Chinese safety refusal).
+      return "model-grok-4.3";
   }
 }
 

@@ -22,7 +22,7 @@ const FILE_ACTIONS_TEXT_ONLY = ["read", "write", "append", "edit"] as const;
 type FileAction = (typeof FILE_ACTIONS_WITH_VIEW)[number];
 
 const MULTIMODAL_UPGRADE_MESSAGE =
-  "The current model does not support multimodal tool results for sandbox images. Please select HackerAI Pro or HackerAI Max and retry the view action.";
+  "The current model does not support multimodal tool results for sandbox images. Please select RIFT Pro or RIFT Max and retry the view action.";
 
 type ViewKind = "image";
 
@@ -66,9 +66,9 @@ import mimetypes
 import os
 import sys
 
-path = os.environ["HACKERAI_FILE_VIEW_PATH"]
-include_data = os.environ.get("HACKERAI_FILE_VIEW_INCLUDE_DATA") == "1"
-max_bytes = int(os.environ.get("HACKERAI_FILE_VIEW_MAX_BYTES", "10485760"))
+path = os.environ["RIFT_FILE_VIEW_PATH"]
+include_data = os.environ.get("RIFT_FILE_VIEW_INCLUDE_DATA") == "1"
+max_bytes = int(os.environ.get("RIFT_FILE_VIEW_MAX_BYTES", "10485760"))
 
 def emit(payload, code=0):
     print(json.dumps(payload, separators=(",", ":")))
@@ -262,9 +262,9 @@ async function readSandboxFileForView(
 
   const sandboxPath = getSandboxViewPath(sandbox, path);
   const viewEnvVars = {
-    HACKERAI_FILE_VIEW_PATH: sandboxPath,
-    HACKERAI_FILE_VIEW_INCLUDE_DATA: includeData ? "1" : "0",
-    HACKERAI_FILE_VIEW_MAX_BYTES: String(MAX_VIEW_FILE_BYTES),
+    RIFT_FILE_VIEW_PATH: sandboxPath,
+    RIFT_FILE_VIEW_INCLUDE_DATA: includeData ? "1" : "0",
+    RIFT_FILE_VIEW_MAX_BYTES: String(MAX_VIEW_FILE_BYTES),
   };
   const command = `PYTHON_BIN="$(command -v python3 || command -v python)" && "$PYTHON_BIN" - <<'PY'\n${VIEW_FILE_SCRIPT}\nPY`;
   let result: {
@@ -412,7 +412,7 @@ export const createFile = (context: ToolContext) => {
         ]
       : [
           "Use 'read' for text-based or line-oriented formats.",
-          "This model cannot view sandbox images directly; ask the user to select HackerAI Pro or HackerAI Max for multimodal image viewing.",
+          "This model cannot view sandbox images directly; ask the user to select RIFT Pro or RIFT Max for multimodal image viewing.",
         ]),
     "Code MUST be saved to a file using this tool before execution via the shell tool.",
     "DO NOT write partial or truncated content; always output the full content.",

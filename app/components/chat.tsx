@@ -22,6 +22,7 @@ import Footer from "./Footer";
 import { useMessageScroll } from "../hooks/useMessageScroll";
 import { useChatHandlers } from "../hooks/useChatHandlers";
 import { useGlobalState } from "../contexts/GlobalState";
+import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 import { useInputApi } from "../contexts/InputContext";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useDocumentDragAndDrop } from "../hooks/useDocumentDragAndDrop";
@@ -58,8 +59,7 @@ import { parseRateLimitWarning } from "@/lib/utils/parse-rate-limit-warning";
 import Loading from "@/components/ui/loading";
 
 import { HackingSuggestions } from "./HackingSuggestions";
-import Waves from "./Waves";
-import { PentestQuickStart } from "./PentestQuickStart";
+import { RiftBrandBar } from "./rift/RiftBrandBar";
 
 // --- Streaming ephemeral state reducer ---
 // Consolidates high-frequency streaming state updates into a single dispatch
@@ -194,6 +194,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   const params = useParams();
   const routeChatId = params?.id as string | undefined;
   const router = useRouter();
+  const { basePath } = useAppShell();
   const isMobile = useIsMobile();
   const { setDataStream, setIsAutoResuming } = useDataStreamDispatch();
   const [streamingState, dispatchStreaming] = useReducer(
@@ -215,6 +216,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     setTodos,
     replaceAssistantTodos,
     temporaryChatsEnabled,
+    setTemporaryChatsEnabled,
     setChatReset,
     hasUserDismissedRateLimitWarning,
     setHasUserDismissedRateLimitWarning,
@@ -469,7 +471,11 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   } = useChat({
     id: chatId,
     messages: serverMessages,
-    experimental_throttle: 150,
+    // Throttle the streamed-token render coalescing window. 150ms made the UI
+    // lag the server by up to a full frame-batch; 50ms (Trigger's realtime
+    // guidance) shows the first token sooner and streams smoother. MessageItem
+    // memoization keeps per-tick render cost bounded.
+    experimental_throttle: 50,
     generateId: () => uuidv4(),
 
     transport: transportRef.current,
@@ -614,7 +620,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
       if (!isExistingChatRef.current && !isTemporaryChat) {
         // Update URL without full navigation so this Chat stays mounted and
         // status can transition to "ready" (stop button → send button).
-        window.history.replaceState({}, "", `/c/${chatId}`);
+        window.history.replaceState({}, "", chatRoute(basePath, chatId));
         removeDraft("new");
         setIsExistingChat(true);
       }
@@ -1116,7 +1122,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
         return;
       }
       initializeChat(newChatId);
-      router.push(`/c/${newChatId}`);
+      router.push(chatRoute(basePath, newChatId));
     } catch (error) {
       console.error("Failed to branch chat:", error);
       toast.error("Failed to branch chat. Please try again.");
@@ -1186,7 +1192,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             : !!chatData?.active_stream_id || !!chatData?.active_trigger_run_id
         }
       />
-      <div className="flex min-h-0 flex-1 w-full flex-col bg-background overflow-hidden">
+      <div className="flex min-h-0 flex-1 w-full flex-col bg-transparent overflow-x-hidden">
         <div className="flex min-h-0 flex-1 min-w-0 relative">
           {/* Left side - Chat content */}
           <div className="flex min-h-0 flex-col flex-1 min-w-0">
@@ -1204,7 +1210,19 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             />
 
             {/* Chat interface */}
-            <div className="bg-background flex flex-col flex-1 relative min-h-0">
+            <div className="bg-transparent flex flex-col flex-1 relative min-h-0">
+              {/* Terminal titlebar with the mascot RIFT — pinned to the top of
+                  the terminal; messages scroll beneath it and never overlap. */}
+              {!isChatNotFound && (
+                <RiftBrandBar
+                  cwd="~/session"
+                  status={
+                    !isExistingChat && temporaryChatsEnabled
+                      ? { label: "incognito", tone: "muted" }
+                      : { label: "sandbox ready", tone: "ok" }
+                  }
+                />
+              )}
               {/* Messages area */}
               {isChatNotFound ? (
                 <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 min-h-0">
@@ -1217,6 +1235,14 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                         This chat doesn&apos;t exist or you don&apos;t have
                         permission to view it.
                       </p>
+                      <a
+                        href="/"
+                        className="mt-6 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-5 py-2.5 font-mono text-sm uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                      >
+                        <span aria-hidden>$</span>
+                        Start new session
+                        <span aria-hidden>▸</span>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -1248,23 +1274,8 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                   branchedFromChatTitle={branchedFromChatTitle}
                 />
               ) : (
-                <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-[#0a0a0c]">
-                  {/* Animated waves background (zauth-style) */}
-                  <Waves
-                    className="pointer-events-none z-0"
-                    lineColor="rgba(63, 63, 70, 0.4)"
-                    backgroundColor="transparent"
-                    waveSpeedX={0.02}
-                    waveSpeedY={0.01}
-                    waveAmpX={40}
-                    waveAmpY={20}
-                    xGap={12}
-                    yGap={36}
-                    friction={0.9}
-                    tension={0.01}
-                    maxCursorMove={120}
-                  />
-                  <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(70%_55%_at_50%_-5%,rgba(255,255,255,0.06),transparent_72%)]" />
+                <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent">
+                  {/* Background is the global RiftBackdrop (mounted in layout) */}
                   <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 min-h-0">
                     <div className="w-full max-w-full sm:max-w-[768px] sm:min-w-[390px] flex flex-col items-center">
                       <div className="text-center">
@@ -1307,13 +1318,6 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                             }
                             contextUsage={contextUsage}
                           />
-                        </div>
-                      )}
-
-                      {/* Pentest quick-start launcher (desktop, persistent chats) */}
-                      {!isMobile && !temporaryChatsEnabled && (
-                        <div className="w-full max-w-2xl">
-                          <PentestQuickStart />
                         </div>
                       )}
                     </div>

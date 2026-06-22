@@ -4,9 +4,33 @@ const mockAction = jest.fn();
 
 export const useMutation = () => mockMutation;
 
-export const useQuery = () => undefined;
+// Convex Auth: injectable viewer + auth state, defaulting to unauthenticated.
+// Tests can override via the __set* helpers below and reset with __resetAuth().
+let viewerValue: unknown = undefined;
+let authState: { isLoading: boolean; isAuthenticated: boolean } = {
+  isLoading: false,
+  isAuthenticated: false,
+};
+
+export const __setViewer = (value: unknown) => {
+  viewerValue = value;
+};
+export const __setAuthState = (state: {
+  isLoading: boolean;
+  isAuthenticated: boolean;
+}) => {
+  authState = state;
+};
+export const __resetAuth = () => {
+  viewerValue = undefined;
+  authState = { isLoading: false, isAuthenticated: false };
+};
+
+export const useQuery = () => viewerValue;
 
 export const useAction = () => mockAction;
+
+export const useConvexAuth = () => authState;
 
 // Create stable reference for paginated query results
 const stablePaginatedResult = {

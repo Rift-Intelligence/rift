@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="500" viewBox="0 0 1500 500" role="img" aria-label="RIFT">
+  <rect width="1500" height="500" fill="#1e1e1e"/>
+  <g shape-rendering="crispEdges">
+    <rect x="635" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="645" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="655" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="665" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="635" y="213" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="675" y="213" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="635" y="223" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="675" y="223" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="635" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="645" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="655" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="665" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="635" y="243" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="655" y="243" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="635" y="253" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="665" y="253" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="635" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="675" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="695" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="705" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="715" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="725" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="735" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="715" y="213" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="715" y="223" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="715" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="715" y="243" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="715" y="253" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="695" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="705" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="715" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="725" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="735" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="755" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="765" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="775" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="785" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="795" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="755" y="213" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="755" y="223" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="755" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="765" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="775" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="785" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="755" y="243" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="755" y="253" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="755" y="263" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="815" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="825" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="835" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="845" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="855" y="203" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="835" y="213" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="835" y="223" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="835" y="233" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="835" y="243" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="835" y="253" width="10" height="10" fill="#f5f5f2"/>
+    <rect x="835" y="263" width="10" height="10" fill="#f5f5f2"/>
+  </g>
+  <text x="750" y="301" text-anchor="middle" fill="#858585" font-family="ui-monospace, Menlo, monospace" font-size="16">autonomous offensive intelligence</text>
+</svg>

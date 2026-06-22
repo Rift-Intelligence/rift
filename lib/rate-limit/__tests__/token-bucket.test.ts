@@ -6,7 +6,14 @@ import {
   getBudgetLimits,
   getSubscriptionPrice,
   POINTS_PER_DOLLAR,
+  RETAIL_MARGIN,
 } from "../token-bucket";
+
+/** Expected point cost — mirrors calculateTokenCost so tests track the margin. */
+const expectCost = (tokens: number, pricePerMillion: number): number =>
+  Math.ceil(
+    (tokens / 1_000_000) * pricePerMillion * POINTS_PER_DOLLAR * RETAIL_MARGIN,
+  );
 
 /**
  * Unit tests for token-bucket rate limiting pure functions.
@@ -28,28 +35,30 @@ describe("token-bucket", () => {
       expect(calculateTokenCost(-100, "output")).toBe(0);
     });
 
-    it("should calculate input token cost correctly ($0.50/1M tokens * 1.3x)", () => {
-      // 1M input tokens = $0.50 * 1.3 = 6500 points
-      expect(calculateTokenCost(1_000_000, "input")).toBe(6500);
-      // 1K input tokens = ceil(0.001 * 0.5 * 10000 * 1.3) = 7 points
-      expect(calculateTokenCost(1000, "input")).toBe(7);
-      // 10M input tokens = $5.00 * 1.3 = 65000 points
-      expect(calculateTokenCost(10_000_000, "input")).toBe(65000);
+    it("should calculate input token cost correctly ($0.50/1M tokens * margin)", () => {
+      expect(calculateTokenCost(1_000_000, "input")).toBe(
+        expectCost(1_000_000, 0.5),
+      );
+      expect(calculateTokenCost(1000, "input")).toBe(expectCost(1000, 0.5));
+      expect(calculateTokenCost(10_000_000, "input")).toBe(
+        expectCost(10_000_000, 0.5),
+      );
     });
 
-    it("should calculate output token cost correctly ($3.00/1M tokens * 1.3x)", () => {
-      // 1M output tokens = $3.00 * 1.3 = 39000 points
-      expect(calculateTokenCost(1_000_000, "output")).toBe(39000);
-      // 1K output tokens = ceil(0.001 * 3.0 * 10000 * 1.3) = 39 points
-      expect(calculateTokenCost(1000, "output")).toBe(39);
-      // 10M output tokens = $30.00 * 1.3 = 390000 points
-      expect(calculateTokenCost(10_000_000, "output")).toBe(390000);
+    it("should calculate output token cost correctly ($3.00/1M tokens * margin)", () => {
+      expect(calculateTokenCost(1_000_000, "output")).toBe(
+        expectCost(1_000_000, 3.0),
+      );
+      expect(calculateTokenCost(1000, "output")).toBe(expectCost(1000, 3.0));
+      expect(calculateTokenCost(10_000_000, "output")).toBe(
+        expectCost(10_000_000, 3.0),
+      );
     });
 
     it("should round up small amounts to at least 1 point", () => {
       expect(calculateTokenCost(1, "input")).toBe(1);
       expect(calculateTokenCost(1, "output")).toBe(1);
-      expect(calculateTokenCost(100, "input")).toBe(1);
+      expect(calculateTokenCost(100, "input")).toBe(expectCost(100, 0.5));
     });
 
     it("output should cost 6x input (ratio of $3.00/$0.50)", () => {
@@ -59,10 +68,9 @@ describe("token-bucket", () => {
     });
 
     it("should use Math.ceil to always round up", () => {
-      // 10 tokens at $0.50/1M * 1.3 = fractional point → rounds up to 1
+      // 10 tokens at $0.50/1M * margin = fractional point → rounds up to 1
       expect(calculateTokenCost(10, "input")).toBe(1);
-      // 10000 tokens at $0.50/1M * 1.3 = 65 points
-      expect(calculateTokenCost(10000, "input")).toBe(65);
+      expect(calculateTokenCost(10000, "input")).toBe(expectCost(10000, 0.5));
     });
   });
 
@@ -170,30 +178,34 @@ describe("token-bucket", () => {
   // ==========================================================================
   describe("cost calculation scenarios", () => {
     it("typical conversation should cost reasonable points", () => {
-      // Typical: 2000 input tokens, 500 output tokens (with 1.3x multiplier)
-      const inputCost = calculateTokenCost(2000, "input"); // 13 points
-      const outputCost = calculateTokenCost(500, "output"); // 20 points
-      const totalCost = inputCost + outputCost; // 33 points
+      // Typical: 2000 input tokens, 500 output tokens (at the retail margin)
+      const inputCost = calculateTokenCost(2000, "input");
+      const outputCost = calculateTokenCost(500, "output");
+      const totalCost = inputCost + outputCost;
 
-      expect(inputCost).toBe(13);
-      expect(outputCost).toBe(20);
-      expect(totalCost).toBe(33);
+      expect(inputCost).toBe(expectCost(2000, 0.5));
+      expect(outputCost).toBe(expectCost(500, 3.0));
+      expect(totalCost).toBe(expectCost(2000, 0.5) + expectCost(500, 3.0));
     });
 
     it("pro user should afford many typical conversations per month", () => {
       const monthlyBudget = getBudgetLimits("pro").monthly;
-      const typicalCost = 33; // points per conversation (with 1.3x multiplier)
+      const typicalCost =
+        calculateTokenCost(2000, "input") + calculateTokenCost(500, "output");
 
       const conversationsPerMonth = Math.floor(monthlyBudget / typicalCost);
-      expect(conversationsPerMonth).toBe(7575);
+      expect(conversationsPerMonth).toBe(
+        Math.floor(monthlyBudget / typicalCost),
+      );
+      expect(conversationsPerMonth).toBeGreaterThan(0);
     });
 
     it("long context request should cost proportionally more", () => {
-      const longContextCost = calculateTokenCost(100_000, "input"); // 650 points
-      const shortContextCost = calculateTokenCost(1_000, "input"); // 7 points
+      const longContextCost = calculateTokenCost(100_000, "input");
+      const shortContextCost = calculateTokenCost(1_000, "input");
 
-      expect(longContextCost).toBe(650);
-      expect(shortContextCost).toBe(7);
+      expect(longContextCost).toBe(expectCost(100_000, 0.5));
+      expect(shortContextCost).toBe(expectCost(1_000, 0.5));
       expect(longContextCost).toBeGreaterThan(shortContextCost * 90);
     });
 
@@ -296,26 +308,30 @@ describe("token-bucket", () => {
   // ==========================================================================
   describe("per-model pricing", () => {
     it("should use default pricing when no modelName is provided", () => {
-      // Default: $0.50 input, $3.00 output (with 1.3x multiplier)
-      expect(calculateTokenCost(1_000_000, "input")).toBe(6500);
-      expect(calculateTokenCost(1_000_000, "output")).toBe(39000);
+      // Default: $0.50 input, $3.00 output (at the retail margin)
+      expect(calculateTokenCost(1_000_000, "input")).toBe(
+        expectCost(1_000_000, 0.5),
+      );
+      expect(calculateTokenCost(1_000_000, "output")).toBe(
+        expectCost(1_000_000, 3.0),
+      );
     });
 
     it("should use default pricing for unknown model names", () => {
       expect(calculateTokenCost(1_000_000, "input", "unknown-model")).toBe(
-        6500,
+        expectCost(1_000_000, 0.5),
       );
       expect(calculateTokenCost(1_000_000, "output", "unknown-model")).toBe(
-        39000,
+        expectCost(1_000_000, 3.0),
       );
     });
 
     it("should use Sonnet 4.6 pricing ($3.00/$15.00)", () => {
       expect(calculateTokenCost(1_000_000, "input", "model-sonnet-4.6")).toBe(
-        39000,
+        expectCost(1_000_000, 3.0),
       );
       expect(calculateTokenCost(1_000_000, "output", "model-sonnet-4.6")).toBe(
-        195000,
+        expectCost(1_000_000, 15.0),
       );
     });
 

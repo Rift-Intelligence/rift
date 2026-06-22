@@ -522,11 +522,15 @@ export class WideEventBuilder {
         Math.round(metrics.cacheHitRate * 1000) / 1000;
     }
 
-    // Warn on low cache hit rate (skip small requests where misses are expected)
+    // Warn on low cache hit rate — but only when it's actionable. A cold first
+    // turn always reports rate≈0 (writes>0, reads=0); that's expected, not a
+    // regression. Only warn once the cache SHOULD be reading (reads>0) yet the
+    // rate is still low, which signals a genuine prefix invalidator.
     const totalCacheTokens = metrics.cacheReadTokens + metrics.cacheWriteTokens;
     if (
       metrics.cacheHitRate !== null &&
       metrics.cacheHitRate < 0.5 &&
+      metrics.cacheReadTokens > 0 &&
       totalCacheTokens > 1000
     ) {
       logger.warn("Low cache hit rate detected", {

@@ -89,17 +89,5 @@ export const ReasoningHandler = memo(function ReasoningHandler({
   if (!combined || REDACTED_PATTERN.test(combined.trim())) return null;
 
   const isLastPart = partIndex === parts.length - 1;
-  const autoOpen =
-    status === "streaming" && isLastPart && Boolean(isLastMessage);
-
-  return (
-    <Reasoning className="w-full" isStreaming={autoOpen}>
-      <ReasoningTrigger />
-      {combined && (
-        <ReasoningContent>
-          <MemoizedMarkdown content={combined} />
-        </ReasoningContent>
-      )}
-    </Reasoning>
-  );
+  return null;
 }, areReasoningPropsEqual);

@@ -1,18 +1,19 @@
 import "@testing-library/jest-dom";
-import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import {
+  describe,
+  it,
+  expect,
+  jest,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
 import DeleteAccountDialog from "../DeleteAccountDialog";
+// The manual convex/react mock (via moduleNameMapper) exposes injectable
+// auth helpers; drive the real Convex Auth-backed useAuth shim through them.
+import { __setAuthState, __setViewer, __resetAuth } from "convex/react";
 
-const mockDeleteAllUserData = jest.fn();
-
-jest.mock("@workos-inc/authkit-nextjs/components", () => ({
-  useAuth: jest.fn(),
-}));
-
-jest.mock("convex/react", () => ({
-  useMutation: () => mockDeleteAllUserData,
-}));
+const ACCOUNT_EMAIL = "signin.rift.co.harmonize442@passmail.net";
 
 jest.mock("@/convex/_generated/api", () => ({
   api: {
@@ -29,11 +30,7 @@ jest.mock("sonner", () => ({
 }));
 
 describe("DeleteAccountDialog", () => {
-  const mockUser = {
-    email: "signin.hackerai.co.harmonize442@passmail.net",
-    lastSignInAt: new Date().toISOString(),
-  };
-  const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+  const mockUser = { email: ACCOUNT_EMAIL };
 
   const renderDialog = () =>
     render(<DeleteAccountDialog open={true} onOpenChange={jest.fn()} />);
@@ -42,13 +39,17 @@ describe("DeleteAccountDialog", () => {
     render(<DeleteAccountDialog open={open} onOpenChange={jest.fn()} />);
 
   beforeEach(() => {
-    mockUseAuth.mockReturnValue({
-      user: {
-        ...mockUser,
-        lastSignInAt: new Date().toISOString(),
-      },
-    } as ReturnType<typeof useAuth>);
-    mockDeleteAllUserData.mockReset();
+    __setAuthState({ isLoading: false, isAuthenticated: true });
+    __setViewer({
+      _id: "user_1",
+      email: ACCOUNT_EMAIL,
+      name: null,
+      image: null,
+    });
+  });
+
+  afterEach(() => {
+    __resetAuth();
   });
 
   it("keeps the delete button visible but disabled before confirmation", () => {
@@ -87,22 +88,6 @@ describe("DeleteAccountDialog", () => {
     });
 
     expect(deleteButton).toBeEnabled();
-  });
-
-  it("shows a refresh login action when the login is stale", () => {
-    mockUseAuth.mockReturnValue({
-      user: {
-        ...mockUser,
-        lastSignInAt: new Date(Date.now() - 11 * 60 * 1000).toISOString(),
-      },
-    } as ReturnType<typeof useAuth>);
-
-    renderDialog();
-
-    expect(screen.getByTestId("refresh-login-button")).toHaveTextContent(
-      "Refresh login",
-    );
-    expect(screen.queryByTestId("delete-button")).not.toBeInTheDocument();
   });
 
   it("resets confirmations after the dialog closes", () => {

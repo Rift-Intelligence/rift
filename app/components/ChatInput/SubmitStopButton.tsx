@@ -9,7 +9,7 @@ import type { ChatStatus } from "@/types";
 import type { ChatMode } from "@/types/chat";
 import type { UploadedFileState } from "@/types/file";
 
-const BASE_BUTTON_CLASSES = "rounded-full p-0 w-8 h-8 min-w-0";
+const BASE_BUTTON_CLASSES = "rounded-md p-0 w-6 h-6 min-w-0";
 
 const STOP_BUTTON_VARIANT_CLASSES: Record<ChatMode, string> = {
   agent:
@@ -21,11 +21,8 @@ function getStopButtonVariantClasses(mode: ChatMode): string {
   return STOP_BUTTON_VARIANT_CLASSES[mode] ?? STOP_BUTTON_VARIANT_CLASSES.ask;
 }
 
-function getSubmitButtonVariantClasses(mode: ChatMode): string {
-  if (mode === "agent") {
-    return "bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:bg-red-400/10 dark:hover:bg-red-400/20 dark:text-red-400 focus-visible:ring-red-500";
-  }
-  return "";
+function getSubmitButtonVariantClasses(_mode: ChatMode): string {
+  return "bg-foreground text-background hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground";
 }
 
 function getSendButtonTooltip(

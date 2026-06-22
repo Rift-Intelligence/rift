@@ -15,7 +15,7 @@ const DEFAULT_MEDIA_TYPE = "application/octet-stream";
 const MAX_GENERATED_FILE_SIZE_MB =
   MAX_GENERATED_FILE_SIZE_BYTES / (1024 * 1024);
 const SANDBOX_UPLOAD_TIMEOUT_MS = 5 * 60 * 1000;
-const SANDBOX_UPLOAD_STATUS_MARKER = "__HACKERAI_UPLOAD_EXIT_CODE__:";
+const SANDBOX_UPLOAD_STATUS_MARKER = "__RIFT_UPLOAD_EXIT_CODE__:";
 
 export type UploadedFileInfo = {
   url: string;

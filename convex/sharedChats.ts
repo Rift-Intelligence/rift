@@ -29,15 +29,15 @@ export const shareChat = mutation({
 
     if (!chat) {
       convexLogger.warn("share_chat_missing", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         chat_id: args.chatId,
       });
       throw new Error("Chat not found");
     }
 
-    if (chat.user_id !== identity.subject) {
+    if (chat.user_id !== identity.subject.split("|")[0]) {
       convexLogger.warn("share_chat_access_denied", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         chat_id: args.chatId,
         owner_user_id: chat.user_id,
       });
@@ -107,15 +107,15 @@ export const updateShareDate = mutation({
 
     if (!chat) {
       convexLogger.warn("share_update_chat_missing", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         chat_id: args.chatId,
       });
       throw new Error("Chat not found");
     }
 
-    if (chat.user_id !== identity.subject) {
+    if (chat.user_id !== identity.subject.split("|")[0]) {
       convexLogger.warn("share_update_access_denied", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         chat_id: args.chatId,
         owner_user_id: chat.user_id,
       });
@@ -125,7 +125,7 @@ export const updateShareDate = mutation({
     // Can only update if chat is already shared
     if (!chat.share_id || !chat.share_date) {
       convexLogger.warn("share_update_not_shared", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         chat_id: args.chatId,
       });
       throw new Error(
@@ -170,15 +170,15 @@ export const unshareChat = mutation({
 
     if (!chat) {
       convexLogger.warn("share_unshare_chat_missing", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         chat_id: args.chatId,
       });
       throw new Error("Chat not found");
     }
 
-    if (chat.user_id !== identity.subject) {
+    if (chat.user_id !== identity.subject.split("|")[0]) {
       convexLogger.warn("share_unshare_access_denied", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         chat_id: args.chatId,
         owner_user_id: chat.user_id,
       });
@@ -263,7 +263,7 @@ export const getUserSharedChats = query({
     const chats = await ctx.db
       .query("chats")
       .withIndex("by_user_and_updated", (q) =>
-        q.eq("user_id", identity.subject),
+        q.eq("user_id", identity.subject.split("|")[0]),
       )
       .collect();
 
@@ -333,7 +333,7 @@ export const forkSharedChat = mutation({
     await ctx.db.insert("chats", {
       id: newChatId,
       title: chat.title,
-      user_id: identity.subject,
+      user_id: identity.subject.split("|")[0],
       branched_from_chat_id: chat.id,
       update_time: Date.now(),
     });
@@ -350,7 +350,7 @@ export const forkSharedChat = mutation({
       await ctx.db.insert("messages", {
         id: newMessageId,
         chat_id: newChatId,
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         role: msg.role,
         parts: sanitizedParts,
         content: msg.content,
@@ -386,7 +386,7 @@ export const unshareAllChats = mutation({
     const sharedChats = await ctx.db
       .query("chats")
       .withIndex("by_user_and_updated", (q) =>
-        q.eq("user_id", identity.subject),
+        q.eq("user_id", identity.subject.split("|")[0]),
       )
       .collect();
 

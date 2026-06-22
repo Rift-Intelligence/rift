@@ -34,6 +34,9 @@ export async function GET(req: NextRequest) {
     const amountDollars = session.metadata.amountDollars
       ? parseFloat(session.metadata.amountDollars)
       : parseInt(session.metadata.amountCents ?? "0", 10) / 100;
+    const bonusPoints = session.metadata.bonusPoints
+      ? parseInt(session.metadata.bonusPoints, 10)
+      : 0;
 
     if (!userId || isNaN(amountDollars) || amountDollars <= 0) {
       console.error(
@@ -59,6 +62,7 @@ export async function GET(req: NextRequest) {
       serviceKey: process.env.CONVEX_SERVICE_ROLE_KEY!,
       userId,
       amountDollars,
+      bonusPoints: Number.isFinite(bonusPoints) ? bonusPoints : 0,
       idempotencyKey: `cs_${session.id}`,
       revenueSource: "extra_usage_purchase",
       stripeCustomerId:

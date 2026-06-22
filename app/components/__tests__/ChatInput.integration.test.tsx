@@ -21,10 +21,20 @@ jest.mock("@/lib/utils/client-storage", () => ({
 
 // Mock Convex hooks used by useFileUpload
 jest.mock("convex/react", () => ({
-  useAuth: () => ({ user: null, entitlements: [] }),
+  useConvexAuth: () => ({ isLoading: false, isAuthenticated: false }),
   useMutation: () => jest.fn(),
   useAction: () => jest.fn(),
   useQuery: () => undefined,
+}));
+
+jest.mock("@/app/hooks/useAuth", () => ({
+  __esModule: true,
+  useAuth: () => ({
+    user: null,
+    loading: false,
+    isAuthenticated: false,
+    entitlements: [],
+  }),
 }));
 
 jest.mock("../../hooks/useFileUpload", () => ({
@@ -69,7 +79,7 @@ describe("ChatInput - Integration Tests", () => {
       );
 
       expect(
-        screen.getByPlaceholderText("Ask, learn, brainstorm"),
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
       ).toBeInTheDocument();
       expect(screen.getByText("Ask")).toBeInTheDocument();
     });
@@ -157,7 +167,7 @@ describe("ChatInput - Integration Tests", () => {
 
       // Component should render in default ask mode
       expect(
-        screen.getByPlaceholderText("Ask, learn, brainstorm"),
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
       ).toBeInTheDocument();
     });
   });
@@ -180,7 +190,7 @@ describe("ChatInput - Integration Tests", () => {
 
       // Should render in ask mode by default
       expect(
-        screen.getByPlaceholderText("Ask, learn, brainstorm"),
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
       ).toBeInTheDocument();
 
       // Re-render with different status
@@ -196,7 +206,7 @@ describe("ChatInput - Integration Tests", () => {
 
       // Should still show ask mode placeholder
       expect(
-        screen.getByPlaceholderText("Ask, learn, brainstorm"),
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
       ).toBeInTheDocument();
     });
   });
@@ -230,7 +240,7 @@ describe("ChatInput - Integration Tests", () => {
 
       // Component should render without errors in submitted status
       expect(
-        screen.getByPlaceholderText("Ask, learn, brainstorm"),
+        screen.getByPlaceholderText("Plan, @ for context, / for commands"),
       ).toBeInTheDocument();
     });
 
@@ -245,7 +255,9 @@ describe("ChatInput - Integration Tests", () => {
         </TestWrapper>,
       );
 
-      const textarea = screen.getByPlaceholderText("Ask, learn, brainstorm");
+      const textarea = screen.getByPlaceholderText(
+        "Plan, @ for context, / for commands",
+      );
 
       // Type some text
       fireEvent.change(textarea, { target: { value: "Test message" } });
@@ -267,7 +279,9 @@ describe("ChatInput - Integration Tests", () => {
         </TestWrapper>,
       );
 
-      const textarea = screen.getByPlaceholderText("Ask, learn, brainstorm");
+      const textarea = screen.getByPlaceholderText(
+        "Plan, @ for context, / for commands",
+      );
 
       // Type some text
       fireEvent.change(textarea, { target: { value: "Test message" } });

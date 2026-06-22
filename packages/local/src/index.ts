@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 /**
- * HackerAI Local Sandbox Client
+ * RIFT Local Sandbox Client
  *
- * Connects to HackerAI backend via Convex for connection lifecycle
+ * Connects to RIFT backend via Convex for connection lifecycle
  * and uses Centrifugo for real-time command relay and streaming output.
  *
  * Runs commands directly on the host OS (no Docker isolation).
  *
  * Usage:
- *   npx @hackerai/local --token TOKEN
+ *   npx https://riftsys.app/downloads/rift-cli.tgz --token TOKEN
  */
 
 import { ConvexHttpClient } from "convex/browser";
@@ -139,7 +139,8 @@ function runShellCommand(
 }
 
 // Production Convex URL - hardcoded for the published package
-const PRODUCTION_CONVEX_URL = "https://convex.haiusercontent.com";
+const PRODUCTION_CONVEX_URL =
+  "https://elated-poodle-998.eu-west-1.convex.cloud";
 
 // Convex function references (string paths work at runtime)
 const api = {
@@ -438,7 +439,7 @@ class LocalSandboxClient {
   }
 
   async start(): Promise<void> {
-    console.log(chalk.blue("🚀 Starting HackerAI local sandbox..."));
+    console.log(chalk.blue("🚀 Starting RIFT local sandbox..."));
     console.log(
       chalk.yellow(
         "⚠️  Commands run directly on your OS without any isolation.",
@@ -464,7 +465,7 @@ class LocalSandboxClient {
   }
 
   private async connect(): Promise<void> {
-    console.log(chalk.blue("Connecting to HackerAI..."));
+    console.log(chalk.blue("Connecting to RIFT..."));
 
     try {
       const result = (await this.convexHttp.mutation(
@@ -1156,10 +1157,10 @@ const hasFlag = (flag: string): boolean => {
 // Show help
 if (hasFlag("--help") || hasFlag("-h")) {
   console.log(`
-${chalk.bold("HackerAI Local Sandbox Client")}
+${chalk.bold("RIFT Local Sandbox Client")}
 
 ${chalk.yellow("Usage:")}
-  npx @hackerai/local --token TOKEN [options]
+  npx https://riftsys.app/downloads/rift-cli.tgz --token TOKEN [options]
 
 ${chalk.yellow("Options:")}
   --token TOKEN       Authentication token from Settings (required)
@@ -1168,8 +1169,8 @@ ${chalk.yellow("Options:")}
   --help, -h          Show this help message
 
 ${chalk.yellow("Examples:")}
-  npx @hackerai/local --token hsb_abc123
-  npx @hackerai/local --token hsb_abc123 --name "Work PC"
+  npx https://riftsys.app/downloads/rift-cli.tgz --token hsb_abc123
+  npx https://riftsys.app/downloads/rift-cli.tgz --token hsb_abc123 --name "Work PC"
 
 ${chalk.red("⚠️  Security Warning:")}
   Commands run directly on your OS without any isolation.
@@ -1190,8 +1191,12 @@ const config: Config = {
 
 if (!config.token) {
   console.error(chalk.red("❌ No authentication token provided"));
-  console.error(chalk.yellow("Usage: npx @hackerai/local --token YOUR_TOKEN"));
-  console.error(chalk.yellow("Get your token from HackerAI Settings > Agents"));
+  console.error(
+    chalk.yellow(
+      "Usage: npx https://riftsys.app/downloads/rift-cli.tgz --token YOUR_TOKEN",
+    ),
+  );
+  console.error(chalk.yellow("Get your token from RIFT Settings > Agents"));
   process.exit(1);
 }
 

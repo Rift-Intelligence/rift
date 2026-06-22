@@ -1,14 +1,14 @@
 import type { ChatMode } from "@/types";
 
-const HACKERAI_DESKTOP_USER_AGENT_TOKEN = "HackerAI-Desktop";
+const RIFT_DESKTOP_USER_AGENT_TOKEN = "RIFT-Desktop";
 
 export const LEGACY_DESKTOP_AGENT_UPDATE_MESSAGE =
-  "Agent mode now requires the latest HackerAI Desktop app. Please update HackerAI Desktop, then try again.";
+  "Agent mode now requires the latest RIFT Desktop app. Please update RIFT Desktop, then try again.";
 
-export function isHackerAIDesktopUserAgent(
+export function isRIFTDesktopUserAgent(
   userAgent: string | null | undefined = getBrowserUserAgent(),
 ): boolean {
-  return userAgent?.includes(HACKERAI_DESKTOP_USER_AGENT_TOKEN) ?? false;
+  return userAgent?.includes(RIFT_DESKTOP_USER_AGENT_TOKEN) ?? false;
 }
 
 export function isLegacyDesktopAgentClient({
@@ -20,7 +20,7 @@ export function isLegacyDesktopAgentClient({
   isTauri: boolean;
   userAgent?: string | null;
 }): boolean {
-  return mode === "agent" && isTauri && !isHackerAIDesktopUserAgent(userAgent);
+  return mode === "agent" && isTauri && !isRIFTDesktopUserAgent(userAgent);
 }
 
 export function shouldUseAgentLongForAgent({

@@ -22,6 +22,7 @@ import { ChatInputTextarea } from "./ChatInputTextarea";
 import { ChatInputToolbar } from "./ChatInputToolbar";
 import { type ContextUsageData } from "../ContextUsageIndicator";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAppShell } from "@/app/contexts/AppShellContext";
 
 interface ChatInputProps {
   onSubmit: (e: React.FormEvent) => void;
@@ -78,11 +79,11 @@ export const ChatInput = ({
     selectedModel,
     setSelectedModel,
     subscription,
-    isCheckingProPlan,
     temporaryChatsEnabled,
     hasLocalSandbox,
     defaultLocalSandboxPreference,
   } = useGlobalState();
+  const { composerClass } = useAppShell();
   const isMobile = useIsMobile();
   const {
     fileInputRef,
@@ -102,8 +103,11 @@ export const ChatInput = ({
   // 1. Requires local sandbox — fall back to ask mode if disconnected
   // 2. Force local sandbox preference (not e2b)
   // 3. Force auto model selection
-  const isFreeAgent =
-    !isCheckingProPlan && subscription === "free" && isAgentMode(chatMode);
+  //
+  // Subscription tiers were removed, so every signed-in user can run cloud
+  // (E2B) Agent mode. The old "free Agent requires a local sandbox, else fall
+  // back to Ask" downgrade no longer applies.
+  const isFreeAgent = false;
 
   const prevHasLocalSandboxRef = useRef(hasLocalSandbox);
   useEffect(() => {
@@ -163,7 +167,9 @@ export const ChatInput = ({
   };
 
   return (
-    <div className={`relative px-4 min-w-0 ${isCentered ? "" : "pb-3"}`}>
+    <div
+      className={`relative min-w-0 px-4 ${isCentered ? "" : "pb-4 bg-gradient-to-b from-transparent via-background/80 to-background"}`}
+    >
       <div className="mx-auto w-full max-w-full min-w-0 sm:max-w-[768px] sm:min-w-[390px] flex flex-col flex-1">
         {rateLimitWarning && onDismissRateLimitWarning && (
           <RateLimitWarning
@@ -216,24 +222,9 @@ export const ChatInput = ({
         />
 
         <div
-          className={`order-2 sm:order-1 flex flex-col transition-colors relative bg-input-chat max-h-[300px] min-w-0 overflow-hidden terminal-panel terminal-border ${uploadedFiles && uploadedFiles.length > 0 ? "rounded-b-[0px] border-t-0" : "rounded-[0px]"}`}
+          className={`order-2 sm:order-1 flex max-h-[300px] min-w-0 flex-col overflow-hidden ${composerClass} ${uploadedFiles && uploadedFiles.length > 0 ? "rounded-t-none border-t-0" : ""}`}
         >
-          {/* Terminal window title bar */}
-          <div className="terminal-titlebar flex items-center gap-2 px-3 py-1.5 select-none">
-            <span className="terminal-dot terminal-dot-red" />
-            <span className="terminal-dot terminal-dot-yellow" />
-            <span className="terminal-dot terminal-dot-green" />
-            <span className="ml-2 text-xs text-terminal-green/70 truncate">
-              {chatMode === "agent"
-                ? "root@rift: ~/exploit"
-                : "operator@rift: ~"}
-            </span>
-            <span className="ml-auto text-[10px] text-terminal-green/50 uppercase tracking-wider hidden sm:inline">
-              {chatMode === "agent" ? "AGENT" : "ASK"} MODE
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-3 py-3">
+          <div className="flex flex-col gap-2 px-3 py-2.5 pb-2">
             <ChatInputTextarea
               draftId={draftId}
               chatMode={chatMode}
@@ -267,7 +258,7 @@ export const ChatInput = ({
             Mobile new chats with no messages: hidden (uses above-input placement). */}
         {isAgent && (!isMobile || !isNewChat || hasMessages) && (
           <div
-            className={`order-3 flex items-center px-1 pt-2 ${isNewChat && !hasMessages ? "absolute left-4 right-4 top-full" : ""}`}
+            className={`order-3 flex items-center px-1 pt-2 md:hidden ${isNewChat && !hasMessages ? "absolute left-4 right-4 top-full" : ""}`}
           >
             <SandboxSelector
               value={sandboxPreference}

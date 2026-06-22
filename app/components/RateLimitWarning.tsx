@@ -1,6 +1,5 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { redirectToPricing } from "../hooks/usePricingDialog";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import type { ChatMode, SubscriptionTier } from "@/types";
 
@@ -85,9 +84,9 @@ const getMessage = (data: RateLimitWarningData, timeString: string): string => {
   if (data.remainingPercent === 0) {
     if (data.cutOff) {
       if (data.subscription === "free") {
-        return `You've reached your free monthly usage limit and this response was cut off. Upgrade to continue. Resets ${timeString}.`;
+        return `You've used your daily free allowance and this response was cut off. Buy tokens to keep going, or wait — it resets ${timeString}.`;
       }
-      return `You've reached your monthly limit and this response was cut off. Add credits or upgrade to continue. Resets ${timeString}.`;
+      return `You've reached your monthly limit and this response was cut off. Buy tokens to continue. Resets ${timeString}.`;
     }
     return `You've reached your monthly usage limit. It resets ${timeString}.`;
   }
@@ -108,39 +107,25 @@ export const RateLimitWarning = ({
 }: RateLimitWarningProps) => {
   const timeString = formatTimeUntil(data.resetTime);
   const message = getMessage(data, timeString);
-  const showUpgrade =
-    data.warningType !== "extra-usage-active" &&
-    (data.subscription === "free" ||
-      data.subscription === "pro" ||
-      data.subscription === "pro-plus");
-  const showAddCredits =
-    data.warningType === "token-bucket" && data.subscription !== "free";
+  // PAYG: non-team users top up by buying tokens (no plan upgrades).
+  const showBuyTokens =
+    data.warningType !== "extra-usage-active" && data.subscription !== "team";
 
   return (
     <div
       data-testid="rate-limit-warning"
-      className={`mb-2 px-3 py-2.5 border rounded-[22px] flex items-center justify-between gap-2 ${WARNING_STYLES}`}
+      className={`mb-2 px-3 py-2.5 border rounded-xl flex items-center justify-between gap-2 ${WARNING_STYLES}`}
     >
       <div className="flex-1 flex items-center gap-2 flex-wrap">
         <span className="text-foreground text-sm">{message}</span>
-        {showAddCredits && (
+        {showBuyTokens && (
           <Button
             onClick={() => openSettingsDialog("Extra Usage")}
             size="sm"
             variant="outline"
             className="h-7 px-3 text-xs font-medium border-black/8 dark:border-border"
           >
-            Add credits
-          </Button>
-        )}
-        {showUpgrade && (
-          <Button
-            onClick={redirectToPricing}
-            size="sm"
-            variant="outline"
-            className="h-7 px-3 text-xs font-medium border-black/8 dark:border-border"
-          >
-            Upgrade plan
+            Buy tokens
           </Button>
         )}
       </div>

@@ -1138,9 +1138,9 @@ fn save_update_check_timestamp(app: &tauri::AppHandle) {
 }
 
 fn get_allowed_hosts() -> Vec<String> {
-    match std::env::var("HACKERAI_ALLOWED_HOSTS") {
+    match std::env::var("RIFT_ALLOWED_HOSTS") {
         Ok(hosts) => hosts.split(',').map(|s| s.trim().to_string()).collect(),
-        Err(_) => vec!["hackerai.co".to_string(), "localhost".to_string()],
+        Err(_) => vec!["rift.co".to_string(), "localhost".to_string()],
     }
 }
 
@@ -1189,7 +1189,7 @@ fn consume_pending_desktop_auth_state(app: &tauri::AppHandle, desktop_state: &st
 }
 
 fn handle_auth_deep_link(app: &tauri::AppHandle, url: &url::Url) {
-    if url.scheme() != "hackerai" {
+    if url.scheme() != "rift" {
         return;
     }
 
@@ -1226,7 +1226,7 @@ fn handle_auth_deep_link(app: &tauri::AppHandle, url: &url::Url) {
                         .filter(|o| validate_origin(o))
                         .unwrap_or_else(|| {
                             log::warn!("Deep link has missing or invalid origin, using production");
-                            "https://hackerai.co".to_string()
+                            "https://rift.co".to_string()
                         });
 
                     let encoded_token: String =
@@ -1442,7 +1442,7 @@ pub fn run() {
             log::info!("Single instance callback with args: {:?}", args);
             for arg in args.iter().skip(1) {
                 if let Ok(url) = url::Url::parse(arg) {
-                    if url.scheme() == "hackerai" {
+                    if url.scheme() == "rift" {
                         log::info!("Processing deep link from CLI arg: {}", arg);
                         handle_auth_deep_link(app, &url);
                     }
@@ -1516,7 +1516,7 @@ pub fn run() {
                 }
             });
 
-            log::info!("HackerAI Desktop initialized");
+            log::info!("RIFT Desktop initialized");
             Ok(())
         })
         .build(tauri::generate_context!())

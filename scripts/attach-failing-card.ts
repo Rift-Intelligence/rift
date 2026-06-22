@@ -24,7 +24,7 @@
  *   pnpm stripe:attach-failing-card <customer-email>
  *
  * Example:
- *   pnpm stripe:attach-failing-card pro1@hackerai.com
+ *   pnpm stripe:attach-failing-card pro1@rift.com
  *
  * After running:
  *   1. Log in as the user in the app
@@ -115,9 +115,7 @@ if (!email) {
     chalk.red("Usage: npx tsx scripts/attach-failing-card.ts <customer-email>"),
   );
   console.log(
-    chalk.gray(
-      "Example: npx tsx scripts/attach-failing-card.ts pro1@hackerai.com",
-    ),
+    chalk.gray("Example: npx tsx scripts/attach-failing-card.ts pro1@rift.com"),
   );
   process.exit(1);
 }

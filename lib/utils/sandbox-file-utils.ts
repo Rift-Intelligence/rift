@@ -37,7 +37,7 @@ const logLocalAttachmentDebug = (
 };
 
 /**
- * E2B uses /home/user/upload; any local connection uses /tmp/hackerai-upload
+ * E2B uses /home/user/upload; any local connection uses /tmp/rift-upload
  * since the host machine may not have /home/user (e.g. macOS in dangerous mode).
  */
 export const getUploadBasePath = (
@@ -45,7 +45,7 @@ export const getUploadBasePath = (
 ): string =>
   sandboxPreference === "e2b" || !sandboxPreference
     ? "/home/user/upload"
-    : "/tmp/hackerai-upload";
+    : "/tmp/rift-upload";
 
 const getLastUserMessageIndex = (messages: UIMessage[]): number => {
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -368,7 +368,7 @@ const shouldTryUploadPathFallback = (
   localPath: string,
   error: unknown,
 ): boolean => {
-  if (!localPath.startsWith("/tmp/hackerai-upload/")) return false;
+  if (!localPath.startsWith("/tmp/rift-upload/")) return false;
   const message = error instanceof Error ? error.message : String(error);
   return /permission denied|read-only file system|cannot create directory|failed to create directory/i.test(
     message,
@@ -386,7 +386,7 @@ const resolveWritableUploadFallbackPath = async (
     `filename=${shellQuote(fileName)}`,
     `for base in "\${TMPDIR:-/tmp}" /var/tmp "\${HOME:-}" "\${PWD:-.}"; do`,
     `  [ -n "$base" ] || continue`,
-    `  dir="$base/hackerai-upload"`,
+    `  dir="$base/rift-upload"`,
     `  if mkdir -p "$dir" 2>/dev/null && [ -w "$dir" ]; then`,
     `    cd "$dir" 2>/dev/null && printf '%s/%s' "$(pwd -P)" "$filename"`,
     `    exit 0`,

@@ -13,46 +13,46 @@ export interface ModelOption {
 
 export const ASK_MODEL_OPTIONS: ModelOption[] = [
   {
-    id: "hackerai-standard",
-    label: "RIFT Standard",
-    description: "Reliable performance for everyday tasks",
+    id: "rift-standard",
+    label: "⬡ Recon",
+    description: "Baseline intelligence for reconnaissance",
     poweredBy:
       "DeepSeek V4 Flash · switches to Gemini 3 Flash for images & PDFs",
   },
   {
-    id: "hackerai-pro",
-    label: "RIFT Pro",
-    description: "Superior performance for most assignments",
-    poweredBy: "Claude Sonnet 4.6",
+    id: "rift-pro",
+    label: "⬢ Strike",
+    description: "Advanced capability for complex operations",
+    poweredBy: "Moonshot Kimi K2.7 Code",
   },
   {
-    id: "hackerai-max",
-    label: "RIFT Max",
-    description: "Maximum intelligence for complex work",
-    poweredBy: "Claude Opus 4.6",
+    id: "rift-max",
+    label: "⬥ Dominate",
+    description: "Maximum power for unrestricted analysis",
+    poweredBy: "xAI Grok 4.3",
   },
 ];
 
 export const AGENT_MODEL_OPTIONS: ModelOption[] = [
   {
-    id: "hackerai-standard",
-    label: "RIFT Standard",
-    description: "Reliable agent for everyday automation",
+    id: "rift-standard",
+    label: "⬡ Recon",
+    description: "Autonomous reconnaissance & enumeration",
     poweredBy: "Moonshot Kimi K2.6",
     thinking: true,
   },
   {
-    id: "hackerai-pro",
-    label: "RIFT Pro",
-    description: "Superior performance for most assignments",
-    poweredBy: "Claude Sonnet 4.6",
+    id: "rift-pro",
+    label: "⬢ Strike",
+    description: "Advanced autonomous exploitation & testing",
+    poweredBy: "Moonshot Kimi K2.7 Code",
     thinking: true,
   },
   {
-    id: "hackerai-max",
-    label: "RIFT Max",
-    description: "Maximum intelligence for complex work",
-    poweredBy: "Claude Opus 4.6",
+    id: "rift-max",
+    label: "⬥ Dominate",
+    description: "Maximum autonomous penetration power",
+    poweredBy: "xAI Grok 4.3",
     thinking: true,
   },
 ];

@@ -175,7 +175,7 @@ export const getChatByIdFromClient = query({
         return null;
       }
 
-      if (chat.user_id !== identity.subject) {
+      if (chat.user_id !== identity.subject.split("|")[0]) {
         return null;
       }
 
@@ -341,7 +341,7 @@ export const updateChatPreferences = mutation({
     // will write these fields on first send via `updateChat`.
     if (!chat) return null;
 
-    if (chat.user_id !== user.subject) {
+    if (chat.user_id !== user.subject.split("|")[0]) {
       throw new ConvexError({ code: "FORBIDDEN", message: "Not your chat" });
     }
 
@@ -509,14 +509,14 @@ export const getUserChats = query({
       const pinnedChats = await ctx.db
         .query("chats")
         .withIndex("by_user_and_pinned", (q) =>
-          q.eq("user_id", identity.subject).gt("pinned_at", 0),
+          q.eq("user_id", identity.subject.split("|")[0]).gt("pinned_at", 0),
         )
         .order("asc")
         .take(MAX_PINNED_CHATS);
 
       if (pinnedChats.length === MAX_PINNED_CHATS) {
         convexLogger.warn("chat_sidebar_pinned_cap_reached", {
-          user_id: identity.subject,
+          user_id: identity.subject.split("|")[0],
           pinned_cap: MAX_PINNED_CHATS,
           requested_page_size: args.paginationOpts.numItems,
           has_cursor: Boolean(args.paginationOpts.cursor),
@@ -530,7 +530,7 @@ export const getUserChats = query({
       const result = await ctx.db
         .query("chats")
         .withIndex("by_user_and_updated", (q) =>
-          q.eq("user_id", identity.subject),
+          q.eq("user_id", identity.subject.split("|")[0]),
         )
         .order("desc")
         .paginate(args.paginationOpts);
@@ -589,7 +589,7 @@ export const getUserChats = query({
       };
     } catch (error) {
       convexLogger.error("chat_sidebar_query_failed", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         requested_page_size: args.paginationOpts.numItems,
         has_cursor: Boolean(args.paginationOpts.cursor),
         error:
@@ -634,7 +634,7 @@ export const pinChat = mutation({
         message: "Chat not found",
       });
     }
-    if (chat.user_id !== identity.subject) {
+    if (chat.user_id !== identity.subject.split("|")[0]) {
       throw new ConvexError({
         code: "ACCESS_DENIED",
         message: "Unauthorized: Chat does not belong to user",
@@ -677,7 +677,7 @@ export const unpinChat = mutation({
         message: "Chat not found",
       });
     }
-    if (chat.user_id !== identity.subject) {
+    if (chat.user_id !== identity.subject.split("|")[0]) {
       throw new ConvexError({
         code: "ACCESS_DENIED",
         message: "Unauthorized: Chat does not belong to user",
@@ -719,7 +719,7 @@ export const deleteChat = mutation({
 
       if (!chat) {
         return null;
-      } else if (chat.user_id !== user.subject) {
+      } else if (chat.user_id !== user.subject.split("|")[0]) {
         throw new ConvexError({
           code: "ACCESS_DENIED",
           message: "Unauthorized: Chat does not belong to user",
@@ -851,7 +851,7 @@ export const renameChat = mutation({
           code: "CHAT_NOT_FOUND",
           message: "Chat not found",
         });
-      } else if (chat.user_id !== user.subject) {
+      } else if (chat.user_id !== user.subject.split("|")[0]) {
         throw new ConvexError({
           code: "ACCESS_DENIED",
           message: "Unauthorized: Chat does not belong to user",
@@ -913,7 +913,7 @@ export const deleteAllChats = mutation({
     }
 
     try {
-      await deleteNextUserChatBatch(ctx, user.subject);
+      await deleteNextUserChatBatch(ctx, user.subject.split("|")[0]);
 
       return null;
     } catch (error) {

@@ -3,6 +3,15 @@ import { AGENT_UI_STREAM_ID } from "@/trigger/stream-ids";
 import { createToolInputDedupFilter } from "./agent-long-tool-input-dedup";
 
 /**
+ * Pre-warm the Trigger.dev SDK chunk. Without this, the dynamic import runs
+ * serially AFTER POST /api/agent-long resolves — on the agent first-token
+ * critical path. Kicking it off at module load means it's almost always
+ * resolved by the time we need it, saving ~200-400ms on the first agent token.
+ * Reuse the same promise everywhere so the import happens at most once.
+ */
+const triggerSdkPromise = import("@trigger.dev/sdk");
+
+/**
  * `fetch` adapter for "agent-long" mode used by the chat transport.
  *
  *   1. POST the request body to /api/agent-long, which triggers a durable
@@ -112,7 +121,7 @@ const buildSSEResponseFromRun = (
       signal?.addEventListener("abort", onAbort, { once: true });
 
       try {
-        const { streams, runs, auth } = await import("@trigger.dev/sdk");
+        const { streams, runs, auth } = await triggerSdkPromise;
 
         await auth.withAuth({ accessToken: publicAccessToken }, async () => {
           readAbortController = new AbortController();

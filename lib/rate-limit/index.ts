@@ -27,7 +27,10 @@ import type {
 // Re-export token bucket functions
 export {
   checkTokenBucketLimit,
+  checkBalanceLimit,
   deductUsage,
+  deductBalanceUsage,
+  computeActualCostPoints,
   refundUsage,
   resetRateLimitBuckets,
   stashOldBucketRemaining,
@@ -61,7 +64,9 @@ export {
 } from "./free-monthly-cost";
 
 // Import for internal use
-import { checkTokenBucketLimit } from "./token-bucket";
+import { checkTokenBucketLimit, checkBalanceLimit } from "./token-bucket";
+import { checkFreeMonthlyCostLimit } from "./free-monthly-cost";
+import { FREE_AGENT_REQUEST_COST, FREE_ASK_REQUEST_COST } from "./free-config";
 import {
   checkFreeUserRateLimit,
   checkFreeAgentRateLimit,
@@ -90,13 +95,41 @@ export const checkRateLimit = async (
   modelName?: string,
   organizationId?: string,
 ): Promise<RateLimitInfo> => {
-  // Free users: fixed daily window
+  // Free users (PAYG): daily + monthly free budget first, then prepaid balance.
   if (subscription === "free") {
-    if (isAgentMode(mode)) {
-      // Free agent mode shares the daily free budget and consumes 2 units.
-      return checkFreeAgentRateLimit(userId);
+    const requestCost = isAgentMode(mode)
+      ? FREE_AGENT_REQUEST_COST
+      : FREE_ASK_REQUEST_COST;
+
+    // Peek the monthly free-cost cap WITHOUT throwing or consuming, so an
+    // exhausted month falls through to the prepaid balance instead of a hard
+    // block — mirroring the daily-window fall-through below.
+    const monthly = await checkFreeMonthlyCostLimit(userId, {
+      throwOnExhaustion: false,
+    });
+
+    if (!monthly.monthlyExhausted) {
+      // Monthly budget still has room — consume the daily free window WITHOUT
+      // throwing on exhaustion so we can still fall through to balance.
+      const free = await checkFreeUserRateLimit(userId, requestCost, {
+        throwOnExhaustion: false,
+      });
+
+      if (!free.freeExhausted) {
+        // Served within both the daily allowance and the monthly free cap —
+        // no balance charge.
+        return free;
+      }
     }
-    return checkFreeUserRateLimit(userId);
+
+    // Daily or monthly free budget spent. Draw from the prepaid token balance;
+    // throws a "buy tokens" error when empty and auto-reload is off.
+    return checkBalanceLimit(
+      userId,
+      estimatedInputTokens || 0,
+      modelName,
+      extraUsageConfig,
+    );
   }
 
   // Paid users: token bucket (same budget for both modes)

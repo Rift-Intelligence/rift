@@ -2,17 +2,10 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
-import {
-  PanelLeft,
-  Sparkle,
-  SquarePen,
-  HatGlasses,
-  Split,
-  Share,
-} from "lucide-react";
+import { useAuth } from "@/app/hooks/useAuth";
+import { PanelLeft, SquarePen, HatGlasses, Split, Share } from "lucide-react";
 import { useGlobalState } from "../contexts/GlobalState";
-import { redirectToPricing } from "../hooks/usePricingDialog";
+import { useAppShell } from "../contexts/AppShellContext";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -58,8 +51,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   const { user, loading } = useAuth();
   const {
     toggleChatSidebar,
-    subscription,
-    isCheckingProPlan,
     initializeNewChat,
     closeSidebar,
     setChatSidebarOpen,
@@ -67,6 +58,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     setTemporaryChatsEnabled,
   } = useGlobalState();
   const router = useRouter();
+  const { basePath } = useAppShell();
   const isMobile = useIsMobile();
   const [showShareDialog, setShowShareDialog] = useState(false);
 
@@ -78,11 +70,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
 
   // Check if this is a branched chat
   const isBranchedChat = !!chatData?.branched_from_chat_id;
-
-  const handleUpgradeClick = () => {
-    // Navigate to pricing page
-    redirectToPricing();
-  };
 
   const handleNewChat = () => {
     // Close computer sidebar when creating new chat
@@ -96,7 +83,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     // Reset chat state while current Chat is still mounted (so chatResetRef is set)
     initializeNewChat();
     setTemporaryChatsEnabled(false);
-    router.push("/");
+    router.push(basePath);
   };
 
   // Show empty state header when no messages and no active chat
@@ -108,52 +95,10 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <div className="py-[10px] flex gap-10 items-center justify-between max-md:hidden">
             <div className="flex items-center gap-2">
               {/* Removed sidebar toggle for desktop - handled by collapsed sidebar logo */}
-              {/* Show upgrade button for logged-in users without pro plan */}
-              {!loading &&
-                user &&
-                !isCheckingProPlan &&
-                subscription === "free" && (
-                  <Button
-                    onClick={handleUpgradeClick}
-                    className="flex items-center gap-1 rounded-full py-2 ps-2.5 pe-3 text-sm font-medium bg-premium-bg text-premium-text hover:bg-premium-hover border-0 transition-all duration-200"
-                    size="default"
-                  >
-                    <Sparkle className="mr-2 h-4 w-4 fill-current" />
-                    Upgrade plan
-                  </Button>
-                )}
             </div>
             <div className="flex flex-1 gap-2 justify-between items-center">
               <div className="flex gap-[40px]"></div>
               <div className="flex gap-2 items-center">
-                {/* Temporary Chat Toggle - Desktop */}
-                {!loading && user && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={temporaryChatsEnabled ? "default" : "ghost"}
-                          size="sm"
-                          aria-label="Toggle temporary chats for new chats"
-                          aria-pressed={temporaryChatsEnabled}
-                          onClick={() =>
-                            setTemporaryChatsEnabled(!temporaryChatsEnabled)
-                          }
-                          className="flex items-center gap-2 rounded-full px-3"
-                        >
-                          <HatGlasses className="size-5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {temporaryChatsEnabled
-                            ? "Turn off temporary chat"
-                            : "Turn on temporary chat"}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
                 {/* Show sign in/up buttons for non-logged-in users */}
                 {!loading && !user && (
                   <>
@@ -193,50 +138,8 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                   <PanelLeft className="size-5" />
                 </Button>
               )}
-              {/* Show upgrade button for logged-in users without pro plan */}
-              {!loading &&
-                user &&
-                !isCheckingProPlan &&
-                subscription === "free" && (
-                  <Button
-                    onClick={handleUpgradeClick}
-                    className="flex items-center gap-1 rounded-full py-2 ps-2.5 pe-3 text-sm font-medium bg-premium-bg text-premium-text hover:bg-premium-hover border-0 transition-all duration-200"
-                    size="sm"
-                  >
-                    <Sparkle className="mr-1 h-3 w-3 fill-current" />
-                    Upgrade plan
-                  </Button>
-                )}
             </div>
             <div className="flex items-center gap-2">
-              {/* Temporary Chat Toggle - Mobile */}
-              {!loading && user && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant={temporaryChatsEnabled ? "default" : "ghost"}
-                        size="icon"
-                        aria-label="Toggle temporary chats for new chats"
-                        aria-pressed={temporaryChatsEnabled}
-                        onClick={() =>
-                          setTemporaryChatsEnabled(!temporaryChatsEnabled)
-                        }
-                        className="h-7 w-7 rounded-full"
-                      >
-                        <HatGlasses className="size-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {temporaryChatsEnabled
-                          ? "Turn off temporary chat"
-                          : "Turn on temporary chat"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
               {/* Show sign in/up buttons for non-logged-in users */}
               {!loading && !user && (
                 <>
@@ -277,7 +180,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           existingShareId={chatData?.share_id}
           existingShareDate={chatData?.share_date}
         />
-        <div className="px-4 bg-background flex-shrink-0">
+        <div className="px-4 bg-background flex-shrink-0 md:hidden">
           <div className="flex flex-row items-center justify-between pt-3 pb-1 gap-1 sticky top-0 z-10 bg-background flex-shrink-0">
             <div className="flex items-center gap-2 min-w-0">
               {/* Only show sidebar toggle on mobile - desktop uses collapsed sidebar logo */}

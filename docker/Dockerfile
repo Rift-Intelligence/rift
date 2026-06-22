@@ -1,9 +1,9 @@
 FROM kalilinux/kali-rolling
 
-LABEL org.opencontainers.image.title="HackerAI Agent Sandbox"
+LABEL org.opencontainers.image.title="RIFT Agent Sandbox"
 LABEL org.opencontainers.image.description="AI Agent Penetration Testing Environment with Comprehensive Automated Tools"
-LABEL org.opencontainers.image.source="https://github.com/hackerai-tech/hackerai"
-LABEL org.opencontainers.image.vendor="HackerAI"
+LABEL org.opencontainers.image.source="https://github.com/rift-tech/rift"
+LABEL org.opencontainers.image.vendor="RIFT"
 
 # ============================================================================
 # Environment Variables
@@ -191,7 +191,7 @@ WORKDIR /home/user
 
 # Ensure Go bin paths are in PATH for login shells (su - user, bash -l)
 RUN echo 'export PATH=/home/user/.local/bin:/usr/local/go/bin:/home/user/go/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:$PATH}' \
-    > /etc/profile.d/00-hackerai-path.sh && chmod 644 /etc/profile.d/00-hackerai-path.sh
+    > /etc/profile.d/00-rift-path.sh && chmod 644 /etc/profile.d/00-rift-path.sh
 
 # ============================================================================
 # Python Packages for Document Generation & Security Tools
@@ -384,6 +384,52 @@ RUN set -eux; \
       rm -rf /tmp/pd_x /tmp/pd.zip; \
     done; \
     ln -sf /usr/local/bin/vulnx /usr/local/bin/cvemap
+
+# ============================================================================
+# Extended Arsenal — exploitation, cracking, recon, OSINT, AD/lateral
+# Installed per-package with graceful skip so an occasional renamed/missing
+# Kali package never fails the whole build. The agent can also install any of
+# these at runtime (sudo apt-get install ...), so a skip is not fatal.
+# ============================================================================
+RUN set -eux; \
+    apt-get update; \
+    for pkg in \
+      metasploit-framework \
+      hashcat \
+      john \
+      hydra-gtk \
+      masscan \
+      amass \
+      dalfox \
+      theharvester \
+      recon-ng \
+      responder \
+      exploitdb \
+      feroxbuster \
+      sherlock \
+      seclists \
+      wordlists \
+      evil-winrm \
+      netexec \
+      certipy-ad \
+      sslscan \
+      dnsx \
+      mapcidr; do \
+      apt-get install -y --no-install-recommends "$pkg" || echo "WARN: skipped $pkg (not in repo)"; \
+    done; \
+    apt-get clean; rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+# OSINT / username-email tools best installed from PyPI (graceful)
+RUN pip3 install --break-system-packages --ignore-installed --no-compile \
+      holehe maigret || echo "WARN: some pip OSINT tools skipped"
+
+# Symlink searchsploit if exploitdb landed under a non-PATH location
+RUN set -eux; \
+    if [ -x /usr/bin/searchsploit ] || command -v searchsploit >/dev/null 2>&1; then \
+      echo "searchsploit present"; \
+    elif [ -x /opt/exploitdb/searchsploit ]; then \
+      ln -sf /opt/exploitdb/searchsploit /usr/local/bin/searchsploit; \
+    fi
 
 # ============================================================================
 # TestSSL Symlink - Allow access via both 'testssl' and 'testssl.sh'

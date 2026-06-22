@@ -8,50 +8,42 @@ import { isAgentMode } from "@/lib/utils/mode-helpers";
 
 type CostTier = "low" | "medium" | "high" | "very-high";
 
-// Cost tier per HackerAI tier id. Standard is mode-aware: in ask it routes
+// Cost tier per RIFT tier id. Standard is mode-aware: in ask it routes
 // through the cheap DeepSeek V4 Flash text path (low), in agent it runs on
 // Kimi K2.6 (medium).
 export function getCostTier(modelId: string, mode?: ChatMode): CostTier {
   switch (modelId) {
-    case "hackerai-standard":
+    case "rift-standard":
       return mode && isAgentMode(mode) ? "medium" : "low";
-    case "hackerai-pro":
+    case "rift-pro":
       return "high";
-    case "hackerai-max":
+    case "rift-max":
       return "very-high";
     default:
       return "medium";
   }
 }
 
-const COST_CONFIG: Record<
-  CostTier,
-  { count: number; label: string; activeClass: string; suffix?: string }
-> = {
+const COST_CONFIG: Record<CostTier, { label: string; activeClass: string }> = {
   low: {
-    count: 1,
-    label: "Low cost",
-    activeClass: "text-emerald-600/80 dark:text-emerald-400/80",
+    label: "low cost",
+    activeClass:
+      "text-emerald-600/90 dark:text-emerald-400/90 border-emerald-500/30",
   },
   medium: {
-    count: 2,
-    label: "Medium cost",
-    activeClass: "text-amber-600/80 dark:text-amber-400/80",
+    label: "medium cost",
+    activeClass: "text-amber-600/90 dark:text-amber-400/90 border-amber-500/30",
   },
   high: {
-    count: 3,
-    label: "High cost",
-    activeClass: "text-orange-600/80 dark:text-orange-400/80",
+    label: "high cost",
+    activeClass:
+      "text-orange-600/90 dark:text-orange-400/90 border-orange-500/30",
   },
   "very-high": {
-    count: 3,
-    label: "Very high cost",
-    activeClass: "text-red-600/80 dark:text-red-400/80",
-    suffix: "+",
+    label: "very high cost",
+    activeClass: "text-red-600/90 dark:text-red-400/90 border-red-500/30",
   },
 };
-
-const MAX_DOLLARS = 3;
 
 export function CostIndicator({
   modelId,
@@ -68,26 +60,9 @@ export function CostIndicator({
       <TooltipTrigger asChild>
         <span
           aria-label={`Cost: ${config.label}`}
-          className="inline-flex items-center gap-0 font-semibold tracking-tight text-xs cursor-default"
+          className={`inline-flex items-center font-mono text-[9px] uppercase tracking-widest cursor-default border px-1 leading-tight ${config.activeClass}`}
         >
-          {Array.from({ length: MAX_DOLLARS }, (_, i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className={
-                i < config.count
-                  ? config.activeClass
-                  : "text-muted-foreground/30"
-              }
-            >
-              $
-            </span>
-          ))}
-          {config.suffix && (
-            <span aria-hidden="true" className={config.activeClass}>
-              {config.suffix}
-            </span>
-          )}
+          {config.label}
         </span>
       </TooltipTrigger>
       <TooltipContent side="right" sideOffset={4} className="text-xs px-2 py-1">

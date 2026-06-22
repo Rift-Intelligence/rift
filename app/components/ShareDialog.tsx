@@ -14,7 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, Check, Loader2, X as XIcon } from "lucide-react";
 import { toast } from "sonner";
-import { HackerAISVG } from "@/components/icons/hackerai-svg";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftWordmark } from "@/components/icons/rift-wordmark";
 import { MessagePartHandler } from "@/app/components/MessagePartHandler";
 import { FilePartRenderer } from "@/app/components/FilePartRenderer";
 
@@ -269,7 +270,7 @@ export const ShareDialog = ({
                                   <div
                                     className={`${
                                       isUser
-                                        ? "max-w-[80%] bg-secondary rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 rounded-se-lg text-primary-foreground border border-border"
+                                        ? "max-w-[80%] bg-secondary rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 rounded-se-lg text-foreground border border-border"
                                         : "w-full prose space-y-3 max-w-none dark:prose-invert min-w-0"
                                     } overflow-hidden`}
                                   >
@@ -337,9 +338,10 @@ export const ShareDialog = ({
                 {/* Fade-out gradient at the bottom - starts at 66% height, more opaque */}
                 <div className="absolute bottom-0 left-0 right-0 h-[34%] bg-gradient-to-t from-muted/90 via-muted/70 via-30% via-muted/40 via-70% to-transparent pointer-events-none" />
 
-                {/* Floating HackerAI Logo - bottom left corner */}
-                <div className="absolute bottom-4 right-4 z-10">
-                  <HackerAISVG theme="dark" scale={0.12} />
+                {/* Floating RIFT Logo - bottom right corner */}
+                <div className="absolute bottom-4 right-4 z-10 flex items-center gap-1.5">
+                  <RiftPixelMark size={18} />
+                  <RiftWordmark height={11} fill="#f5f5f2" />
                 </div>
               </div>
             </div>

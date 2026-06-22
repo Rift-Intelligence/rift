@@ -45,7 +45,7 @@ export function SharedMessages({ messages, shareDate }: SharedMessagesProps) {
         className="text-center text-[12px] font-normal"
         style={{ color: "rgb(155, 155, 155)" }}
       >
-        This is a copy of a conversation between HackerAI & Anonymous.
+        This is a copy of a conversation between RIFT & Anonymous.
       </div>
 
       {/* Messages */}
@@ -106,7 +106,7 @@ export function SharedMessages({ messages, shareDate }: SharedMessagesProps) {
                 <div
                   className={`${
                     isUser
-                      ? "max-w-[80%] bg-secondary rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 rounded-se-lg text-primary-foreground border border-border"
+                      ? "max-w-[80%] bg-secondary rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 rounded-se-lg text-foreground border border-border"
                       : "w-full prose space-y-3 max-w-none dark:prose-invert min-w-0"
                   } overflow-hidden`}
                 >

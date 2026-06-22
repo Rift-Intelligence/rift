@@ -10,7 +10,7 @@ import React, {
   useRef,
   ReactNode,
 } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import {
   type ChatMode,
   type SelectedModel,
@@ -191,39 +191,8 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     }
   }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-
-    fetch("/api/referrals/attribution", {
-      method: "POST",
-      credentials: "include",
-    })
-      .then(async (response) => {
-        if (!response.ok) return;
-        const body = (await response.json().catch(() => null)) as {
-          status?: string;
-          starterBonusUnitsAwarded?: boolean;
-          starterBonusUnits?: number;
-        } | null;
-        const bonusUnits =
-          typeof body?.starterBonusUnits === "number"
-            ? body.starterBonusUnits
-            : 0;
-
-        if (
-          body?.status === "attributed" &&
-          body.starterBonusUnitsAwarded &&
-          bonusUnits > 0
-        ) {
-          toast.success("Referral bonus added", {
-            description: `You got ${bonusUnits} extra free request${bonusUnits === 1 ? "" : "s"}.`,
-          });
-        }
-      })
-      .catch(() => {
-        // Referral attribution is best-effort and must never block app startup.
-      });
-  }, [user]);
+  // Referral attribution ran through a a removed endpoint that has been
+  // removed; referral rewards are deferred with the billing/teams rework.
 
   const unreadReferralRewardNotifications = useQuery(
     api.referrals.getUnreadRewardNotifications,
@@ -343,7 +312,7 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     }
   }, [queueBehavior]);
 
-  // Model selection — HackerAI tier ids (Lite/Pro/Max) are mode-agnostic;
+  // Model selection — RIFT tier ids (Lite/Pro/Max) are mode-agnostic;
   // the active model is resolved server-side via resolveTierToProviderKey.
   const [selectedModel, setSelectedModelRaw] = useState<SelectedModel>(() => {
     const saved = readSelectedModel();
@@ -412,7 +381,7 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
       return;
     }
 
-    // Mock billing: a locally-persisted tier takes precedence over WorkOS
+    // Mock billing: a locally-persisted tier takes precedence over server
     // entitlements so upgrades reflect immediately during local testing.
     if (isMockBillingEnabled()) {
       const mockTier = getMockTier();
@@ -428,7 +397,7 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
   }, [user, entitlements, setSubscriptionWithNormalize]);
 
   // Desktop sessions are created through a separate OAuth transfer flow. Older
-  // desktop sessions may be unscoped, so refresh once to pull WorkOS
+  // desktop sessions may be unscoped, so refresh once to pull server
   // entitlements from the user's organization before showing them as free.
   useEffect(() => {
     const refreshDesktopEntitlements = async () => {

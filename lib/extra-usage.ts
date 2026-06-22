@@ -1,9 +1,5 @@
-import { POINTS_PER_DOLLAR } from "@/lib/rate-limit/token-bucket";
 import { getConvexClient } from "@/lib/db/convex-client";
 import { api } from "@/convex/_generated/api";
-
-/** Extra usage pricing multiplier */
-export const EXTRA_USAGE_MULTIPLIER = 1.05;
 
 export interface ExtraUsageBalance {
   balanceDollars: number;
@@ -34,15 +30,6 @@ export interface DeductBalanceResult {
   memberDisabled?: boolean;
   /** Team-pool-only: admin disabled the team pool entirely */
   poolDisabled?: boolean;
-}
-
-/**
- * Convert points to dollars at the extra usage rate.
- * Points are internal units (1 point = $0.0001)
- */
-export function pointsToDollars(points: number): number {
-  const dollars = (points / POINTS_PER_DOLLAR) * EXTRA_USAGE_MULTIPLIER;
-  return Math.ceil(dollars * 100) / 100; // Round up to nearest cent
 }
 
 /**

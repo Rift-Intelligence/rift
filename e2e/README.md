@@ -1,6 +1,6 @@
 # E2E Testing Setup
 
-This directory contains end-to-end tests for HackerAI using Playwright.
+This directory contains end-to-end tests for RIFT using Playwright.
 
 ## Test Suites
 
@@ -140,11 +140,11 @@ e2e/
 
 Three test users are configured for different subscription tiers:
 
-| Tier  | Email              | Test ID Prefix |
-| ----- | ------------------ | -------------- |
-| Free  | free@hackerai.com  | TEST*FREE*     |
-| Pro   | pro@hackerai.com   | TEST*PRO*      |
-| Ultra | ultra@hackerai.com | TEST*ULTRA*    |
+| Tier  | Email          | Test ID Prefix |
+| ----- | -------------- | -------------- |
+| Free  | free@rift.com  | TEST*FREE*     |
+| Pro   | pro@rift.com   | TEST*PRO*      |
+| Ultra | ultra@rift.com | TEST*ULTRA*    |
 
 ### Setup
 

@@ -2,7 +2,7 @@ import type { SubscriptionTier } from "@/types";
 
 /**
  * Mock billing helpers for local testing. When NEXT_PUBLIC_MOCK_BILLING is
- * enabled, upgrades bypass Stripe/WorkOS entirely and the selected tier is
+ * enabled, upgrades bypass Stripe entirely and the selected tier is
  * persisted to localStorage so the client can resolve it as the active
  * subscription tier.
  */

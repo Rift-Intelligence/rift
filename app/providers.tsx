@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import { useEffect } from "react";
 import { useGlobalState } from "./contexts/GlobalState";
 import { shouldDropExpectedConvexException } from "@/lib/posthog/expected-convex-errors";

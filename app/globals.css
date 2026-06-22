@@ -9,8 +9,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  /* Refined dark-SaaS type system: Geist body, Space Grotesk display, JetBrains
+     Mono for terminal/command output only. */
+  --font-sans: var(--font-geist), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-display: var(--font-space-grotesk), sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -50,91 +53,216 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* zauth-inspired accent palette exposed as Tailwind color utilities
-     (text-terminal-green, bg-terminal-green, border-terminal-green, etc.).
-     Literal values so utilities (incl. /opacity modifiers) always generate. */
-  --color-terminal-green: #10b981;
-  --color-terminal-green-dim: #059669;
-  --color-terminal-sky: #0ea5e9;
-  --color-terminal-text: #fafafa;
-  --color-terminal-text-dim: #a1a1aa;
-  --color-terminal-border: #27272a;
-  --color-terminal-bg: #0a0a0b;
-  --color-terminal-primary: #131316;
-  --color-terminal-secondary: #1b1b1f;
+  /* RIFT v2 — "Command Center" system. One cyan signal accent + layered
+     neutral surfaces, mapped to per-theme vars below so every utility
+     (bg-signal, text-signal, bg-surface-2, border-strong, …) re-themes
+     automatically in light/dark. Tailwind v4 generates /opacity modifiers
+     via color-mix on these var-backed colors. */
+  --color-signal: var(--signal);
+  --color-signal-bright: var(--signal-bright);
+  --color-signal-dim: var(--signal-dim);
+  --color-signal-soft: var(--signal-soft);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-elevated: var(--elevated);
+  --color-border-strong: var(--border-strong);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  /* Legacy terminal/rift token names kept so existing markup re-themes with
+     zero edits; values now resolve to the cyan signal + neutral surfaces. */
+  --color-terminal-green: var(--signal);
+  --color-terminal-green-dim: var(--signal-dim);
+  --color-terminal-sky: var(--signal-bright);
+  --color-terminal-text: var(--foreground);
+  --color-terminal-text-dim: var(--muted-foreground);
+  --color-terminal-border: var(--border);
+  --color-terminal-bg: var(--background);
+  --color-terminal-primary: var(--surface-2);
+  --color-terminal-secondary: var(--surface-3);
+
+  --color-rift: var(--signal);
+  --color-rift-dim: var(--signal-dim);
+  --color-rift-deep: var(--signal-soft);
+  --color-rift-hot: var(--signal-bright);
+  --color-alarm: var(--destructive);
 }
 
 :root {
-  --radius: 0.375rem;
-  /* Rift Design System - Dark Terminal Theme */
-  --background: #0a0e17;
-  --foreground: #e2e8f0;
-  --card: #111827;
-  --card-foreground: #e2e8f0;
-  --popover: #111827;
-  --popover-foreground: #e2e8f0;
-  --primary: #1e3a5f;
+  --radius: 0.625rem; /* 10px — premium default; sm/md/xl derive from this */
+  --mascot-bg: #e8e8e8;
+  --mascot-face: #ffffff;
+  --mascot-detail: #1a1a1a;
+
+  /* ── Light mode — clean, professional, soft-neutral ── */
+  --background: #ffffff;
+  --foreground: #14161a;
+  --card: #f7f8f9;
+  --card-foreground: #14161a;
+  --popover: #ffffff;
+  --popover-foreground: #14161a;
+  --primary: #14161a;
   --primary-foreground: #ffffff;
-  --secondary: #1e3a5f;
-  --secondary-foreground: #e2e8f0;
-  --muted: #1a1f2e;
-  --muted-foreground: #64748b;
-  --accent: #059669;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #059669;
-  --chart-1: #059669;
-  --chart-2: #1e3a5f;
-  --chart-3: #0ea5e9;
-  --chart-4: #8b5cf6;
-  --chart-5: #f97316;
-  --sidebar: #0d121d;
-  --sidebar-foreground: #e2e8f0;
-  --sidebar-primary: #1e3a5f;
+  --secondary: #f0f1f3;
+  --secondary-foreground: #14161a;
+  --muted: #f0f1f3;
+  --muted-foreground: #5d636d;
+  --accent: #eceef1;
+  --accent-foreground: #14161a;
+  --destructive: #e5484d;
+  --border: #e6e8eb;
+  --input: #e6e8eb;
+  --ring: var(--signal);
+  --chart-1: #0b8ea0;
+  --chart-2: #2b7fff;
+  --chart-3: #1a9d5e;
+  --chart-4: #c08a2e;
+  --chart-5: #e5707a;
+  --sidebar: #fafbfc;
+  --sidebar-foreground: #14161a;
+  --sidebar-primary: #14161a;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1f2e;
-  --sidebar-accent-foreground: #e2e8f0;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #059669;
+  --sidebar-accent: #eef0f2;
+  --sidebar-accent-foreground: #14161a;
+  --sidebar-border: #e9ebee;
+  --sidebar-ring: var(--signal);
 
-  /* Custom chat input */
-  --fill-input-chat: #1a1f2e;
+  /* Command-center primitives (light) */
+  --signal: #0b8ea0;
+  --signal-bright: #11a9be;
+  --signal-dim: #0a7280;
+  --signal-soft: rgba(11, 142, 160, 0.1);
+  --surface-1: #fafbfc;
+  --surface-2: #f5f6f8;
+  --surface-3: #eef0f2;
+  --surface-4: #e6e9ec;
+  --elevated: #ffffff;
+  --success: #1a9d5e;
+  --warning: #b9822b;
+  --info: #2b7fff;
 
-  /* Custom link colors */
-  --link-color: #059669;
+  --surface: #f5f6f8;
+  --border-strong: #d3d7dd;
+  --rift-glow: rgba(0, 0, 0, 0.05);
+  --grid-dot: rgba(0, 0, 0, 0.05);
 
-  /* Premium/Upgrade colors */
-  --premium-bg: #1e3a5f;
-  --premium-text: #059669;
-  --premium-hover: #2563eb;
+  --fill-input-chat: #f5f6f8;
+  --link-color: #2b7fff;
 
-  /* Scrollbar colors */
-  --scrollbar-track: #0a0e17;
-  --scrollbar-thumb: rgba(5, 150, 105, 0.3);
-  --scrollbar-thumb-hover: rgba(5, 150, 105, 0.5);
+  --premium-bg: #f0f1f3;
+  --premium-text: #14161a;
+  --premium-hover: #14161a;
 
-  /* Sidebar text mask for truncation */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.16);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
+
   --sidebar-mask: linear-gradient(
     90deg,
-    #0a0e17 0%,
-    #0a0e17 95%,
-    transparent 100%,
+    #fafbfc 0%,
+    #fafbfc 95%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #0a0e17 0%,
-    #0a0e17 88%,
+    #e6e9ec 0%,
+    #e6e9ec 88%,
     transparent 93%,
     transparent 100%
   );
 
-  /* Neon glow effect */
-  --neon-glow: 0 0 10px rgba(5, 150, 105, 0.5), 0 0 20px rgba(5, 150, 105, 0.3);
-  --neon-glow-intense:
-    0 0 15px rgba(5, 150, 105, 0.7), 0 0 30px rgba(5, 150, 105, 0.5);
+  --neon-glow: none;
+  --neon-glow-intense: none;
+}
+
+.dark {
+  --mascot-bg: #1c1f25;
+  --mascot-face: #eceef1;
+  --mascot-detail: #0c0d0f;
+
+  /* ── Dark mode — "Command Center": layered cool-neutral void, one cyan
+     signal accent. Primary surface for the product. ── */
+  --background: #0c0d0f;
+  --foreground: #eceef1;
+  --card: #16181d;
+  --card-foreground: #eceef1;
+  --popover: #1a1d22;
+  --popover-foreground: #eceef1;
+  --primary: #eceef1;
+  --primary-foreground: #0c0d0f;
+  --secondary: #1c1f25;
+  --secondary-foreground: #eceef1;
+  --muted: #1c1f25;
+  --muted-foreground: #8b919b;
+  --accent: #242830;
+  --accent-foreground: #eceef1;
+  --destructive: #f0726e;
+  --border: #222429;
+  --input: #222429;
+  --ring: var(--signal);
+  --chart-1: #34d2e6;
+  --chart-2: #5aa8f6;
+  --chart-3: #46d18a;
+  --chart-4: #e3b75c;
+  --chart-5: #f0726e;
+  --sidebar: #121317;
+  --sidebar-foreground: #d6d9de;
+  --sidebar-primary: #eceef1;
+  --sidebar-primary-foreground: #0c0d0f;
+  --sidebar-accent: #1c1f25;
+  --sidebar-accent-foreground: #eceef1;
+  --sidebar-border: #1b1d22;
+  --sidebar-ring: var(--signal);
+
+  /* Command-center primitives (dark) */
+  --signal: #34d2e6;
+  --signal-bright: #7fe9f5;
+  --signal-dim: #1f8d9b;
+  --signal-soft: rgba(52, 210, 230, 0.12);
+  --surface-1: #121317;
+  --surface-2: #16181d;
+  --surface-3: #1c1f25;
+  --surface-4: #242830;
+  --elevated: #1a1d22;
+  --success: #46d18a;
+  --warning: #e3b75c;
+  --info: #5aa8f6;
+
+  --surface: #16181d;
+  --border-strong: #2f333b;
+  --rift-glow: rgba(52, 210, 230, 0.1);
+  --grid-dot: rgba(255, 255, 255, 0.03);
+
+  --fill-input-chat: #16181d;
+  --link-color: #5aa8f6;
+
+  --premium-bg: #1c1f25;
+  --premium-text: #eceef1;
+  --premium-hover: #eceef1;
+
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(120, 126, 138, 0.3);
+  --scrollbar-thumb-hover: rgba(120, 126, 138, 0.48);
+
+  --sidebar-mask: linear-gradient(
+    90deg,
+    #121317 0%,
+    #121317 95%,
+    transparent 100%
+  );
+  --sidebar-mask-active: linear-gradient(
+    90deg,
+    #242830 0%,
+    #242830 88%,
+    transparent 93%,
+    transparent 100%
+  );
+
+  --neon-glow: none;
+  --neon-glow-intense: none;
 }
 
 @layer base {
@@ -142,8 +270,343 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
   }
+  /* Tighter, more confident headings */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.018em;
+  }
+  /* Tabular figures for stats / token meters / counters */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* RIFT pixel mascot — Claude Code–style idle bob + leg shuffle */
+/* Shiki dual-theme: light = github-light (default), dark = houston */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+  text-decoration: var(--shiki-light-text-decoration);
+}
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+@keyframes rift-mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes rift-mascot-leg-l {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes rift-mascot-leg-r {
+  0%,
+  100% {
+    transform: translateY(-1.5px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+}
+.rift-mascot-bob {
+  animation: rift-mascot-bob 1.8s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+@keyframes rift-mascot-banner-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1px);
+  }
+}
+.rift-mascot-banner {
+  animation: rift-mascot-banner-bob 1.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+.rift-mascot-glow {
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.28))
+    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+}
+.rift-mascot-leg-l {
+  animation: rift-mascot-leg-l 0.9s ease-in-out infinite;
+}
+.rift-mascot-leg-r {
+  animation: rift-mascot-leg-r 0.9s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rift-mascot-bob,
+  .rift-mascot-banner,
+  .rift-mascot-leg-l,
+  .rift-mascot-leg-r,
+  .rift-mascot-hero {
+    animation: none !important;
+  }
+}
+
+@keyframes rift-mascot-hero-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(-1deg);
+  }
+  75% {
+    transform: translateY(-2px) rotate(1deg);
+  }
+}
+.rift-mascot-hero {
+  animation: rift-mascot-hero-bob 2.4s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.landing-grid-bg {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    var(--grid-dot, rgba(255, 255, 255, 0.035)) 1px,
+    transparent 0
+  );
+  background-size: 28px 28px;
+}
+
+.landing-rift2-bg {
+  background:
+    radial-gradient(
+      ellipse 120% 80% at 70% 10%,
+      rgba(52, 210, 230, 0.05),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 10% 90%,
+      rgba(80, 60, 40, 0.04),
+      transparent 50%
+    ),
+    var(--background);
+}
+
+/* Authenticated app shell — same family as landing, tuned quieter */
+.app-rift2-shell {
+  background:
+    radial-gradient(
+      ellipse 110% 70% at 72% 0%,
+      rgba(52, 210, 230, 0.035),
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 85% 65% at 8% 100%,
+      rgba(80, 60, 40, 0.025),
+      transparent 48%
+    ),
+    var(--background);
+}
+
+.rift2-glass-panel {
+  border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
+  background: color-mix(in oklab, var(--background) 68%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.rift2-shell-sidebar {
+  background: color-mix(in oklab, var(--surface-1) 82%, transparent);
+  backdrop-filter: blur(18px);
+  border-color: color-mix(in oklab, var(--border) 42%, transparent);
+}
+
+.rift2-titlebar {
+  background: color-mix(in oklab, var(--surface-1) 75%, transparent);
+  backdrop-filter: blur(16px);
+  border-color: color-mix(in oklab, var(--border) 40%, transparent);
+}
+
+/* App Studio — warm editorial void, violet signal, solid panels */
+.app-studio-shell {
+  background:
+    radial-gradient(
+      ellipse 90% 55% at 50% -8%,
+      rgba(167, 139, 250, 0.07),
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 70% 45% at 100% 100%,
+      rgba(212, 165, 116, 0.045),
+      transparent 48%
+    ),
+    #0a0908;
+}
+
+.dark .app-studio-shell {
+  --background: #0a0908;
+  --foreground: #edeae6;
+  --card: #141312;
+  --card-foreground: #edeae6;
+  --popover: #181716;
+  --popover-foreground: #edeae6;
+  --muted: #1a1918;
+  --muted-foreground: #9a9590;
+  --accent: #242220;
+  --border: #2a2826;
+  --input: #2a2826;
+  --fill-input-chat: #121110;
+  --signal: #b794f6;
+  --signal-bright: #d6bcfa;
+  --signal-dim: #805ad5;
+  --signal-soft: rgba(183, 148, 246, 0.12);
+  --surface-1: #11100f;
+  --surface-2: #181716;
+  --surface-3: #201f1d;
+  --surface-4: #2a2826;
+  --elevated: #1c1b19;
+  --border-strong: #3a3734;
+  --sidebar: #11100f;
+  --sidebar-foreground: #d8d4cf;
+  --sidebar-accent: #1a1918;
+  --sidebar-border: #242220;
+}
+
+.studio-shell-sidebar {
+  background: var(--surface-1);
+  border-color: color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.studio-titlebar {
+  background: var(--surface-1);
+  border-color: color-mix(in oklab, var(--border) 55%, transparent);
+}
+
+.studio-panel {
+  position: relative;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 65%, transparent);
+  background: var(--surface-2);
+}
+
+.studio-panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--signal-dim) 80%, transparent),
+    var(--signal)
+  );
+  opacity: 0.85;
+}
+
+.studio-display {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  letter-spacing: -0.02em;
+}
+
+.studio-composer {
+  border-radius: 0.875rem;
+  border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
+  background: var(--fill-input-chat);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 4%, transparent),
+    0 10px 36px -18px rgba(0, 0, 0, 0.65);
+}
+
+.app-studio-shell .studio-new-chat {
+  border-radius: 0.625rem;
+  border-color: color-mix(in oklab, var(--border) 75%, transparent);
+  background: var(--surface-2);
+  font-family: var(--font-serif), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+.app-studio-shell .studio-new-chat:hover {
+  border-color: color-mix(in oklab, var(--signal) 35%, var(--border));
+  background: var(--surface-3);
+}
+
+.app-studio-shell .studio-search {
+  border-radius: 0.625rem;
+  background: var(--surface-1);
+}
+
+.app-studio-shell .studio-title-pill {
+  border-radius: 0.5rem;
+}
+
+.app-studio-shell .studio-hero-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.rift2-display {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+}
+
+.rift2-serif {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.rift2-demo-tilt {
+  transform: rotateX(2.5deg);
+  transform-origin: center top;
+}
+
+@media (min-width: 1024px) {
+  .rift2-demo-stage .rift2-demo-tilt {
+    animation: rift2-demo-float 9s ease-in-out infinite;
+  }
+}
+
+@keyframes rift2-demo-float {
+  0%,
+  100% {
+    transform: rotateX(2.5deg) translateY(0);
+  }
+  50% {
+    transform: rotateX(1.5deg) translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rift2-demo-stage .rift2-demo-tilt {
+    animation: none;
+    transform: rotateX(1deg);
+  }
+}
+
+.landing-rift3 {
+  background: var(--background);
+}
+
+.landing-rift3 article strong {
+  font-weight: 500;
 }
 
 @keyframes shimmer {
@@ -224,11 +687,14 @@
   opacity: 0;
 }
 
-/* Display heading emphasis: elegant serif italic (zauth headline treatment) */
+/* Display heading emphasis: terminal glitch highlight (RIFT). Mono, cyan,
+   tracked + faint signal glow — replaces the old serif-italic zauth treatment. */
 .display-emphasis {
-  font-family: var(--font-serif), ui-serif, Georgia, "Times New Roman", serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--signal);
+  letter-spacing: -0.01em;
 }
 
 /* Glitch effect for hover */
@@ -246,11 +712,11 @@
   animation: neon-pulse 2s ease-in-out infinite;
 }
 
-/* Text neon glow */
+/* Text neon glow (cyan signal) */
 .text-neon-glow {
   text-shadow:
-    0 0 10px rgba(5, 150, 105, 0.5),
-    0 0 20px rgba(5, 150, 105, 0.3);
+    0 0 10px rgba(0, 255, 102, 0.5),
+    0 0 20px rgba(0, 255, 102, 0.3);
 }
 
 @keyframes worked-for-content-open {
@@ -361,4 +827,513 @@
 
 .terminal-cursor {
   animation: cursor-blink 1s step-end infinite;
+}
+
+/* ============================================================
+   zauth-grade motion system
+   Original keyframes reproducing the reference's motion language
+   (blur reveal, serif highlight settle, dot reveal, trace pulse,
+   digit roll + flash). Behavioural study only — no copied source.
+   ============================================================ */
+
+/* hero / content blur-rise reveal */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* lighter route/section enter */
+@keyframes viewEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* serif highlight settling from accent to white */
+@keyframes heroHighlight {
+  0% {
+    color: var(--rift-highlight, #00ff66);
+  }
+  60% {
+    color: var(--rift-highlight, #00ff66);
+  }
+  100% {
+    color: #ffffff;
+  }
+}
+
+/* matrix dot fade-in to resting opacity */
+@keyframes dotReveal {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+
+/* faint scanning "trace" blink across the matrix */
+@keyframes ztrace {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  20% {
+    opacity: 0.12;
+  }
+}
+
+/* conic glow brighten-in */
+@keyframes lightOn {
+  0% {
+    opacity: 0;
+    filter: brightness(0.3);
+  }
+  40% {
+    opacity: 0.6;
+    filter: brightness(1.5);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+/* data/terminal card slide-in from the right */
+@keyframes terminalSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(120px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cardFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* number roll up / down */
+@keyframes digitUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    opacity: 0.9;
+    transform: translateY(-0.65em) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes digitDown {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    opacity: 0.9;
+    transform: translateY(0.65em) scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* value-change flash (green up / red down) */
+@keyframes flashUp {
+  0% {
+    color: inherit;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  20% {
+    color: #00ff66;
+    text-shadow: 0 0 12px rgba(0, 255, 102, 0.5);
+  }
+  100% {
+    color: inherit;
+    text-shadow: none;
+  }
+}
+@keyframes flashDown {
+  0% {
+    color: inherit;
+    text-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  }
+  20% {
+    color: #f87171;
+    text-shadow: 0 0 12px rgba(248, 113, 113, 0.5);
+  }
+  100% {
+    color: inherit;
+    text-shadow: none;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ---- application utilities ---- */
+.animate-marquee {
+  animation: marquee 36s linear infinite;
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out both;
+}
+.animate-view-enter {
+  animation: viewEnter 0.5s ease-out both;
+}
+.animate-hero-highlight {
+  animation: heroHighlight 2.5s ease-in-out both;
+}
+.animate-terminal-in {
+  animation: terminalSlideIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-card-fade-in {
+  animation: cardFadeIn 0.6s ease-out both;
+}
+.animate-light-on {
+  animation: lightOn 2.4s ease-out both;
+}
+.digit-up {
+  animation: digitUp 0.45s ease-out;
+}
+.digit-down {
+  animation: digitDown 0.45s ease-out;
+}
+.flash-up {
+  animation: flashUp 0.9s ease-out;
+}
+.flash-down {
+  animation: flashDown 0.9s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-fade-in-up,
+  .animate-view-enter,
+  .animate-hero-highlight,
+  .animate-terminal-in,
+  .animate-card-fade-in,
+  .animate-light-on {
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   RIFT — Surveillance Brutalism primitives
+   Pure-black void · cold cyan signal · HUD chrome · dot-matrix
+   ============================================================ */
+
+/* --- Motion tokens --- */
+:root {
+  --rift-dur-fast: 120ms;
+  --rift-dur-base: 220ms;
+  --rift-dur-slow: 480ms;
+  --rift-ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- HUD panel: hairline border + L-shaped corner registration marks --- */
+.hud {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+}
+/* Targeting-reticle corner brackets retired for the refined theme. */
+.hud::before,
+.hud::after {
+  content: none;
+}
+/* top-left + bottom-right brackets via ::before/::after */
+.hud::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+.hud::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 1px 1px 0;
+}
+.hud > .hud-corners::before,
+.hud > .hud-corners::after {
+  content: none;
+}
+
+/* HUD micro-label (uppercase, tracked, dim) */
+.hud-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* --- Dot-matrix background field (the machine's vision) --- */
+.dot-matrix {
+  background-image: radial-gradient(
+    var(--color-rift-deep, #06384a) 1px,
+    transparent 1.4px
+  );
+  background-size: 6px 6px;
+  background-position: 0 0;
+}
+.dot-matrix-dense {
+  background-image: radial-gradient(
+    rgba(0, 255, 102, 0.14) 1px,
+    transparent 1.3px
+  );
+  background-size: 4px 4px;
+}
+
+/* --- Scanline overlay + sweeping bar --- */
+.scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+  z-index: 2;
+}
+@keyframes rift-scan-sweep {
+  0% {
+    transform: translateY(-120%);
+  }
+  100% {
+    transform: translateY(120%);
+  }
+}
+.scan-sweep::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 28%;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(0, 255, 102, 0.06) 60%,
+    rgba(0, 255, 102, 0.12)
+  );
+  mix-blend-mode: screen;
+  animation: rift-scan-sweep 4.2s linear infinite;
+  z-index: 3;
+}
+
+/* --- Glitch-in (one-shot on mount) --- */
+@keyframes rift-glitch-in {
+  0% {
+    clip-path: inset(45% 0 50% 0);
+    transform: translateX(-6px);
+    opacity: 0;
+  }
+  20% {
+    clip-path: inset(10% 0 80% 0);
+    transform: translateX(5px);
+    opacity: 1;
+  }
+  40% {
+    clip-path: inset(70% 0 12% 0);
+    transform: translateX(-3px);
+  }
+  60% {
+    clip-path: inset(30% 0 45% 0);
+    transform: translateX(2px);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.rift-glitch-in {
+  animation: rift-glitch-in 420ms steps(2, end) both;
+}
+
+/* --- Signal glow / pulse for live elements --- */
+@keyframes rift-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 102, 0);
+  }
+  50% {
+    box-shadow: 0 0 14px 0 rgba(0, 255, 102, 0.45);
+  }
+}
+/* Neon pulse + headline glow retired for the refined dark-SaaS theme. */
+.rift-live {
+  animation: none;
+}
+.text-rift-glow {
+  text-shadow: none;
+}
+
+/* --- Outer page frame (inset hairline with corner ticks) --- */
+.rift-frame::before {
+  content: "";
+  position: fixed;
+  inset: 14px;
+  pointer-events: none;
+  border: 1px solid var(--border);
+  z-index: 50;
+  opacity: 0.5;
+}
+
+/* --- Halftone / dithered image treatment (machine vision portraits) --- */
+.halftone {
+  filter: grayscale(1) contrast(1.35) brightness(0.95);
+  -webkit-mask-image: radial-gradient(circle, #000 0.8px, transparent 1.1px);
+  mask-image: radial-gradient(circle, #000 0.8px, transparent 1.1px);
+  -webkit-mask-size: 3px 3px;
+  mask-size: 3px 3px;
+}
+.halftone-cyan {
+  filter: grayscale(1) contrast(1.4) sepia(1) hue-rotate(140deg) saturate(4)
+    brightness(0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-sweep::after,
+  .rift-live {
+    animation: none !important;
+  }
+  .rift-glitch-in {
+    animation: none !important;
+  }
+}
+
+/* RIFT app shell — chat workspace typography */
+.rift-cursor-app {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rift-cursor-app code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: var(--signal-bright);
+}
+
+/* Cursor mockup — "Planning next moves" indicator */
+@keyframes cursor-thinking-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.rift-cursor-app .cursor-thinking-dots span {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: cursor-thinking-pulse 1.2s infinite;
+}
+
+.rift-cursor-app .cursor-thinking-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.rift-cursor-app .cursor-thinking-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rift-cursor-app .cursor-thinking-dots span {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* Prevent iOS Safari auto-zoom on input focus (triggers when font-size < 16px) */
+@media (max-width: 767px) {
+  textarea,
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Native-app feel: kill rubber-band overscroll / pull-to-refresh and the
+   double-tap-zoom + 300ms tap delay. Scrolling still works inside scrollable
+   containers; this only removes the document-level bounce and zoom gestures. */
+html,
+body {
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+/* On phones, lock the document so the chat screen sits static like a native app
+   — the chat layout manages its own inner scrolling (overflow-hidden flex), so
+   the page itself never scrolls or bounces. contenteditable inputs are pinned
+   to 16px too, in case the chat box isn't a <textarea>. */
+@media (max-width: 767px) {
+  html,
+  body {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+  [contenteditable="true"],
+  [contenteditable=""] {
+    font-size: 16px !important;
+  }
 }

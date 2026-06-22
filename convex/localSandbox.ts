@@ -99,7 +99,7 @@ export const getToken = mutation({
       });
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
 
     const existing = await ctx.db
       .query("local_sandbox_tokens")
@@ -137,7 +137,7 @@ export const regenerateToken = mutation({
       });
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
     const token = generateToken();
 
     const existing = await ctx.db
@@ -438,7 +438,7 @@ export const connectDesktop = mutation({
       });
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
 
     // Disconnect stale desktop connections for this user (page reload, etc.)
     const existingDesktop = await ctx.db
@@ -502,7 +502,7 @@ export const refreshCentrifugoTokenDesktop = mutation({
       });
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
 
     const connection = await ctx.db
       .query("local_sandbox_connections")
@@ -544,7 +544,7 @@ export const disconnectDesktop = mutation({
       });
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
 
     const connection = await ctx.db
       .query("local_sandbox_connections")
@@ -623,7 +623,7 @@ export const listConnections = query({
       return [];
     }
 
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
 
     const connections = await ctx.db
       .query("local_sandbox_connections")

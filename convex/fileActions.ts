@@ -120,7 +120,7 @@ export type RateLimitResult = {
  *
  * @param userId - The user's unique identifier
  * @param consume - If true, consumes a token from the bucket. If false, just peeks at the current state.
- * @param options.entitlements - WorkOS entitlements used to choose a paid-tier quota.
+ * @param options.entitlements - entitlements used to choose a paid-tier quota.
  * @returns RateLimitResult with remaining count, or null if Redis is not configured
  * @throws ConvexError if rate limited
  */
@@ -703,7 +703,7 @@ export const saveFile = action({
           message: "Unauthorized: User not authenticated",
         });
       }
-      actingUserId = user.subject;
+      actingUserId = user.subject.split("|")[0];
       entitlements = parseEntitlements(user.entitlements);
 
       // Security: Only backend (service key) flows can directly set skipTokenValidation

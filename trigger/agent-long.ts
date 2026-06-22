@@ -46,6 +46,7 @@ import {
   checkFreeMonthlyCostLimit,
   checkRateLimit,
   deductUsage,
+  deductBalanceUsage,
   recordFreeMonthlyCost,
   UsageRefundTracker,
 } from "@/lib/rate-limit";
@@ -543,7 +544,7 @@ export const agentLongTask = task({
   // Provider errors are handled internally via the fallback-model path.
   retry: { maxAttempts: 1 },
   // Right-sized from observed production CPU/memory usage.
-  machine: { preset: "small-1x" },
+  machine: { preset: "medium-1x" },
 
   onCancel: async ({
     ctx,
@@ -581,7 +582,7 @@ export const agentLongTask = task({
       organizationId,
       messages,
       localDesktopAttachmentsPrepared,
-      sandboxPreference,
+      sandboxPreference: _sandboxPreference,
       selectedModel: selectedModelOverride,
       userLocation,
       temporary,
@@ -683,7 +684,7 @@ export const agentLongTask = task({
         { isTemporary: !!temporary, regenerate },
       );
 
-      const uploadBasePath = getUploadBasePath(sandboxPreference);
+      const uploadBasePath = getUploadBasePath("e2b");
       const messagesForProcessing =
         localDesktopAttachmentsPrepared && messages.length > 0
           ? messages
@@ -700,7 +701,7 @@ export const agentLongTask = task({
           subscription,
           uploadBasePath,
           modelOverride: selectedModelOverride,
-          allowLocalDesktopFiles: sandboxPreference === "desktop",
+          allowLocalDesktopFiles: false,
         });
 
       if (!processedMessages.length) {
@@ -769,6 +770,15 @@ export const agentLongTask = task({
           return getUserFriendlyProviderError(error);
         },
         execute: async ({ writer }) => {
+          // Emit an early heartbeat before any await so the frontend's
+          // 5-minute idle timeout is cleared immediately. Without this,
+          // slow setup (E2B sandbox cold-start, LLM queue) can exceed
+          // 5 minutes before writer.merge() fires its first heartbeat.
+          writer.write({
+            type: AGENT_LONG_HEARTBEAT_PART_TYPE,
+            data: { at: Date.now() },
+          } as AgentLongUiStreamPart);
+
           try {
             await assertUserCanMakeCostIncurringRequest(userId);
             if (subscription === "free") {
@@ -796,9 +806,14 @@ export const agentLongTask = task({
               organizationId,
             );
 
+            // Snapshot only — never throw here. checkRateLimit already routed
+            // an exhausted month to the prepaid balance (servedFrom: balance);
+            // re-throwing on exhaustion would block a funded PAYG user.
             const freeMonthlyBudgetSnapshot =
               subscription === "free"
-                ? await checkFreeMonthlyCostLimit(userId)
+                ? await checkFreeMonthlyCostLimit(userId, {
+                    throwOnExhaustion: false,
+                  })
                 : null;
 
             usageRefundTracker.recordDeductions(rateLimitInfo);
@@ -839,7 +854,7 @@ export const agentLongTask = task({
               memoryEnabled,
               !!temporary,
               assistantMessageId,
-              sandboxPreference,
+              "e2b",
               process.env.CONVEX_SERVICE_ROLE_KEY,
               userCustomization?.guardrails_config,
               false,
@@ -855,6 +870,14 @@ export const agentLongTask = task({
               undefined,
               selectedModel,
             );
+
+            // Eagerly start the sandbox NOW so its cold-start (E2B create or
+            // resume-from-pause, 1-3s+) overlaps title generation and the first
+            // LLM round-trip instead of blocking the first tool call. getSandbox
+            // caches, so the later upload/tool paths reuse this same boot.
+            // Errors are intentionally swallowed here — the real tool call will
+            // surface them properly; this is only a prewarm.
+            void ensureSandbox().catch(() => {});
 
             const sendFileMetadataToStream = (
               fileMetadata: Array<{
@@ -996,7 +1019,11 @@ export const agentLongTask = task({
             });
             const effectiveBudgetSnapshot =
               budgetSnapshot ??
-              (freeMonthlyBudgetSnapshot?.rateLimitSkipped
+              // When served from balance the monthly snapshot is exhausted
+              // (remaining 0, no cushion) — building a BudgetMonitor from it
+              // would spuriously abort a request the user is paying for.
+              (rateLimitInfo.servedFrom === "balance" ||
+              freeMonthlyBudgetSnapshot?.rateLimitSkipped
                 ? null
                 : freeMonthlyBudgetSnapshot);
             const budgetMonitor = effectiveBudgetSnapshot
@@ -1048,11 +1075,41 @@ export const agentLongTask = task({
                   usageTracker.modelProviderCost > 0
                     ? usageTracker.providerCost
                     : undefined;
-                if (subscription === "free") {
+                if (
+                  subscription === "free" &&
+                  rateLimitInfo.servedFrom !== "balance"
+                ) {
+                  // Served within the daily free allowance — only track the
+                  // free monthly cost cap; no balance charge.
                   await recordFreeMonthlyCost(
                     userId,
                     usageCostRecord.costDollars,
                   );
+                } else if (rateLimitInfo.servedFrom === "balance") {
+                  // PAYG free user past the daily allowance: reconcile the
+                  // actual cost against the prepaid balance (input pre-charged).
+                  await deductBalanceUsage(
+                    userId,
+                    estimatedInputTokens,
+                    usageTracker.inputTokens,
+                    usageTracker.outputTokens,
+                    providerCost,
+                    selectedModel,
+                    usageTracker.nonModelCost,
+                  );
+                  usageTracker.log({
+                    userId,
+                    organizationId,
+                    chatId,
+                    endpoint: "/api/agent-long",
+                    mode,
+                    subscription,
+                    selectedModel,
+                    selectedModelOverride,
+                    responseModel: state.responseModel,
+                    configuredModelId,
+                    rateLimitInfo,
+                  });
                 } else {
                   await deductUsage(
                     userId,

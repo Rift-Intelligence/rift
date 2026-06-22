@@ -11,6 +11,14 @@ interface ToolBlockProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
+/**
+ * ToolBlock — RIFT terminal-native action line.
+ *
+ * Renders a single agent action as a command-log row: a cyan `$` prompt, the
+ * tool's glyph, the action verb, and an optional mono target. Square corners +
+ * left cyan rule instead of the old rounded SaaS pill, so it reads like a line
+ * in a real terminal rather than a generic chat tool-chip.
+ */
 const ToolBlock: React.FC<ToolBlockProps> = ({
   icon,
   action,
@@ -21,13 +29,13 @@ const ToolBlock: React.FC<ToolBlockProps> = ({
   onKeyDown,
 }) => {
   const baseClasses =
-    "rounded-[15px] px-[10px] py-[6px] border border-border bg-muted/20 inline-flex max-w-full gap-[4px] items-center relative h-[36px] overflow-hidden";
+    "group/tb inline-flex h-[34px] max-w-full items-center gap-2 overflow-hidden border border-border/60 border-l-2 border-l-primary/40 bg-black/30 pl-2 pr-3 font-mono transition-[background-color,border-color] relative";
   const clickableClasses = isClickable
-    ? "cursor-pointer hover:bg-muted/40 transition-colors"
+    ? "cursor-pointer hover:border-l-primary hover:bg-primary/[0.06] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40"
     : "";
 
   return (
-    <div className="flex-1 min-w-0">
+    <div className="min-w-0 flex-1">
       <button
         className={`${baseClasses} ${clickableClasses}`}
         onClick={isClickable ? onClick : undefined}
@@ -38,19 +46,31 @@ const ToolBlock: React.FC<ToolBlockProps> = ({
           isClickable && target ? `Open ${target} in sidebar` : undefined
         }
       >
-        <div className="w-[21px] inline-flex items-center flex-shrink-0 text-foreground [&>svg]:h-4 [&>svg]:w-4">
+        <span
+          aria-hidden
+          className="select-none text-[13px] leading-none text-primary"
+        >
+          $
+        </span>
+        <span className="inline-flex w-[17px] flex-shrink-0 items-center text-muted-foreground/70 [&>svg]:h-[15px] [&>svg]:w-[15px]">
           {icon}
-        </div>
-        <div className="max-w-[100%] truncate text-muted-foreground relative top-[-1px]">
-          <span className="text-[13px]">
+        </span>
+        <span className="max-w-full truncate">
+          <span className="text-[12.5px] tracking-tight text-foreground/85">
             {isShimmer ? <Shimmer>{action}</Shimmer> : action}
           </span>
           {target && (
-            <span className="text-[12px] font-mono ml-[6px] text-muted-foreground/70">
-              {target}
-            </span>
+            <span className="ml-2 text-[11.5px] text-primary/70">{target}</span>
           )}
-        </div>
+        </span>
+        {isClickable && (
+          <span
+            aria-hidden
+            className="ml-auto select-none pl-2 text-[11px] text-muted-foreground/0 transition-colors group-hover/tb:text-primary/60"
+          >
+            ↗
+          </span>
+        )}
       </button>
     </div>
   );

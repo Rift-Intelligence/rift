@@ -39,7 +39,7 @@ const logLocalAttachmentDebug = (
   if (typeof window === "undefined") return;
   const enabled =
     process.env.NODE_ENV === "development" ||
-    window.localStorage.getItem("hackerai:debug-local-attachments") === "1";
+    window.localStorage.getItem("rift:debug-local-attachments") === "1";
   if (!enabled) return;
   console.info(`[local-attachments] ${event}`, data);
 };
@@ -471,11 +471,6 @@ export const useFileUpload = (mode: ChatMode = "ask") => {
 
   const processLocalDesktopPaths = useCallback(
     async (paths: string[]) => {
-      if (subscription === "free") {
-        toast.error("Upgrade plan to upload files.");
-        return;
-      }
-
       const existingUploadedCount = uploadedFiles.length;
       const remainingSlots = maxFilesLimit - existingUploadedCount;
       if (remainingSlots <= 0) {
@@ -585,24 +580,13 @@ export const useFileUpload = (mode: ChatMode = "ask") => {
         startDesktopSelectedFiles(validFiles);
       }
     },
-    [
-      subscription,
-      uploadedFiles.length,
-      maxFilesLimit,
-      startDesktopSelectedFiles,
-      mode,
-    ],
+    [uploadedFiles.length, maxFilesLimit, startDesktopSelectedFiles, mode],
   );
 
   // Unified file processing function
   const processFiles = useCallback(
     async (files: File[], source: FileSource) => {
-      // Check if user has pro plan for file uploads
-      if (subscription === "free") {
-        toast.error("Upgrade plan to upload files.");
-        return;
-      }
-
+      // File uploads are available to everyone (no plan gate).
       const result = await validateAndFilterFiles(files);
 
       // Check if we have slots available
@@ -619,7 +603,6 @@ export const useFileUpload = (mode: ChatMode = "ask") => {
       }
     },
     [
-      subscription,
       validateAndFilterFiles,
       showProcessingFeedback,
       startFileUploads,

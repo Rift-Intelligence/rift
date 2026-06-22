@@ -564,10 +564,27 @@ export function buildProviderOptions(
         ? {
             reasoning: {
               enabled: true,
-              ...(isDeepSeekV4 && { effort: "xhigh" }),
+              // Bound the thinking budget. Without a cap, OpenRouter lets the
+              // model run an open-ended think-then-answer pass on EVERY turn —
+              // even a one-word greeting — adding 1-3s of TTFT. DeepSeek-V4
+              // takes a qualitative effort level; everyone else (Anthropic
+              // Opus/Sonnet) takes a token budget. 2048 is plenty for the
+              // step-level planning these agent turns actually need.
+              // Only reached when reasoning is enabled (agent mode — ASK runs
+              // reasoning-disabled). DeepSeek-V4 backs the free agent path;
+              // `xhigh` ran an open-ended max-effort think pass before the first
+              // token (1-4s of TTFT) — the opposite of the latency intent above.
+              ...(isDeepSeekV4 ? { effort: "low" } : { max_tokens: 2048 }),
             },
           }
         : { reasoning: { enabled: false } }),
+      // NOTE: do NOT add provider:{sort:'latency'} here. For Anthropic models
+      // it let OpenRouter route to Google Vertex / first-party Anthropic, both
+      // of which enforce Anthropic's real-time cyber content-filter and EMPTY
+      // OUT offensive-security output (finish_reason:'content-filter' after a
+      // full agent run). OpenRouter's default routing happened to land on a
+      // non-filtering upstream; latency-sort broke that. The few hundred ms
+      // saved is not worth silently nuking the core capability.
       ...(userId && { user: userId }),
       ...(fallbackSlugs.length > 0 && { models: fallbackSlugs }),
     },
@@ -597,7 +614,12 @@ export function logOpenRouterFallbackIfFired(args: {
 }
 
 const ANTHROPIC_CACHE_BREAKPOINT = {
-  openrouter: { cacheControl: { type: "ephemeral" as const } },
+  // 1-hour TTL (vs the 5-minute default). The ~19k-token system prefix is
+  // identical across a session; a 1h window keeps it cache-readable across the
+  // normal pauses between user turns, so follow-ups pay ~0.1x reads instead of
+  // re-writing all 19k tokens at full price. Writes cost 2x (vs 1.25x for 5m)
+  // but reads dominate over a session, so this is a net win.
+  openrouter: { cacheControl: { type: "ephemeral" as const, ttl: "1h" } },
 };
 
 /**
@@ -888,29 +910,14 @@ export async function applyPrepareStepReminders(
  * Free-tier agent mode is restricted to the local sandbox + auto model.
  * Throws ChatSDKError("forbidden:chat") if either gate fails.
  */
-export function assertFreeAgentGates(args: {
+export function assertFreeAgentGates(_args: {
   mode: ChatMode;
   subscription: SubscriptionTier;
   sandboxPreference: SandboxPreference | undefined;
   rawSelectedModel: string | undefined;
 }): void {
-  const { mode, subscription, sandboxPreference, rawSelectedModel } = args;
-  if (!isAgentMode(mode) || subscription !== "free") return;
-
-  const isLocalSandbox = sandboxPreference && sandboxPreference !== "e2b";
-  if (!isLocalSandbox) {
-    throw new ChatSDKError(
-      "forbidden:chat",
-      "Agent mode on the free plan requires a local sandbox. Install the desktop app or upgrade to Pro for cloud access.",
-    );
-  }
-
-  if (rawSelectedModel && rawSelectedModel !== "auto") {
-    throw new ChatSDKError(
-      "forbidden:chat",
-      "Custom model selection in agent mode requires a Pro plan. Free agent mode uses the default model.",
-    );
-  }
+  // Subscription tiers were removed: every signed-in user can run cloud (E2B)
+  // Agent mode with any model, so there are no free-tier agent gates anymore.
 }
 
 /**
@@ -926,7 +933,23 @@ export async function buildExtraUsageConfig(args: {
   organizationId?: string;
 }): Promise<ExtraUsageConfig | undefined> {
   const { userId, subscription, userCustomization, organizationId } = args;
-  if (subscription === "free") return undefined;
+
+  // Free users (PAYG): once the daily allowance is spent, requests draw from
+  // the prepaid token balance. No opt-in gate — holding a balance is consent to
+  // spend it. (Auto-reload still requires its own explicit toggle.)
+  if (subscription === "free") {
+    const balanceInfo = await getExtraUsageBalance(userId);
+    if (!balanceInfo) return undefined;
+    if (balanceInfo.balanceDollars > 0 || balanceInfo.autoReloadEnabled) {
+      return {
+        enabled: true,
+        hasBalance: balanceInfo.balanceDollars > 0,
+        balanceDollars: balanceInfo.balanceDollars,
+        autoReloadEnabled: balanceInfo.autoReloadEnabled,
+      };
+    }
+    return undefined;
+  }
 
   // Team users: extra usage is org-funded and admin-controlled. Personal
   // extra_usage settings are ignored — overflow routes through the team pool.

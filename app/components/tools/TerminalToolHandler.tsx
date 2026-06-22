@@ -1,18 +1,35 @@
 import React, { memo, useMemo } from "react";
 import { UIMessage } from "@ai-sdk/react";
-import ToolBlock from "@/components/ui/tool-block";
-import { Terminal } from "lucide-react";
+import { CursorToolBlock } from "@/components/ui/cursor-tool-block";
 import type { ChatStatus } from "@/types/chat";
-import { isSidebarTerminal } from "@/types/chat";
+import { isSidebarTerminal, type SidebarTerminal } from "@/types/chat";
 import { useToolSidebar } from "../../hooks/useToolSidebar";
 import {
   computeShellTerminalBlock,
   getShellDisplayCommand,
   getStreamingTerminalOutput,
+  isInteractiveShellAction,
   type ShellToolInput,
   type ShellToolOutput,
 } from "./shell-tool-utils";
 import { isUserStoppedToolError } from "@/lib/chat/tool-abort-utils";
+
+function getCursorToolLabel(
+  isShellTool: boolean,
+  shellAction: string | undefined,
+  isActive: boolean,
+  blockAction: (active: boolean) => string,
+  blockTarget: string | undefined,
+  briefOnly: boolean,
+  briefText: string,
+): string {
+  if (briefOnly && briefText) return briefText;
+  if (isActive && blockTarget) return blockTarget;
+  if (!isActive && (shellAction === "exec" || !isShellTool)) {
+    return "Ran terminal command";
+  }
+  return blockAction(isActive);
+}
 
 interface TerminalToolHandlerProps {
   message: UIMessage;
@@ -122,56 +139,96 @@ export const TerminalToolHandler = memo(function TerminalToolHandler({
       // label instead of "Generating command" which only applies to exec
       if (isShellTool && shellAction && shellAction !== "exec") {
         return (
-          <ToolBlock
+          <CursorToolBlock
             key={toolCallId}
-            icon={<Terminal />}
-            action={blockAction(true)}
-            target={blockTarget || undefined}
-            isShimmer={true}
+            label={blockAction(true)}
+            status="running"
+            command={blockTarget || undefined}
+            isShimmer
           />
         );
       }
       return (
-        <ToolBlock
+        <CursorToolBlock
           key={toolCallId}
-          icon={<Terminal />}
-          action="Generating command"
-          isShimmer={true}
+          label="Generating command"
+          status="running"
+          isShimmer
         />
       );
     }
-    case "input-available":
+    case "input-available": {
+      const briefText = (input as { brief?: string })?.brief || "";
+      const useBriefOnly =
+        !!briefText &&
+        ((isShellTool && isInteractiveShellAction(shellAction)) ||
+          (!isInteractiveShellAction(shellAction) && false));
+      const label = getCursorToolLabel(
+        isShellTool,
+        shellAction,
+        status === "streaming",
+        blockAction,
+        blockTarget,
+        useBriefOnly,
+        briefText,
+      );
+      const output =
+        isExecuting && sidebarContent ? sidebarContent.output : undefined;
       return (
-        <ToolBlock
+        <CursorToolBlock
           key={toolCallId}
-          icon={<Terminal />}
-          action={blockAction(status === "streaming")}
-          target={blockTarget}
+          label={label}
+          status={status === "streaming" ? "running" : "done"}
+          command={blockTarget || undefined}
+          output={output}
+          defaultOpen={isExecuting}
           isShimmer={status === "streaming"}
           isClickable
           onClick={handleOpenInSidebar}
           onKeyDown={handleKeyDown}
         />
       );
-    case "output-available":
+    }
+    case "output-available": {
+      const briefTextOut = (input as { brief?: string })?.brief || "";
+      const labelOut = getCursorToolLabel(
+        isShellTool,
+        shellAction,
+        false,
+        blockAction,
+        blockTarget,
+        !!briefTextOut,
+        briefTextOut,
+      );
+      const outputText =
+        sidebarContent?.output ||
+        (typeof terminalOutput === "object"
+          ? terminalOutput?.result?.stdout ||
+            terminalOutput?.result?.output ||
+            terminalOutput?.output
+          : "") ||
+        "";
       return (
-        <ToolBlock
+        <CursorToolBlock
           key={toolCallId}
-          icon={<Terminal />}
-          action={blockAction(false)}
-          target={blockTarget}
+          label={labelOut}
+          status="done"
+          command={blockTarget || undefined}
+          output={outputText || undefined}
+          defaultOpen={Boolean(outputText)}
           isClickable
           onClick={handleOpenInSidebar}
           onKeyDown={handleKeyDown}
         />
       );
+    }
     case "output-error":
       return (
-        <ToolBlock
+        <CursorToolBlock
           key={toolCallId}
-          icon={<Terminal />}
-          action={isStoppedByUser ? "Stopped command" : blockAction(false)}
-          target={blockTarget}
+          label={isStoppedByUser ? "Stopped command" : blockAction(false)}
+          status={isStoppedByUser ? "stopped" : "error"}
+          command={blockTarget || undefined}
           isClickable
           onClick={handleOpenInSidebar}
           onKeyDown={handleKeyDown}

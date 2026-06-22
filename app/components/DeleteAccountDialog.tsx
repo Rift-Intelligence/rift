@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -33,21 +33,11 @@ export const DeleteAccountDialog = ({
   const [emailInput, setEmailInput] = useState("");
   const [confirmInput, setConfirmInput] = useState("");
 
-  const lastSignInAtIso: string | null = useMemo(() => {
-    if (!user) return null;
-    // WorkOS user has lastSignInAt ISO string when available
-
-    const value = (user as any)?.lastSignInAt as string | undefined;
-    return value ?? null;
-  }, [user]);
-
-  const hasRecentLogin = useMemo(() => {
-    if (!lastSignInAtIso) return false;
-    const last = new Date(lastSignInAtIso).getTime();
-    if (Number.isNaN(last)) return false;
-    const tenMinutesMs = 10 * 60 * 1000;
-    return Date.now() - last <= tenMinutesMs;
-  }, [lastSignInAtIso]);
+  // Convex Auth does not expose a last-sign-in timestamp, so the previous
+  // "logged in within 10 minutes" step-up gate no longer applies. The email +
+  // "DELETE" confirmation below is the safety check. (A re-auth step-up can be
+  // reintroduced alongside the teams/MFA migration.)
+  const hasRecentLogin = Boolean(user);
 
   const expectedEmail: string = useMemo(() => user?.email ?? "", [user]);
 
@@ -81,7 +71,7 @@ export const DeleteAccountDialog = ({
     try {
       // 1) Delete all Convex data first
       await deleteAllUserData({});
-      // 2) Cancel Stripe subs, remove WorkOS org(s), and delete WorkOS user server-side
+      // 2) Cancel Stripe subs, remove the account server-side
       const res = await fetch("/api/delete-account", { method: "POST" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

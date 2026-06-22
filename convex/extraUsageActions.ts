@@ -1,10 +1,9 @@
 "use node";
 
-import { action } from "./_generated/server";
+import { action, type ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import Stripe from "stripe";
-import { WorkOS } from "@workos-inc/node";
 import { convexLogger } from "./lib/logger";
 
 // =============================================================================
@@ -12,7 +11,6 @@ import { convexLogger } from "./lib/logger";
 // =============================================================================
 
 let stripeInstance: Stripe | null = null;
-let workosInstance: WorkOS | null = null;
 
 function getStripe(): Stripe {
   if (!stripeInstance) {
@@ -23,62 +21,66 @@ function getStripe(): Stripe {
   return stripeInstance;
 }
 
-function getWorkOS(): WorkOS {
-  if (!workosInstance) {
-    const key = process.env.WORKOS_API_KEY;
-    if (!key) throw new Error("WORKOS_API_KEY not configured");
-    workosInstance = new WorkOS(key, {
-      clientId: process.env.WORKOS_CLIENT_ID,
-    });
-  }
-  return workosInstance;
+/** Points per dollar (1 point = $0.0001), mirrors convex/extraUsage.ts. */
+const POINTS_PER_DOLLAR = 10_000;
+
+/**
+ * Volume-bonus tokens (points) for a top-up amount, tiered by spend.
+ *
+ * Thresholds mirror the package ladder in lib/billing/token-packages.ts so a
+ * package's displayed bonus matches what gets credited:
+ *   < $50  → +0%    ($20 Starter)
+ *   ≥ $50  → +5%    ($50 Plus)
+ *   ≥ $100 → +10%   ($100 Pro)
+ *   ≥ $300 → +20%   ($300 Scale)
+ * Custom amounts land in whichever tier their dollar value reaches.
+ *
+ * Server-derived from the validated dollar amount — never trust a client value.
+ */
+function bonusPointsForDollars(dollars: number): number {
+  const basePoints = dollars * POINTS_PER_DOLLAR;
+  let pct = 0;
+  if (dollars >= 300) pct = 20;
+  else if (dollars >= 100) pct = 10;
+  else if (dollars >= 50) pct = 5;
+  return Math.round((basePoints * pct) / 100);
 }
 
 // =============================================================================
 // Helper Functions
 // =============================================================================
 
-type BillingMembership = {
-  organizationId: string;
-  status?: string;
-  role?: { slug?: string } | null;
-  roles?: Array<{ slug?: string } | null> | null;
-};
-
-function canManageOrganizationBilling(membership: BillingMembership): boolean {
-  const status = membership.status;
-  const roleSlug = membership.role?.slug;
-  const roles = membership.roles;
-  const hasBillingRole =
-    roleSlug === "admin" ||
-    roleSlug === "owner" ||
-    roles?.some((role) => role?.slug === "admin" || role?.slug === "owner");
-
-  return (status === undefined || status === "active") && !!hasBillingRole;
-}
-
-async function getStripeCustomerId(userId: string): Promise<string | null> {
-  const workos = getWorkOS();
-
-  const memberships = await workos.userManagement.listOrganizationMemberships({
-    userId,
-    statuses: ["active"],
-  });
-
-  if (!memberships.data || memberships.data.length === 0) {
-    return null;
-  }
-
-  const billingMembership = memberships.data.find(canManageOrganizationBilling);
-  if (!billingMembership) {
-    return null;
-  }
-
-  const organization = await workos.organizations.getOrganization(
-    billingMembership.organizationId,
+/**
+ * Resolve (and optionally lazily create) the per-user Stripe customer for
+ * pay-as-you-go token purchases.
+ *
+ * - Reads the persisted `stripe_customer_id` from the user's extra_usage row.
+ * - With `createIfMissing`, creates a Stripe customer on first checkout and
+ *   persists it. Read-only callers (payment status, billing portal, auto-
+ *   reload) pass createIfMissing=false and treat null as "no billing yet".
+ */
+async function getStripeCustomerId(
+  ctx: ActionCtx,
+  userId: string,
+  opts?: { email?: string | null; createIfMissing?: boolean },
+): Promise<string | null> {
+  const existing = await ctx.runQuery(
+    internal.extraUsage.getStripeCustomerIdForUser,
+    { userId },
   );
+  if (existing) return existing;
+  if (!opts?.createIfMissing) return null;
 
-  return organization.stripeCustomerId || null;
+  const stripe = getStripe();
+  const customer = await stripe.customers.create({
+    email: opts.email ?? undefined,
+    metadata: { userId },
+  });
+  await ctx.runMutation(internal.extraUsage.setStripeCustomerIdForUser, {
+    userId,
+    stripeCustomerId: customer.id,
+  });
+  return customer.id;
 }
 
 async function getStripePaymentMethod(customerId: string): Promise<{
@@ -195,7 +197,7 @@ async function createAutoReloadPayment(
       invoice: invoice.id,
       amount: amountCents,
       currency: "usd",
-      description: `HackerAI Extra Usage Auto-Reload ($${amountCents / 100})`,
+      description: `RIFT Extra Usage Auto-Reload ($${amountCents / 100})`,
     });
 
     // Finalize the invoice
@@ -269,7 +271,10 @@ export const getPaymentStatus = action({
     }
 
     try {
-      const stripeCustomerId = await getStripeCustomerId(identity.subject);
+      const stripeCustomerId = await getStripeCustomerId(
+        ctx,
+        identity.subject.split("|")[0],
+      );
       if (!stripeCustomerId) {
         return {
           hasPaymentMethod: false,
@@ -306,6 +311,109 @@ export const getPaymentStatus = action({
  * 2. The actual payment confirmation happens via secure webhooks
  * 3. A malicious user can only redirect themselves to a different site
  */
+/**
+ * Create a NowPayments hosted crypto invoice for a token top-up.
+ *
+ * Pay-as-you-go, no account/customer object needed (crypto). Returns the hosted
+ * `invoice_url` to redirect to. Crediting is async: NowPayments POSTs an IPN to
+ * `/api/extra-usage/nowpayments-ipn` when the payment reaches `finished`, which
+ * is where `addCredits` runs. The dollar amount and (server-derived) bonus are
+ * recovered on the IPN from `price_amount` + `order_id`.
+ */
+export const createCryptoInvoice = action({
+  args: {
+    amountDollars: v.number(),
+    baseUrl: v.string(),
+  },
+  returns: v.object({
+    url: v.union(v.string(), v.null()),
+    error: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { url: null, error: "Not authenticated" };
+    }
+    const userId = identity.subject.split("|")[0];
+
+    if (!Number.isInteger(args.amountDollars)) {
+      return { url: null, error: "Amount must be a whole dollar value" };
+    }
+    if (args.amountDollars < 10) {
+      return { url: null, error: "Minimum amount is $10" };
+    }
+    if (args.amountDollars > 999_999) {
+      return { url: null, error: "Maximum amount is $999,999" };
+    }
+    if (!args.baseUrl || !args.baseUrl.startsWith("http")) {
+      return { url: null, error: "Invalid base URL" };
+    }
+
+    const apiKey = process.env.NOWPAYMENTS_API_KEY;
+    if (!apiKey) {
+      return {
+        url: null,
+        error: "Crypto payments are not configured. Please try again later.",
+      };
+    }
+
+    // order_id carries the userId so the IPN can attribute the credit. A random
+    // suffix keeps it unique per attempt. The bonus is NOT trusted from here —
+    // the IPN recomputes it server-side from the paid price_amount.
+    const orderId = `${userId}::${identity.subject.slice(-6)}-${args.amountDollars}`;
+
+    try {
+      const res = await fetch("https://api.nowpayments.io/v1/invoice", {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          price_amount: args.amountDollars,
+          price_currency: "usd",
+          order_id: orderId,
+          order_description: `RIFT tokens — $${args.amountDollars}`,
+          ipn_callback_url: `${args.baseUrl}/api/extra-usage/nowpayments-ipn`,
+          success_url: `${args.baseUrl}/?tokens-pending=1`,
+          cancel_url: args.baseUrl,
+        }),
+      });
+
+      if (!res.ok) {
+        const detail = await res.text();
+        convexLogger.error("nowpayments_invoice_failed", {
+          user_id: userId,
+          amount_dollars: args.amountDollars,
+          status: res.status,
+          detail: detail.slice(0, 500),
+        });
+        return { url: null, error: "Could not start crypto checkout." };
+      }
+
+      const data = (await res.json()) as { invoice_url?: string; id?: string };
+      if (!data.invoice_url) {
+        return { url: null, error: "Could not start crypto checkout." };
+      }
+
+      convexLogger.info("nowpayments_invoice_created", {
+        user_id: userId,
+        amount_dollars: args.amountDollars,
+        invoice_id: data.id,
+      });
+
+      return { url: data.invoice_url };
+    } catch (error) {
+      convexLogger.error("nowpayments_invoice_error", {
+        user_id: userId,
+        amount_dollars: args.amountDollars,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      return { url: null, error: "Could not start crypto checkout." };
+    }
+  },
+});
+
 export const createPurchaseSession = action({
   args: {
     amountDollars: v.number(),
@@ -325,12 +433,17 @@ export const createPurchaseSession = action({
     if (!Number.isInteger(args.amountDollars)) {
       return { url: null, error: "Amount must be a whole dollar value" };
     }
-    if (args.amountDollars < 15) {
-      return { url: null, error: "Minimum amount is $15" };
+    if (args.amountDollars < 10) {
+      return { url: null, error: "Minimum amount is $10" };
     }
     if (args.amountDollars > 999_999) {
       return { url: null, error: "Maximum amount is $999,999" };
     }
+
+    // Server-derived volume bonus (tokens granted on top of the dollar amount).
+    // Tiered by spend so packages AND custom amounts both reward larger top-ups.
+    // Thresholds match the package ladder in lib/billing/token-packages.ts.
+    const bonusPoints = bonusPointsForDollars(args.amountDollars);
 
     // Basic URL validation
     if (!args.baseUrl || !args.baseUrl.startsWith("http")) {
@@ -338,11 +451,19 @@ export const createPurchaseSession = action({
     }
 
     try {
-      const stripeCustomerId = await getStripeCustomerId(identity.subject);
+      // Lazily create the per-user Stripe customer on first purchase.
+      const stripeCustomerId = await getStripeCustomerId(
+        ctx,
+        identity.subject.split("|")[0],
+        {
+          email: identity.email ?? null,
+          createIfMissing: true,
+        },
+      );
       if (!stripeCustomerId) {
         return {
           url: null,
-          error: "No Stripe customer found. Please subscribe first.",
+          error: "Could not initialize billing account. Please try again.",
         };
       }
 
@@ -358,7 +479,7 @@ export const createPurchaseSession = action({
             price_data: {
               currency: "usd",
               product_data: {
-                name: "HackerAI Extra Usage Credits",
+                name: "RIFT Extra Usage Credits",
                 description: `$${args.amountDollars} in extra usage credits`,
               },
               unit_amount: amountCents,
@@ -374,15 +495,16 @@ export const createPurchaseSession = action({
         },
         metadata: {
           type: "extra_usage_purchase",
-          userId: identity.subject,
+          userId: identity.subject.split("|")[0],
           amountDollars: String(args.amountDollars),
+          bonusPoints: String(bonusPoints),
         },
         success_url: `${args.baseUrl}/api/extra-usage/confirm?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: args.baseUrl,
       });
 
       convexLogger.info("purchase_session_created", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         amount_dollars: args.amountDollars,
         session_id: session.id,
       });
@@ -390,7 +512,7 @@ export const createPurchaseSession = action({
       return { url: session.url };
     } catch (error) {
       convexLogger.error("purchase_session_failed", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         amount_dollars: args.amountDollars,
         error: error instanceof Error ? error.message : "Unknown error",
       });
@@ -433,7 +555,10 @@ export const createBillingPortalSession = action({
     }
 
     try {
-      const stripeCustomerId = await getStripeCustomerId(identity.subject);
+      const stripeCustomerId = await getStripeCustomerId(
+        ctx,
+        identity.subject.split("|")[0],
+      );
       if (!stripeCustomerId) {
         return { url: null, error: "No billing account found" };
       }
@@ -558,8 +683,8 @@ export const deductWithAutoReload = action({
     if (allConditionsMet) {
       autoReloadTriggered = true;
 
-      // Get Stripe customer ID
-      const stripeCustomerId = await getStripeCustomerId(args.userId);
+      // Get Stripe customer ID (must already exist from a prior purchase)
+      const stripeCustomerId = await getStripeCustomerId(ctx, args.userId);
       if (!stripeCustomerId) {
         autoReloadResult = { success: false, reason: "no_stripe_customer" };
       } else {

@@ -1,8 +1,56 @@
-import { internalMutation, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { validateServiceKey } from "./lib/utils";
 import { convexLogger } from "./lib/logger";
 import { recordRevenueEventInternal } from "./unitEconomicsLib";
+
+// =============================================================================
+// Stripe customer mapping (per-user, pay-as-you-go)
+// =============================================================================
+
+/** Read the user's stored Stripe customer id, or null if none yet. */
+export const getStripeCustomerIdForUser = internalQuery({
+  args: { userId: v.string() },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, args) => {
+    const row = await ctx.db
+      .query("extra_usage")
+      .withIndex("by_user_id", (q) => q.eq("user_id", args.userId))
+      .first();
+    return row?.stripe_customer_id ?? null;
+  },
+});
+
+/** Persist the user's Stripe customer id (upsert the extra_usage row). */
+export const setStripeCustomerIdForUser = internalMutation({
+  args: { userId: v.string(), stripeCustomerId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const row = await ctx.db
+      .query("extra_usage")
+      .withIndex("by_user_id", (q) => q.eq("user_id", args.userId))
+      .first();
+    if (row) {
+      await ctx.db.patch(row._id, {
+        stripe_customer_id: args.stripeCustomerId,
+        updated_at: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("extra_usage", {
+        user_id: args.userId,
+        balance_points: 0,
+        stripe_customer_id: args.stripeCustomerId,
+        updated_at: Date.now(),
+      });
+    }
+    return null;
+  },
+});
 
 // =============================================================================
 // Currency Conversion Helpers
@@ -225,6 +273,9 @@ export const addCredits = mutation({
     serviceKey: v.string(),
     userId: v.string(),
     amountDollars: v.number(),
+    // Volume-bonus tokens (points) granted on top of the dollar amount. Always
+    // server-derived (see bonusPointsForDollars) — never client-supplied.
+    bonusPoints: v.optional(v.number()),
     idempotencyKey: v.optional(v.string()), // Primary dedup key (session-scoped: `cs_<id>`)
     legacyIdempotencyKey: v.optional(v.string()), // Stripe event ID — checked only to guard pre-deploy webhook retries
     revenueSource: v.optional(
@@ -276,7 +327,11 @@ export const addCredits = mutation({
       throw new Error("Invalid amount: must be a positive number");
     }
 
-    const amountPoints = dollarsToPoints(args.amountDollars);
+    const bonusPoints =
+      args.bonusPoints && args.bonusPoints > 0
+        ? Math.floor(args.bonusPoints)
+        : 0;
+    const amountPoints = dollarsToPoints(args.amountDollars) + bonusPoints;
 
     // Get current settings
     const settings = await ctx.db
@@ -627,6 +682,9 @@ export const getExtraUsageSettings = query({
     v.null(),
     v.object({
       balanceDollars: v.number(),
+      // Prepaid balance as displayed tokens (1 token = 1 point). Source of
+      // truth for the "X tokens left" UI.
+      balancePoints: v.number(),
       autoReloadEnabled: v.boolean(),
       autoReloadThresholdDollars: v.optional(v.number()),
       autoReloadAmountDollars: v.optional(v.number()),
@@ -645,7 +703,9 @@ export const getExtraUsageSettings = query({
 
     const settings = await ctx.db
       .query("extra_usage")
-      .withIndex("by_user_id", (q) => q.eq("user_id", identity.subject))
+      .withIndex("by_user_id", (q) =>
+        q.eq("user_id", identity.subject.split("|")[0]),
+      )
       .first();
 
     if (!settings) {
@@ -654,6 +714,7 @@ export const getExtraUsageSettings = query({
 
     return {
       balanceDollars: pointsToDollars(settings.balance_points),
+      balancePoints: settings.balance_points ?? 0,
       autoReloadEnabled: settings.auto_reload_enabled ?? false,
       autoReloadThresholdDollars: settings.auto_reload_threshold_points
         ? pointsToDollars(settings.auto_reload_threshold_points)
@@ -725,7 +786,9 @@ export const updateExtraUsageSettings = mutation({
 
     const settings = await ctx.db
       .query("extra_usage")
-      .withIndex("by_user_id", (q) => q.eq("user_id", identity.subject))
+      .withIndex("by_user_id", (q) =>
+        q.eq("user_id", identity.subject.split("|")[0]),
+      )
       .first();
 
     const updateData: Record<string, unknown> = {
@@ -762,7 +825,7 @@ export const updateExtraUsageSettings = mutation({
       await ctx.db.patch(settings._id, updateData);
     } else {
       await ctx.db.insert("extra_usage", {
-        user_id: identity.subject,
+        user_id: identity.subject.split("|")[0],
         balance_points: 0,
         ...updateData,
         updated_at: Date.now(),

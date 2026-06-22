@@ -1,70 +1,66 @@
 @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 :root {
-  /* === zauth-inspired palette: neutral near-black + emerald/sky accents === */
-  --terminal-bg: #0a0a0b;
-  --terminal-primary: #131316;
-  --terminal-secondary: #1b1b1f;
-  --terminal-sidebar-bg: #0a0a0b;
-  --terminal-green: #10b981;
-  --terminal-green-dim: #059669;
-  --terminal-green-glow: #10b981;
-  --terminal-sky: #0ea5e9;
-  --terminal-text: #fafafa;
-  --terminal-text-dim: #a1a1aa;
-  --terminal-border: #27272a;
+  --terminal-bg: #1e1e1e;
+  --terminal-primary: #1e1e1e;
+  --terminal-secondary: #252526;
+  --terminal-sidebar-bg: #181818;
+  --terminal-green: #89d185;
+  --terminal-green-dim: #6a9955;
+  --terminal-green-glow: #89d185;
+  --terminal-sky: #4daafc;
+  --terminal-text: #cccccc;
+  --terminal-text-dim: #858585;
+  --terminal-border: #2b2b2b;
   --terminal-scanline: transparent;
   --terminal-crt-flicker: transparent;
-
-  /* CRT effects disabled for a refined, modern look. */
   --terminal-scanline-opacity: 0;
   --terminal-glow-intensity: 0;
-
-  /* === Accent system → emerald === */
-  --primary: #10b981;
-  --primary-foreground: #04130a;
-  --secondary: #18181b;
-  --secondary-foreground: #fafafa;
-  --accent: #10b981;
-  --accent-foreground: #04130a;
-  --ring: #10b981;
-  --chart-1: #10b981;
-  --chart-2: #059669;
-  --chart-3: #0ea5e9;
-  --chart-4: #34d399;
-  --chart-5: #6366f1;
-  --link-color: #10b981;
-
-  --sidebar-primary: #10b981;
-  --sidebar-primary-foreground: #04130a;
-  --sidebar-ring: #10b981;
-
-  /* Premium / Upgrade buttons → emerald */
-  --premium-bg: #0f2a20;
-  --premium-text: #10b981;
-  --premium-hover: #059669;
+  --primary: #e8e8e8;
+  --primary-foreground: #1e1e1e;
+  --secondary: #2d2d2d;
+  --secondary-foreground: #cccccc;
+  --accent: #37373d;
+  --accent-foreground: #e8e8e8;
+  --ring: #0078d4;
+  --link-color: #4daafc;
+  --sidebar-primary: #e8e8e8;
+  --sidebar-primary-foreground: #1e1e1e;
+  --sidebar-ring: #0078d4;
+  --premium-bg: #2d2d2d;
+  --premium-text: #e8e8e8;
+  --premium-hover: #cccccc;
 }
 
-/* Typography: clean sans-serif for reading/UI text, monospace reserved for
-   code, terminal output and hacker-flavored accents. Previously every element
-   was forced to monospace via `* { ... !important }`, which made prose cramped
-   and hard to read. */
+/* RIFT typography: Geist body (UI), Space Grotesk display (headings/brand),
+   JetBrains Mono for terminal/code only. */
 body {
   background-color: var(--terminal-bg) !important;
   color: var(--terminal-text) !important;
   overflow: hidden;
-  font-family:
-    var(--font-inter),
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: var(--font-geist), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.011em;
 }
 
-/* Monospace where the terminal aesthetic matters. */
+/* Make every UI surface inherit the mono face (kills residual sans rendering
+   from component-level font utilities that pointed at the old sans var). */
+button,
+input,
+textarea,
+select,
+p,
+span,
+div,
+a,
+li,
+label {
+  font-family: inherit;
+}
+
+/* Monospace ONLY for genuine terminal/code output. UI chrome (titlebars,
+   buttons, stats) now inherits the Geist body face. */
 code,
 pre,
 kbd,
@@ -73,13 +69,7 @@ samp,
 .terminal-input,
 .terminal-code,
 .terminal-ascii,
-.terminal-prompt,
-.terminal-stats,
-.terminal-titlebar,
-.terminal-dot ~ span,
-.terminal-glow,
-.terminal-glow-subtle,
-.terminal-btn {
+.terminal-prompt {
   font-family:
     "JetBrains Mono", var(--font-jetbrains-mono), ui-monospace, monospace !important;
 }
@@ -278,7 +268,7 @@ samp,
   --sidebar-foreground: var(--terminal-text);
   --sidebar-primary: var(--terminal-green);
   --sidebar-primary-foreground: var(--terminal-bg);
-  --sidebar-accent: rgba(34, 197, 94, 0.1);
+  --sidebar-accent: rgba(34, 224, 255, 0.1);
   --sidebar-accent-foreground: var(--terminal-green);
   --sidebar-border: var(--terminal-border);
   --sidebar-ring: var(--terminal-green);
@@ -291,14 +281,14 @@ samp,
 /* User avatar fallback → green terminal style */
 [data-slot="avatar-fallback"] {
   background-color: var(--terminal-green-dim) !important;
-  color: #04130a !important;
+  color: #001a1f !important;
   font-weight: 700;
 }
 
 /* Primary buttons → emerald */
 .bg-primary {
   background-color: var(--terminal-green) !important;
-  color: #04130a !important;
+  color: #001a1f !important;
 }
 
 /* Terminal Message */
@@ -306,12 +296,14 @@ samp,
   padding: 8px 12px;
   margin: 4px 0;
   border-left: 2px solid var(--terminal-green);
-  background: rgba(34, 197, 94, 0.05);
+  background: rgba(34, 224, 255, 0.05);
 }
 
 .terminal-message-user {
+  background: transparent !important;
+  border: none !important;
   border-left-color: var(--terminal-green-dim);
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(34, 224, 255, 0.1);
 }
 
 /* Terminal Code Block */
@@ -404,9 +396,9 @@ samp,
   background-color: var(--terminal-bg) !important;
 }
 
-.bg-primary {
-  background-color: var(--terminal-primary) !important;
-}
+/* .bg-primary intentionally NOT remapped to a surface here — it stays the cyan
+   accent fill (see "Primary buttons" rule above) so CTAs/send buttons read as
+   the accent, matching the refined design. */
 
 .text-foreground {
   color: var(--terminal-text) !important;
@@ -441,3 +433,34 @@ samp,
   pointer-events: none;
   z-index: 1;
 }
+
+/* ============================================================
+   RIFT terminal chrome — square off every "modern SaaS" surface
+   (dialogs, dropdowns, popovers, command palette) and frame them
+   like terminal windows. Kills the ChatGPT/RIFT-clone feel.
+   ============================================================ */
+
+/* Overlay surfaces: rounded, hairline border, soft shadow (refined). */
+[data-slot="dialog-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="popover-content"],
+[data-slot="select-content"],
+[data-slot="command"],
+[data-slot="command-dialog"] [data-slot="dialog-content"],
+[cmdk-root] {
+  border-radius: var(--radius) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--popover) !important;
+  box-shadow: 0 16px 48px -24px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Menu/command items: subtle rounded hover, no green flood. */
+[data-slot="dropdown-menu-item"]:hover,
+[data-slot="command-item"][data-selected="true"],
+[cmdk-item][data-selected="true"] {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+/* CRT scanline/vignette/flicker overlays and phosphor text glow retired for the
+   refined dark-SaaS theme — calm flat surfaces, no emitted-light effects. */

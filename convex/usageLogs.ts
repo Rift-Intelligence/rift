@@ -123,7 +123,7 @@ export const getDailyUsageSummary = query({
     if (!identity) {
       throw new Error("Unauthenticated");
     }
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
     const days = Math.min(Math.max(Math.round(args.days ?? 7), 1), 30);
     const startDate = Date.now() - days * 24 * 60 * 60 * 1000;
 
@@ -168,7 +168,7 @@ export const getUserUsageLogs = query({
     if (!identity) {
       throw new Error("Unauthenticated");
     }
-    const userId = identity.subject;
+    const userId = identity.subject.split("|")[0];
 
     const results = await ctx.db
       .query("usage_logs")

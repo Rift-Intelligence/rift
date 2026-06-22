@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
+import type * as auth from "../auth.js";
 import type * as chatStreams from "../chatStreams.js";
 import type * as chats from "../chats.js";
 import type * as constants from "../constants.js";
@@ -18,6 +20,7 @@ import type * as feedback from "../feedback.js";
 import type * as fileActions from "../fileActions.js";
 import type * as fileAggregate from "../fileAggregate.js";
 import type * as fileStorage from "../fileStorage.js";
+import type * as http from "../http.js";
 import type * as lib_logger from "../lib/logger.js";
 import type * as lib_utils from "../lib/utils.js";
 import type * as localSandbox from "../localSandbox.js";
@@ -39,6 +42,7 @@ import type * as usageLogs from "../usageLogs.js";
 import type * as userCustomization from "../userCustomization.js";
 import type * as userDeletion from "../userDeletion.js";
 import type * as userSuspensions from "../userSuspensions.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -47,6 +51,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
+  auth: typeof auth;
   chatStreams: typeof chatStreams;
   chats: typeof chats;
   constants: typeof constants;
@@ -57,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   fileActions: typeof fileActions;
   fileAggregate: typeof fileAggregate;
   fileStorage: typeof fileStorage;
+  http: typeof http;
   "lib/logger": typeof lib_logger;
   "lib/utils": typeof lib_utils;
   localSandbox: typeof localSandbox;
@@ -78,6 +85,7 @@ declare const fullApi: ApiFromModules<{
   userCustomization: typeof userCustomization;
   userDeletion: typeof userDeletion;
   userSuspensions: typeof userSuspensions;
+  users: typeof users;
 }>;
 
 /**

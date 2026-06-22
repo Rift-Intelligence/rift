@@ -11,12 +11,10 @@ const customJestConfig = {
   testEnvironment: "jest-environment-jsdom",
   moduleNameMapper: {
     "^jose$": "<rootDir>/__mocks__/jose.ts",
-    "^@workos-inc/node$": "<rootDir>/__mocks__/workos-node.ts",
-    "^@workos-inc/authkit-nextjs$": "<rootDir>/__mocks__/workos-authkit.ts",
-    "^@workos-inc/authkit-nextjs/components$": "<rootDir>/__mocks__/workos.ts",
     "^stripe$": "<rootDir>/__mocks__/stripe.ts",
     "^@/(.*)$": "<rootDir>/$1",
     "^convex/react$": "<rootDir>/__mocks__/convex-react.ts",
+    "^@convex-dev/auth/react$": "<rootDir>/__mocks__/convex-dev-auth-react.ts",
     "^uuid$": "<rootDir>/__mocks__/uuid.ts",
     "^react-hotkeys-hook$": "<rootDir>/__mocks__/react-hotkeys-hook.ts",
     "^react-markdown$": "<rootDir>/__mocks__/react-markdown.tsx",

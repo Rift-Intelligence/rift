@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useAuth } from "@workos-inc/authkit-nextjs/components";
+import { useAuth } from "@/app/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import {
 } from "date-fns";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { useGlobalState } from "../contexts/GlobalState";
+import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChats } from "../hooks/useChats";
 
@@ -56,6 +57,7 @@ export const MessageSearchDialog: React.FC<MessageSearchDialogProps> = ({
 }) => {
   const { user } = useAuth();
   const router = useRouter();
+  const { basePath } = useAppShell();
   const { setChatSidebarOpen, closeSidebar } = useGlobalState();
   const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
@@ -250,7 +252,7 @@ export const MessageSearchDialog: React.FC<MessageSearchDialogProps> = ({
       setChatSidebarOpen(false);
     }
 
-    router.push(`/c/${chatId}`);
+    router.push(chatRoute(basePath, chatId));
     onClose();
   };
 

@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { useId, type FC } from "react";
 
 interface RiftLogoProps {
   /** Pixel size of the square logo */
@@ -9,20 +9,20 @@ interface RiftLogoProps {
 }
 
 /**
- * RIFT logo mark.
+ * RIFT logo mark — "slip-fault".
  *
- * Concept: a solid geometric monolith cleanly cleaved by a diagonal "rift".
- * Two offset facets in a light/dark tone create depth and read as the letter
- * "R" / a fault line. Minimal, flat, premium — Anthropic / Cursor / Devin style.
- *
- * Uses `currentColor` so it inherits the surrounding text color by default;
- * pass `glow` for an optional neon halo.
+ * A solid rounded square split by an offset vertical tear: the upper crack sits
+ * left of center, the lower crack right, joined by a 45° slip plane — reading as
+ * two tectonic plates that have shifted past each other (a breach / rift). The
+ * tear is a true transparent cut (via mask), so the mark inherits `currentColor`
+ * and works on any background, at any size. Pass `glow` for the phosphor halo.
  */
 export const RiftLogo: FC<RiftLogoProps> = ({
   size = 32,
   glow = false,
   className,
 }) => {
+  const maskId = useId();
   return (
     <svg
       width={size}
@@ -35,17 +35,29 @@ export const RiftLogo: FC<RiftLogoProps> = ({
       aria-label="RIFT"
       style={
         glow
-          ? { filter: "drop-shadow(0 0 5px rgba(34,197,94,0.55))" }
+          ? { filter: "drop-shadow(0 0 4px rgba(0,255,102,0.6))" }
           : undefined
       }
     >
-      {/* Left facet — full strength */}
-      <path d="M5 4 H16.5 L12 16 L17 28 H5 Z" fill="currentColor" />
-      {/* Right facet — lighter tone for depth across the rift */}
-      <path
-        d="M19.5 4 H27 V28 H21 L15.5 16 Z"
+      <mask id={maskId}>
+        {/* Visible body */}
+        <rect x="1" y="1" width="30" height="30" rx="8" fill="#fff" />
+        {/* Carved slip-fault tear (offset top→bottom, 45° slip in the middle) */}
+        <path
+          d="M16 -2 L13.4 13 L18.6 18 L15.4 34"
+          stroke="#000"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+      </mask>
+      <rect
+        x="1"
+        y="1"
+        width="30"
+        height="30"
+        rx="8"
         fill="currentColor"
-        fillOpacity="0.45"
+        mask={`url(#${maskId})`}
       />
     </svg>
   );

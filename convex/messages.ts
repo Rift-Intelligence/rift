@@ -656,7 +656,7 @@ export const getMessagesByChatId = query({
     try {
       await ctx.runQuery(internal.messages.verifyChatOwnership, {
         chatId: args.chatId,
-        userId: user.subject,
+        userId: user.subject.split("|")[0],
       });
 
       const result = await ctx.db
@@ -693,7 +693,7 @@ export const getMessagesByChatId = query({
       // Only file metadata (fileId, name, mediaType, s3Key, storageId) is returned.
       const fileDetailsMap = new Map();
       files.forEach((file, index) => {
-        if (file && file.user_id === user.subject) {
+        if (file && file.user_id === user.subject.split("|")[0]) {
           fileDetailsMap.set(fileIdArray[index], {
             fileId: fileIdArray[index],
             name: file.name,
@@ -822,7 +822,7 @@ export const saveAssistantMessage = mutation({
         internal.messages.verifyChatOwnership,
         {
           chatId: args.chatId,
-          userId: user.subject,
+          userId: user.subject.split("|")[0],
         },
       );
 
@@ -836,7 +836,7 @@ export const saveAssistantMessage = mutation({
       await ctx.db.insert("messages", {
         id: args.id,
         chat_id: args.chatId,
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         role: args.role,
         parts: args.parts,
         content: content || undefined,
@@ -910,7 +910,10 @@ export const deleteLastAssistantMessage = mutation({
 
       if (messagesToDelete.length > 0) {
         const firstMsg = messagesToDelete[0];
-        if (firstMsg.user_id && firstMsg.user_id !== user.subject) {
+        if (
+          firstMsg.user_id &&
+          firstMsg.user_id !== user.subject.split("|")[0]
+        ) {
           throw new Error(
             "Unauthorized: User not allowed to delete this message",
           );
@@ -920,7 +923,7 @@ export const deleteLastAssistantMessage = mutation({
             internal.messages.verifyChatOwnership,
             {
               chatId: args.chatId,
-              userId: user.subject,
+              userId: user.subject.split("|")[0],
             },
           );
 
@@ -974,7 +977,7 @@ export const deleteLastAssistantMessage = mutation({
           .withIndex("by_chat_id", (q) => q.eq("id", args.chatId))
           .first();
 
-        if (chat && chat.user_id === user.subject) {
+        if (chat && chat.user_id === user.subject.split("|")[0]) {
           await ctx.db.patch(chat._id, {
             todos: args.todos,
           });
@@ -1191,13 +1194,17 @@ export const searchMessages = query({
         ctx.db
           .query("messages")
           .withSearchIndex("search_content", (q) =>
-            q.search("content", searchQuery).eq("user_id", user.subject),
+            q
+              .search("content", searchQuery)
+              .eq("user_id", user.subject.split("|")[0]),
           )
           .take(SEARCH_RESULT_CAP),
         ctx.db
           .query("chats")
           .withSearchIndex("search_title", (q) =>
-            q.search("title", searchQuery).eq("user_id", user.subject),
+            q
+              .search("title", searchQuery)
+              .eq("user_id", user.subject.split("|")[0]),
           )
           .take(SEARCH_RESULT_CAP),
       ]);
@@ -1218,7 +1225,7 @@ export const searchMessages = query({
 
       if (failedIndexes.length > 0) {
         convexLogger.warn("message_search_index_failed", {
-          user_id: user.subject,
+          user_id: user.subject.split("|")[0],
           query_length: searchQuery.length,
           failed_indexes: failedIndexes,
           duration_ms: Date.now() - searchStartedAt,
@@ -1262,7 +1269,7 @@ export const searchMessages = query({
       if (missingChatIds.length > 0) {
         if (missingChatIds.length > SEARCH_CHAT_METADATA_CAP) {
           convexLogger.warn("message_search_metadata_cap_reached", {
-            user_id: user.subject,
+            user_id: user.subject.split("|")[0],
             query_length: searchQuery.length,
             missing_chat_count: missingChatIds.length,
             metadata_cap: SEARCH_CHAT_METADATA_CAP,
@@ -1282,7 +1289,7 @@ export const searchMessages = query({
         );
         if (metadataFailures.length > 0) {
           convexLogger.warn("message_search_metadata_fetch_failed", {
-            user_id: user.subject,
+            user_id: user.subject.split("|")[0],
             query_length: searchQuery.length,
             failed_count: metadataFailures.length,
             requested_count: fetched.length,
@@ -1394,7 +1401,7 @@ export const searchMessages = query({
       };
     } catch (error) {
       convexLogger.error("message_search_failed", {
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         query_length: searchQuery.length,
         requested_page_size: args.paginationOpts.numItems,
         has_cursor: Boolean(args.paginationOpts.cursor),
@@ -1435,15 +1442,15 @@ export const branchChat = mutation({
 
       if (!message) {
         convexLogger.warn("branch_chat_message_missing", {
-          user_id: user.subject,
+          user_id: user.subject.split("|")[0],
           message_id: args.messageId,
         });
         return null;
       }
 
-      if (message.user_id !== user.subject) {
+      if (message.user_id !== user.subject.split("|")[0]) {
         convexLogger.warn("branch_chat_message_access_denied", {
-          user_id: user.subject,
+          user_id: user.subject.split("|")[0],
           message_id: args.messageId,
         });
         return null;
@@ -1453,13 +1460,13 @@ export const branchChat = mutation({
         internal.messages.verifyChatOwnership,
         {
           chatId: message.chat_id,
-          userId: user.subject,
+          userId: user.subject.split("|")[0],
         },
       );
 
       if (!chatExists) {
         convexLogger.warn("branch_chat_chat_missing_or_denied", {
-          user_id: user.subject,
+          user_id: user.subject.split("|")[0],
           message_id: args.messageId,
           chat_id: message.chat_id,
         });
@@ -1474,7 +1481,7 @@ export const branchChat = mutation({
 
       if (!originalChat) {
         convexLogger.warn("branch_chat_original_chat_missing", {
-          user_id: user.subject,
+          user_id: user.subject.split("|")[0],
           message_id: args.messageId,
           chat_id: message.chat_id,
         });
@@ -1498,7 +1505,7 @@ export const branchChat = mutation({
       const newChatDocId = await ctx.db.insert("chats", {
         id: newChatId,
         title: originalChat.title,
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         branched_from_chat_id: message.chat_id,
         update_time: Date.now(),
       });
@@ -1511,7 +1518,7 @@ export const branchChat = mutation({
         await ctx.db.insert("messages", {
           id: newMessageId,
           chat_id: newChatId,
-          user_id: user.subject,
+          user_id: user.subject.split("|")[0],
           role: msg.role,
           parts: msg.parts,
           content: msg.content,
@@ -1573,7 +1580,10 @@ export const regenerateWithNewContent = mutation({
         // Silently no-op if the message no longer exists (edited/removed locally or race)
         // Avoid throwing/logging to prevent noisy errors on client
         return null;
-      } else if (message.user_id && message.user_id !== user.subject) {
+      } else if (
+        message.user_id &&
+        message.user_id !== user.subject.split("|")[0]
+      ) {
         throw new Error(
           "Unauthorized: User not allowed to regenerate this message",
         );
@@ -1583,7 +1593,7 @@ export const regenerateWithNewContent = mutation({
           internal.messages.verifyChatOwnership,
           {
             chatId: message.chat_id,
-            userId: user.subject,
+            userId: user.subject.split("|")[0],
           },
         );
 
@@ -1867,7 +1877,7 @@ export const getPreviewMessages = query({
         .withIndex("by_chat_id", (q) => q.eq("id", args.chatId))
         .first();
 
-      if (!chat || chat.user_id !== identity.subject) {
+      if (!chat || chat.user_id !== identity.subject.split("|")[0]) {
         return [];
       }
 
@@ -1901,7 +1911,7 @@ export const getPreviewMessages = query({
 
       const fileDetailsMap = new Map();
       files.forEach((file, index) => {
-        if (file && file.user_id === identity.subject) {
+        if (file && file.user_id === identity.subject.split("|")[0]) {
           fileDetailsMap.set(fileIdArray[index], {
             fileId: fileIdArray[index],
             name: file.name,

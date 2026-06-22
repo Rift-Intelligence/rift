@@ -7,7 +7,6 @@ import { useChats } from "../hooks/useChats";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -29,17 +28,23 @@ const ChatListContent: FC<{ chatListData: ChatListData }> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div
-      className="h-full min-w-0 overflow-y-auto overflow-x-hidden terminal-scrollbar"
-      ref={scrollContainerRef}
-      data-testid="sidebar-chat-list-scroll-container"
-    >
-      <SidebarHistory
-        chats={chatListData.results || []}
-        paginationStatus={chatListData.status}
-        loadMore={chatListData.loadMore}
-        containerRef={scrollContainerRef}
-      />
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Operation templates — pinned above scrollable history */}
+      <PentestArsenal />
+
+      {/* Chat history — scrollable */}
+      <div
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden terminal-scrollbar"
+        ref={scrollContainerRef}
+        data-testid="sidebar-chat-list-scroll-container"
+      >
+        <SidebarHistory
+          chats={chatListData.results || []}
+          paginationStatus={chatListData.status}
+          loadMore={chatListData.loadMore}
+          containerRef={scrollContainerRef}
+        />
+      </div>
     </div>
   );
 };
@@ -56,8 +61,8 @@ const DesktopSidebarContent: FC<{
   return (
     <Sidebar
       side="left"
-      collapsible="icon"
-      className={`${isMobile ? "w-full" : "w-72"} terminal-sidebar`}
+      collapsible="none"
+      className={`${isMobile ? "w-full" : "w-[260px]"}`}
     >
       <SidebarHeader>
         <SidebarHeaderContent
@@ -66,26 +71,13 @@ const DesktopSidebarContent: FC<{
         />
       </SidebarHeader>
 
-      <SidebarContent>
-        {!isCollapsed && (
-          <SidebarGroup className="border-b border-sidebar-border/60 pb-1">
-            <SidebarGroupContent>
-              <PentestArsenal />
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-        <SidebarGroup className="min-h-0 flex-1">
-          <SidebarGroupContent>
-            {/* Subscription stays active in MainSidebar; only render list when expanded */}
-            {!isCollapsed && <ChatListContent chatListData={chatListData} />}
+      <SidebarContent className="min-h-0 flex-1">
+        <SidebarGroup className="min-h-0 flex-1 overflow-hidden">
+          <SidebarGroupContent className="h-full min-h-0">
+            <ChatListContent chatListData={chatListData} />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarUserNav isCollapsed={isCollapsed} />
-      </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 };
@@ -117,18 +109,12 @@ const MainSidebar: FC<{
             isMobileOverlay={true}
           />
 
-          {/* Pentest Arsenal */}
-          <div className="border-b border-sidebar-border/60 pb-1">
-            <PentestArsenal />
-          </div>
-
-          {/* Chat List */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <ChatListContent chatListData={chatListData} />
           </div>
 
           {/* Footer */}
-          <div className="p-2">
+          <div className="p-2 pb-3">
             <SidebarUserNav isCollapsed={false} />
           </div>
         </div>

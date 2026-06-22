@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,124 +9,109 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CreditCard, Pencil, Wallet } from "lucide-react";
-import { toast } from "sonner";
+import { Bitcoin, CreditCard } from "lucide-react";
+import {
+  TOKEN_PACKAGES,
+  MIN_CUSTOM_TOPUP_USD,
+  bonusPointsForDollars,
+  type TokenPackage,
+} from "@/lib/billing/token-packages";
+import { formatTokens } from "@/lib/billing/token-display";
+import { POINTS_PER_DOLLAR } from "@/lib/rate-limit/token-bucket";
+import { cn } from "@/lib/utils";
 
 type BuyExtraUsageDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPurchase: (amountDollars: number) => Promise<void>;
+  onCardPurchase?: (amountDollars: number) => Promise<void>;
   isLoading: boolean;
   title?: string;
   description?: string;
   lineItemLabel?: string;
-  paymentMethodMode?: "personal" | "checkout";
-};
-
-/** Format card brand name for display */
-const formatCardBrand = (brand: string | null): string => {
-  if (!brand) return "Card";
-  return brand.charAt(0).toUpperCase() + brand.slice(1).replace(/_/g, " ");
 };
 
 const MAX_AMOUNT = 999_999;
 
-/** Format number with commas (e.g., 1000 -> 1,000) */
 const formatWithCommas = (value: string): string => {
-  // Remove existing commas
   const cleanValue = value.replace(/,/g, "");
-  // Format with commas (whole dollars only)
   return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-/** Remove commas for parsing */
 const removeCommas = (value: string): string => value.replace(/,/g, "");
+
+const totalTokensForDollars = (dollars: number): number =>
+  dollars * POINTS_PER_DOLLAR + bonusPointsForDollars(dollars);
+
+type PaymentMethod = "card" | "crypto";
 
 type ContentProps = {
   onPurchase: (amountDollars: number) => Promise<void>;
+  onCardPurchase?: (amountDollars: number) => Promise<void>;
   isLoading: boolean;
   onClose: () => void;
   title: string;
   description: string;
   lineItemLabel: string;
-  paymentMethodMode: "personal" | "checkout";
 };
 
 const BuyExtraUsageDialogContent = ({
   onPurchase,
+  onCardPurchase,
   isLoading,
   title,
   description,
   lineItemLabel,
-  paymentMethodMode,
 }: ContentProps) => {
-  const [purchaseAmount, setPurchaseAmount] = useState<string>("15");
-  const [paymentMethod, setPaymentMethod] = useState<{
-    hasPaymentMethod: boolean;
-    last4: string | null;
-    brand: string | null;
-  } | null>(null);
-  const [loadingPaymentMethod, setLoadingPaymentMethod] = useState(
-    paymentMethodMode === "personal",
+  const [selected, setSelected] = useState<TokenPackage["id"] | "custom">(
+    "plus",
+  );
+  const [customAmount, setCustomAmount] = useState<string>("50");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    onCardPurchase ? "card" : "crypto",
   );
 
-  const createBillingPortalSession = useAction(
-    api.extraUsageActions.createBillingPortalSession,
-  );
-  const getPaymentStatus = useAction(api.extraUsageActions.getPaymentStatus);
+  const selectedPackage =
+    selected === "custom"
+      ? undefined
+      : TOKEN_PACKAGES.find((p) => p.id === selected);
 
-  // Fetch payment method on mount
-  useEffect(() => {
-    if (paymentMethodMode === "checkout") {
-      return;
-    }
+  const customParsed = parseInt(removeCommas(customAmount) || "0", 10);
+  const amountDollars = selectedPackage
+    ? selectedPackage.priceUsd
+    : customParsed;
 
-    getPaymentStatus({})
-      .then((result) => {
-        setPaymentMethod({
-          hasPaymentMethod: result.hasPaymentMethod,
-          last4: result.paymentMethodLast4,
-          brand: result.paymentMethodBrand,
-        });
-      })
-      .catch((err) => {
-        console.error("Failed to fetch payment method:", err);
-      })
-      .finally(() => {
-        setLoadingPaymentMethod(false);
-      });
-  }, [getPaymentStatus, paymentMethodMode]);
-
-  const handleEditPaymentMethod = async () => {
-    try {
-      const result = await createBillingPortalSession({
-        flow: "payment_method",
-        baseUrl: window.location.origin,
-      });
-      if (result.url) {
-        window.open(result.url, "_blank", "noopener,noreferrer");
-        // Clear cached payment method so it refreshes when user returns
-        setPaymentMethod(null);
-      } else {
-        toast.error(result.error || "Failed to open billing portal");
-      }
-    } catch {
-      toast.error("Failed to open billing portal");
-    }
-  };
-
-  const parsedAmount = parseInt(removeCommas(purchaseAmount) || "0", 10);
   const isValidAmount =
-    !isNaN(parsedAmount) && parsedAmount >= 15 && parsedAmount <= MAX_AMOUNT;
+    !isNaN(amountDollars) &&
+    amountDollars >= MIN_CUSTOM_TOPUP_USD &&
+    amountDollars <= MAX_AMOUNT;
   const showMinAmountError =
-    purchaseAmount !== "" && !isNaN(parsedAmount) && parsedAmount < 15;
+    selected === "custom" &&
+    customAmount !== "" &&
+    !isNaN(customParsed) &&
+    customParsed < MIN_CUSTOM_TOPUP_USD;
   const showMaxAmountError =
-    purchaseAmount !== "" && !isNaN(parsedAmount) && parsedAmount > MAX_AMOUNT;
+    selected === "custom" &&
+    customAmount !== "" &&
+    !isNaN(customParsed) &&
+    customParsed > MAX_AMOUNT;
+
+  const totalTokens = selectedPackage
+    ? selectedPackage.totalTokens
+    : isValidAmount
+      ? totalTokensForDollars(amountDollars)
+      : 0;
 
   const handlePurchase = async () => {
     if (!isValidAmount) return;
-    await onPurchase(parsedAmount);
+    if (paymentMethod === "card" && onCardPurchase) {
+      await onCardPurchase(amountDollars);
+    } else {
+      await onPurchase(amountDollars);
+    }
   };
+
+  const hasCard = !!onCardPurchase;
 
   return (
     <>
@@ -136,88 +119,172 @@ const BuyExtraUsageDialogContent = ({
         <DialogTitle>{title}</DialogTitle>
       </DialogHeader>
       <div className="flex flex-col gap-5 pt-4">
+        <label className="block text-muted-foreground text-sm">
+          {description}
+        </label>
+
+        {/* Package cards */}
+        <div className="grid grid-cols-2 gap-2.5">
+          {TOKEN_PACKAGES.map((pkg) => {
+            const active = selected === pkg.id;
+            return (
+              <button
+                key={pkg.id}
+                type="button"
+                onClick={() => setSelected(pkg.id)}
+                aria-pressed={active}
+                aria-label={`${pkg.name}: $${pkg.priceUsd} for ${formatTokens(pkg.totalTokens)} tokens`}
+                className={cn(
+                  "relative flex flex-col gap-0.5 rounded-lg border p-3 text-left transition-colors",
+                  active
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50",
+                )}
+              >
+                {pkg.bonusPct > 0 && (
+                  <span className="absolute right-2 top-2 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                    +{pkg.bonusPct}%
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  {pkg.name}
+                </span>
+                <span className="font-mono text-base font-semibold tabular-nums">
+                  {formatTokens(pkg.totalTokens)}
+                </span>
+                <span className="text-xs text-muted-foreground">tokens</span>
+                <span className="mt-1 text-sm font-medium">
+                  ${pkg.priceUsd}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Custom amount */}
         <div>
-          <label className="block text-muted-foreground text-sm mb-3">
-            {description}
-          </label>
-          <Input
-            placeholder="$15"
-            className="w-full"
-            type="text"
-            value={`$${formatWithCommas(purchaseAmount)}`}
-            onChange={(e) => {
-              // Remove $ and commas, keep only digits (whole dollars only)
-              const val = e.target.value.replace(/[^0-9]/g, "");
-              setPurchaseAmount(val);
-            }}
-            aria-label="Purchase amount"
-          />
-          {showMinAmountError && (
-            <p className="text-sm text-red-500 mt-2">Minimum amount is $15</p>
-          )}
-          {showMaxAmountError && (
-            <p className="text-sm text-red-500 mt-2">
-              Maximum amount is $999,999
-            </p>
+          <button
+            type="button"
+            onClick={() => setSelected("custom")}
+            aria-pressed={selected === "custom"}
+            className={cn(
+              "mb-2 text-sm underline-offset-2 transition-colors",
+              selected === "custom"
+                ? "text-primary underline"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            Custom amount
+          </button>
+          {selected === "custom" && (
+            <>
+              <Input
+                placeholder="$50"
+                className="w-full"
+                type="text"
+                value={`$${formatWithCommas(customAmount)}`}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, "");
+                  setCustomAmount(val);
+                }}
+                aria-label="Custom purchase amount"
+                autoFocus
+              />
+              {showMinAmountError && (
+                <p className="mt-2 text-sm text-red-500">
+                  Minimum amount is ${MIN_CUSTOM_TOPUP_USD}
+                </p>
+              )}
+              {showMaxAmountError && (
+                <p className="mt-2 text-sm text-red-500">
+                  Maximum amount is $999,999
+                </p>
+              )}
+            </>
           )}
         </div>
+
         <div className="space-y-2">
           <hr className="mb-5 border-border" />
           <div className="flex justify-between text-sm">
             <span>{lineItemLabel}</span>
-            <span>${formatWithCommas(String(parsedAmount))}</span>
+            <span className="tabular-nums">
+              {formatTokens(totalTokens)} tokens
+            </span>
           </div>
           <div className="flex justify-between pt-2 text-sm font-medium">
             <span>Total due</span>
-            <span>${formatWithCommas(String(parsedAmount))}</span>
+            <span>
+              ${formatWithCommas(String(isValidAmount ? amountDollars : 0))}
+            </span>
           </div>
         </div>
-        <div className="mt-2">
-          <div className="flex items-center justify-between p-5 border border-border rounded-lg">
-            <span className="font-medium text-sm">Payment method</span>
-            <div className="flex items-center gap-3">
-              {paymentMethodMode === "checkout" ? (
-                <p className="text-sm flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Team billing account
-                </p>
-              ) : loadingPaymentMethod ? (
-                <p className="text-sm text-muted-foreground">Loading...</p>
-              ) : paymentMethod?.hasPaymentMethod && paymentMethod.last4 ? (
-                <p className="text-sm flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  {formatCardBrand(paymentMethod.brand)} ending in{" "}
-                  {paymentMethod.last4}
-                </p>
-              ) : (
-                <p className="text-sm flex items-center gap-2">
-                  <Wallet className="h-5 w-5" />
-                  Link by Stripe
-                </p>
-              )}
-              {paymentMethodMode === "personal" && (
-                <button
-                  type="button"
-                  className="text-muted-foreground hover:text-foreground"
-                  aria-label="Edit payment method"
-                  tabIndex={0}
-                  onClick={handleEditPaymentMethod}
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-              )}
+
+        {/* Payment method selector */}
+        <div>
+          {hasCard && (
+            <div className="mb-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("card")}
+                aria-pressed={paymentMethod === "card"}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors",
+                  paymentMethod === "card"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50",
+                )}
+              >
+                <CreditCard className="h-4 w-4" />
+                Card
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("crypto")}
+                aria-pressed={paymentMethod === "crypto"}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors",
+                  paymentMethod === "crypto"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50",
+                )}
+              >
+                <Bitcoin className="h-4 w-4" />
+                Crypto
+              </button>
             </div>
-          </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            {paymentMethod === "card"
+              ? "You'll be redirected to Stripe for secure card payment."
+              : "BTC, ETH, USDT… Tokens are credited after on-chain confirmation (usually a few minutes)."}
+          </p>
+
+          {!hasCard && (
+            <div className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+              <CreditCard className="h-3.5 w-3.5" />
+              <span>
+                Credit card payments —{" "}
+                <span className="font-medium text-foreground">coming soon</span>
+              </span>
+            </div>
+          )}
         </div>
-        <div className="flex flex-col gap-3">
-          <Button
-            onClick={handlePurchase}
-            disabled={isLoading || !isValidAmount}
-            className="w-full h-11"
-          >
-            {isLoading ? "Processing..." : "Purchase"}
-          </Button>
-        </div>
+
+        <Button
+          onClick={handlePurchase}
+          disabled={isLoading || !isValidAmount}
+          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-[15px] shadow-md hover:opacity-90 hover:bg-primary disabled:opacity-50"
+        >
+          {isLoading
+            ? "Processing…"
+            : isValidAmount
+              ? paymentMethod === "card"
+                ? `Pay $${amountDollars} with card`
+                : `Pay with crypto — ${formatTokens(totalTokens)} tokens`
+              : "Buy tokens"}
+        </Button>
       </div>
     </>
   );
@@ -227,28 +294,24 @@ const BuyExtraUsageDialog = ({
   open,
   onOpenChange,
   onPurchase,
+  onCardPurchase,
   isLoading,
-  title = "Buy extra usage",
-  description = "Get extra usage to keep using RIFT when you hit a limit.",
-  lineItemLabel = "Extra usage",
-  paymentMethodMode = "personal",
+  title = "Buy tokens",
+  description = "Top up your token balance. Bigger packs include bonus tokens.",
+  lineItemLabel = "Tokens",
 }: BuyExtraUsageDialogProps) => {
-  const handleOpenChange = (newOpen: boolean) => {
-    onOpenChange(newOpen);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         {open && (
           <BuyExtraUsageDialogContent
             onPurchase={onPurchase}
+            onCardPurchase={onCardPurchase}
             isLoading={isLoading}
             onClose={() => onOpenChange(false)}
             title={title}
             description={description}
             lineItemLabel={lineItemLabel}
-            paymentMethodMode={paymentMethodMode}
           />
         )}
       </DialogContent>

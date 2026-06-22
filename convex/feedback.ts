@@ -27,13 +27,13 @@ export const createFeedback = mutation({
 
     if (!message) {
       convexLogger.warn("feedback_message_missing", {
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         message_id: args.message_id,
       });
       return null;
-    } else if (message.user_id !== user.subject) {
+    } else if (message.user_id !== user.subject.split("|")[0]) {
       convexLogger.warn("feedback_message_access_denied", {
-        user_id: user.subject,
+        user_id: user.subject.split("|")[0],
         message_id: args.message_id,
       });
       throw new ConvexError({

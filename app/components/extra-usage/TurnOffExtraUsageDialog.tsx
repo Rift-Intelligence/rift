@@ -30,9 +30,9 @@ const TurnOffExtraUsageDialog = ({
           <DialogTitle>Turn off extra usage?</DialogTitle>
         </DialogHeader>
         <DialogDescription className="text-muted-foreground py-4">
-          Turning off extra usage will immediately prevent you from using
-          HackerAI beyond your base subscription limits. Any ongoing
-          conversations may be interrupted.
+          Turning off extra usage will immediately prevent you from using RIFT
+          beyond your base subscription limits. Any ongoing conversations may be
+          interrupted.
         </DialogDescription>
         <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Button

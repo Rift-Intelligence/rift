@@ -42,16 +42,66 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-describe("buildExtraUsageConfig — free tier", () => {
-  it("returns undefined for free users regardless of state", async () => {
+describe("buildExtraUsageConfig — free tier (PAYG)", () => {
+  it("enables balance for free users when they hold tokens — no opt-in gate", async () => {
+    mockGetUserBalance.mockResolvedValue({
+      balanceDollars: 5,
+      balancePoints: 50000,
+      enabled: true,
+      autoReloadEnabled: false,
+    } as any);
+
     const config = await buildExtraUsageConfig({
       userId: USER_ID,
       subscription: "free",
-      userCustomization: { extra_usage_enabled: true } as any,
+      // extra_usage_enabled intentionally absent: holding a balance is consent.
+      userCustomization: {} as any,
+    });
+
+    expect(config).toEqual({
+      enabled: true,
+      hasBalance: true,
+      balanceDollars: 5,
+      autoReloadEnabled: false,
+    });
+    expect(mockGetTeamState).not.toHaveBeenCalled();
+  });
+
+  it("returns undefined for free users with no balance and no auto-reload", async () => {
+    mockGetUserBalance.mockResolvedValue({
+      balanceDollars: 0,
+      balancePoints: 0,
+      enabled: true,
+      autoReloadEnabled: false,
+    } as any);
+
+    const config = await buildExtraUsageConfig({
+      userId: USER_ID,
+      subscription: "free",
+      userCustomization: {} as any,
     });
     expect(config).toBeUndefined();
-    expect(mockGetUserBalance).not.toHaveBeenCalled();
-    expect(mockGetTeamState).not.toHaveBeenCalled();
+  });
+
+  it("enables free users with auto-reload even at $0 balance", async () => {
+    mockGetUserBalance.mockResolvedValue({
+      balanceDollars: 0,
+      balancePoints: 0,
+      enabled: true,
+      autoReloadEnabled: true,
+    } as any);
+
+    const config = await buildExtraUsageConfig({
+      userId: USER_ID,
+      subscription: "free",
+      userCustomization: {} as any,
+    });
+    expect(config).toEqual({
+      enabled: true,
+      hasBalance: false,
+      balanceDollars: 0,
+      autoReloadEnabled: true,
+    });
   });
 });
 

@@ -7,11 +7,14 @@ import {
   PanelLeft,
   Sidebar as SidebarIcon,
   SquarePen,
+  Plus,
   Search,
+  History,
 } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { RiftLogo } from "@/components/icons/rift-logo";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
 import { useGlobalState } from "../contexts/GlobalState";
+import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChats } from "../hooks/useChats";
 import { MessageSearchDialog } from "./MessageSearchDialog";
@@ -45,12 +48,10 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
     initializeNewChat,
     setTemporaryChatsEnabled,
   } = useGlobalState();
+  const { basePath, displayClass } = useAppShell();
 
   // Search dialog state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  // Hover state for search button
-  const [isSearchHovered, setIsSearchHovered] = useState(false);
 
   // Fetch chats when search dialog is opened to ensure data is available
   // This handles the case where user opens search without opening sidebar first
@@ -94,7 +95,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
     // Reset chat state while current Chat is still mounted (so chatResetRef is set)
     initializeNewChat();
     setTemporaryChatsEnabled(false);
-    router.push("/");
+    router.push(basePath);
   };
 
   const handleSearchOpen = () => {
@@ -126,7 +127,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
             role="button"
             aria-label="Expand sidebar"
           >
-            <RiftLogo size={26} className="text-terminal-green" glow />
+            <RiftPixelMark size={26} />
             {/* Sidebar icon shown on hover over entire collapsed sidebar */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-sidebar/80 rounded">
               <SidebarIcon className="w-5 h-5" />
@@ -156,8 +157,6 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
                 className="h-8 w-8 p-0 hover:bg-sidebar-accent/50"
                 onClick={handleSearchOpen}
                 aria-label="Search chats"
-                onMouseEnter={() => setIsSearchHovered(true)}
-                onMouseLeave={() => setIsSearchHovered(false)}
               >
                 <Search className="w-4 h-4" />
               </Button>
@@ -176,65 +175,41 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between p-2">
-        <div className="flex items-center gap-2">
-          {/* Show close button on mobile or desktop when expanded */}
-          <Button
-            data-testid="sidebar-toggle"
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={handleCloseSidebar}
-          >
-            <PanelLeft className="size-5" />
-          </Button>
-        </div>
+      <div className="flex items-center gap-1 px-2 pb-2 pt-2">
+        <button
+          type="button"
+          onClick={handleNewChat}
+          aria-label="Start new chat"
+          className={`${displayClass} studio-new-chat flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border border-border/60 bg-surface-2/50 text-[12px] font-medium text-foreground transition-colors hover:border-signal/40 hover:bg-surface-3/60`}
+        >
+          <Plus className="size-3.5" />
+          New Chat
+        </button>
+        <button
+          type="button"
+          onClick={handleSearchOpen}
+          aria-label="Search chat history"
+          className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-colors hover:bg-surface-2/60 hover:text-foreground"
+        >
+          <History className="size-4" />
+        </button>
       </div>
 
-      {/* Sidebar Actions - Expanded */}
-      <div className="flex flex-col">
-        {/* New Chat Button styled like a chat item */}
-        <div className="px-2 py-1">
-          <Button
-            variant="ghost"
-            className="group relative flex w-full justify-start items-center rounded-lg p-2 h-auto hover:bg-sidebar-accent/50 text-left"
-            onClick={handleNewChat}
-            aria-label="Start new chat"
-          >
-            <SquarePen className="w-4 h-4" />
-            <div className="mr-2 flex-1 overflow-hidden text-clip whitespace-nowrap text-sm font-medium text-left">
-              New chat
-            </div>
-          </Button>
-        </div>
-
-        {/* Search Button styled like a chat item */}
-        <div className="px-2 py-1">
-          <Button
-            variant="ghost"
-            className="relative flex w-full justify-start items-center rounded-lg p-2 h-auto hover:bg-sidebar-accent/50 text-left"
+      <div className="px-2 pb-2">
+        <div className="studio-search flex h-8 items-center gap-2 rounded-full border border-border/50 bg-surface-1/60 px-3 text-[12px] text-muted-foreground backdrop-blur-sm">
+          <Search className="size-3.5 shrink-0" />
+          <input
+            type="text"
+            readOnly
+            onFocus={handleSearchOpen}
             onClick={handleSearchOpen}
+            placeholder="Search chats…"
             aria-label="Search chats"
-            onMouseEnter={() => setIsSearchHovered(true)}
-            onMouseLeave={() => setIsSearchHovered(false)}
-          >
-            <Search className="w-4 h-4" />
-            <div className="mr-2 flex-1 overflow-hidden text-clip whitespace-nowrap text-sm font-medium text-left">
-              Search chats
-            </div>
-            {/* Only show shortcut when hovering directly on the search button */}
-            <div
-              className={`text-xs transition-opacity ${
-                isSearchHovered ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              {modifierKey}K
-            </div>
-          </Button>
+            className="min-w-0 flex-1 bg-transparent text-[12px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+          />
         </div>
       </div>
 
-      {/* Search Dialog */}
       <MessageSearchDialog isOpen={isSearchOpen} onClose={handleSearchClose} />
     </>
   );
