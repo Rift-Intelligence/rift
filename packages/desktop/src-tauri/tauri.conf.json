@@ -5,7 +5,7 @@
   "identifier": "security.rift.desktop",
   "build": {
     "beforeDevCommand": "",
-    "devUrl": "http://localhost:3000",
+    "devUrl": "http://localhost:3010",
     "beforeBuildCommand": "node scripts/build.js",
     "frontendDist": "../src"
   },
