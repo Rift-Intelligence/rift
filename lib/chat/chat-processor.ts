@@ -7,11 +7,7 @@ import {
   getMaxFilesLimitForMode,
   isSupportedImageMediaType,
 } from "@/lib/utils/file-utils";
-import {
-  isAnthropicModel,
-  resolveTierToProviderKey,
-  type ModelName,
-} from "@/lib/ai/providers";
+import { isAnthropicModel, type ModelName } from "@/lib/ai/providers";
 import { AUTH_DISCLAIMER, detectLang } from "@/lib/chat/auth-disclaimer";
 import {
   ABORTED_TOOL_ERROR_TEXT,
@@ -39,44 +35,21 @@ export const getMaxStepsForUser = (
  *   Gemini 3 Flash so vision/document parts are actually understood.
  * @returns Model name to use
  */
+// Single-model product: every user, every mode, every tier resolves to one
+// model. No tier selection is offered in the UI. Grok 4.3 is the single model —
+// the most capable PERMISSIVE model (it actually serves offensive-security
+// output). The literally-priciest models (Opus/Sonnet) are NOT used: Anthropic's
+// real-time cyber content-filter empties out pentest output, which would
+// reintroduce the exact refusals this product depends on avoiding.
+const SINGLE_MODEL: ModelName = "model-grok-4.3";
+
 export function selectModel(
-  mode: ChatMode,
-  subscription: SubscriptionTier,
-  selectedModel?: SelectedModel,
-  hasImageOrPdf?: boolean,
+  _mode: ChatMode,
+  _subscription: SubscriptionTier,
+  _selectedModel?: SelectedModel,
+  _hasImageOrPdf?: boolean,
 ): ModelName {
-  const isAgent = isAgentMode(mode);
-  // ASK takes the cheap DeepSeek text path for free users (always) and for
-  // paid users only when no image/PDF is attached — DeepSeek is text-only,
-  // so we promote to Gemini 3 Flash when vision/document parts are present.
-  const askUsesDeepSeek =
-    !isAgent && (subscription === "free" || !hasImageOrPdf);
-
-  const autoModel: ModelName = isAgent
-    ? subscription === "free"
-      ? "agent-model-free"
-      : "agent-model"
-    : askUsesDeepSeek
-      ? "ask-model-free"
-      : "ask-model";
-
-  // Free users always route through the auto router; paid users may pick a
-  // tier explicitly. The tier id is mode-aware via resolveTierToProviderKey.
-  if (!selectedModel || selectedModel === "auto" || subscription === "free") {
-    return autoModel;
-  }
-
-  // Paid ASK Standard → Gemini 3 Flash (explicit key so getModelDisplayName
-  // shows the picked model). Previously routed text-only requests to DeepSeek
-  // V4 Flash, but DeepSeek is a Chinese model whose safety layer refuses
-  // security questions in Chinese — retired from every reachable route. Gemini
-  // is the same price ($0.5/$3) and does not Chinese-refuse.
-  if (selectedModel === "rift-standard" && !isAgent) {
-    return "model-gemini-3-flash";
-  }
-
-  const providerKey = resolveTierToProviderKey(selectedModel, mode);
-  return providerKey ?? autoModel;
+  return SINGLE_MODEL;
 }
 
 /**

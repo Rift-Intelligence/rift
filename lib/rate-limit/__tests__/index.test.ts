@@ -71,7 +71,7 @@ describe("checkRateLimit", () => {
   };
 
   describe("free users", () => {
-    it("should use the shared free rate limit with cost 2 in agent mode", async () => {
+    it("should use the shared free rate limit with cost 1 in agent mode", async () => {
       const { checkRateLimit } = getIsolatedModule();
 
       mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
@@ -84,7 +84,7 @@ describe("checkRateLimit", () => {
           expect.stringMatching(/^free_limit:user-123:free:\d+$/),
           "free_referral_bonus:user-123",
         ],
-        [10, 2, expect.any(Number)],
+        [1, 1, expect.any(Number)],
       );
       expect(mockCheckTokenBucketLimit).not.toHaveBeenCalled();
       expect(result.remaining).toBe(5);
@@ -103,7 +103,7 @@ describe("checkRateLimit", () => {
           expect.stringMatching(/^free_limit:user-123:free:\d+$/),
           "free_referral_bonus:user-123",
         ],
-        [10, 1, expect.any(Number)],
+        [1, 1, expect.any(Number)],
       );
       expect(mockCheckTokenBucketLimit).not.toHaveBeenCalled();
       expect(result.remaining).toBe(5);
@@ -115,8 +115,8 @@ describe("checkRateLimit", () => {
       mockCreateRedisClient.mockReturnValue(null);
 
       const result = await checkRateLimit("user-123", "ask", "free", 0);
-      expect(result.remaining).toBe(10);
-      expect(result.limit).toBe(10);
+      expect(result.remaining).toBe(1);
+      expect(result.limit).toBe(1);
       expect(result.rateLimitSkipped).toBe(true);
     });
 
