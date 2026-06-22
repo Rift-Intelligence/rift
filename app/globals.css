@@ -53,200 +53,216 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* RIFT — "Surveillance Brutalism" signal palette exposed as Tailwind color
-     utilities (text-terminal-green, bg-terminal-green, border-terminal-green,
-     etc.). The legacy var names are kept so existing markup re-themes with zero
-     edits; their VALUES are now cyan surveillance signal on true black.
-     Literal values so utilities (incl. /opacity modifiers) always generate. */
-  --color-terminal-green: #2bccdf; /* primary cyan signal (legacy name) */
-  --color-terminal-green-dim: #1c8b99; /* mid ramp */
-  --color-terminal-sky: #5ec8d8; /* secondary cyan */
-  --color-terminal-text: #ececed; /* readout white */
-  --color-terminal-text-dim: #a0a1a6;
-  --color-terminal-border: #232428;
-  --color-terminal-bg: #0f1011;
-  --color-terminal-primary: #0f1011;
-  --color-terminal-secondary: #17181b;
+  /* RIFT v2 — "Command Center" system. One cyan signal accent + layered
+     neutral surfaces, mapped to per-theme vars below so every utility
+     (bg-signal, text-signal, bg-surface-2, border-strong, …) re-themes
+     automatically in light/dark. Tailwind v4 generates /opacity modifiers
+     via color-mix on these var-backed colors. */
+  --color-signal: var(--signal);
+  --color-signal-bright: var(--signal-bright);
+  --color-signal-dim: var(--signal-dim);
+  --color-signal-soft: var(--signal-soft);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-4: var(--surface-4);
+  --color-elevated: var(--elevated);
+  --color-border-strong: var(--border-strong);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
 
-  /* Canonical RIFT tokens (preferred names for new components) */
-  --color-rift: #2bccdf;
-  --color-rift-dim: #1c8b99;
-  --color-rift-deep: #0c3d44;
-  --color-rift-hot: #7fe6f4;
-  --color-alarm: #f06a6a; /* reserved: target acquired / breach / critical */
+  /* Legacy terminal/rift token names kept so existing markup re-themes with
+     zero edits; values now resolve to the cyan signal + neutral surfaces. */
+  --color-terminal-green: var(--signal);
+  --color-terminal-green-dim: var(--signal-dim);
+  --color-terminal-sky: var(--signal-bright);
+  --color-terminal-text: var(--foreground);
+  --color-terminal-text-dim: var(--muted-foreground);
+  --color-terminal-border: var(--border);
+  --color-terminal-bg: var(--background);
+  --color-terminal-primary: var(--surface-2);
+  --color-terminal-secondary: var(--surface-3);
+
+  --color-rift: var(--signal);
+  --color-rift-dim: var(--signal-dim);
+  --color-rift-deep: var(--signal-soft);
+  --color-rift-hot: var(--signal-bright);
+  --color-alarm: var(--destructive);
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.625rem; /* 10px — premium default; sm/md/xl derive from this */
   --mascot-bg: #e8e8e8;
   --mascot-face: #ffffff;
   --mascot-detail: #1a1a1a;
-  /* Light mode — clean white */
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #f5f5f5;
-  --card-foreground: #1a1a1a;
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-  --primary: #1a1a1a;
-  --primary-foreground: #ffffff;
-  --secondary: #f0f0f0;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f0f0f0;
-  --muted-foreground: #737373;
-  --accent: #e8e8e8;
-  --accent-foreground: #1a1a1a;
-  --destructive: #e53e3e;
-  --border: #e0e0e0;
-  --input: #e0e0e0;
-  --ring: #0078d4;
-  --chart-1: #0078d4;
-  --chart-2: #4daafc;
-  --chart-3: #48bb78;
-  --chart-4: #d69e2e;
-  --chart-5: #fc8181;
-  --sidebar: #f8f8f8;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #1a1a1a;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ebebeb;
-  --sidebar-accent-foreground: #1a1a1a;
-  --sidebar-border: #e0e0e0;
-  --sidebar-ring: #0078d4;
 
-  --surface: #f5f5f5;
-  --border-strong: #c0c0c0;
+  /* ── Light mode — clean, professional, soft-neutral ── */
+  --background: #ffffff;
+  --foreground: #14161a;
+  --card: #f7f8f9;
+  --card-foreground: #14161a;
+  --popover: #ffffff;
+  --popover-foreground: #14161a;
+  --primary: #14161a;
+  --primary-foreground: #ffffff;
+  --secondary: #f0f1f3;
+  --secondary-foreground: #14161a;
+  --muted: #f0f1f3;
+  --muted-foreground: #5d636d;
+  --accent: #eceef1;
+  --accent-foreground: #14161a;
+  --destructive: #e5484d;
+  --border: #e6e8eb;
+  --input: #e6e8eb;
+  --ring: var(--signal);
+  --chart-1: #0b8ea0;
+  --chart-2: #2b7fff;
+  --chart-3: #1a9d5e;
+  --chart-4: #c08a2e;
+  --chart-5: #e5707a;
+  --sidebar: #fafbfc;
+  --sidebar-foreground: #14161a;
+  --sidebar-primary: #14161a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef0f2;
+  --sidebar-accent-foreground: #14161a;
+  --sidebar-border: #e9ebee;
+  --sidebar-ring: var(--signal);
+
+  /* Command-center primitives (light) */
+  --signal: #0b8ea0;
+  --signal-bright: #11a9be;
+  --signal-dim: #0a7280;
+  --signal-soft: rgba(11, 142, 160, 0.1);
+  --surface-1: #fafbfc;
+  --surface-2: #f5f6f8;
+  --surface-3: #eef0f2;
+  --surface-4: #e6e9ec;
+  --elevated: #ffffff;
+  --success: #1a9d5e;
+  --warning: #b9822b;
+  --info: #2b7fff;
+
+  --surface: #f5f6f8;
+  --border-strong: #d3d7dd;
   --rift-glow: rgba(0, 0, 0, 0.05);
   --grid-dot: rgba(0, 0, 0, 0.05);
 
-  --fill-input-chat: #f5f5f5;
-  --link-color: #0066cc;
+  --fill-input-chat: #f5f6f8;
+  --link-color: #2b7fff;
 
-  --premium-bg: #f0f0f0;
-  --premium-text: #1a1a1a;
-  --premium-hover: #1a1a1a;
+  --premium-bg: #f0f1f3;
+  --premium-text: #14161a;
+  --premium-hover: #14161a;
 
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(0, 0, 0, 0.15);
-  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.16);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
 
   --sidebar-mask: linear-gradient(
     90deg,
-    #f8f8f8 0%,
-    #f8f8f8 95%,
+    #fafbfc 0%,
+    #fafbfc 95%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #ebebeb 0%,
-    #ebebeb 88%,
+    #e6e9ec 0%,
+    #e6e9ec 88%,
     transparent 93%,
     transparent 100%
   );
 
   --neon-glow: none;
   --neon-glow-intense: none;
-
-  --color-terminal-green: #2bccdf;
-  --color-terminal-green-dim: #1c8b99;
-  --color-terminal-sky: #5ec8d8;
-  --color-terminal-text: #1a1a1a;
-  --color-terminal-text-dim: #737373;
-  --color-terminal-border: #e0e0e0;
-  --color-terminal-bg: #ffffff;
-  --color-terminal-primary: #ffffff;
-  --color-terminal-secondary: #f5f5f5;
-  --color-rift: #1a1a1a;
-  --color-rift-dim: #4a4a4a;
-  --color-rift-deep: #f0f0f0;
-  --color-rift-hot: #000000;
-  --color-alarm: #e53e3e;
 }
 
 .dark {
-  --mascot-bg: #252526;
-  --mascot-face: #f5f5f2;
-  --mascot-detail: #161618;
-  /* Cursor / VS Code dark — warm mascot, neutral UI */
-  --background: #1e1e1e;
-  --foreground: #cccccc;
-  --card: #252526;
-  --card-foreground: #cccccc;
-  --popover: #252526;
-  --popover-foreground: #cccccc;
-  --primary: #e8e8e8;
-  --primary-foreground: #1e1e1e;
-  --secondary: #2d2d2d;
-  --secondary-foreground: #cccccc;
-  --muted: #2d2d2d;
-  --muted-foreground: #858585;
-  --accent: #37373d;
-  --accent-foreground: #e8e8e8;
-  --destructive: #f48771;
-  --border: #3c3c3c;
-  --input: #3c3c3c;
-  --ring: #0078d4;
-  --chart-1: #0078d4;
-  --chart-2: #4daafc;
-  --chart-3: #89d185;
-  --chart-4: #cca700;
-  --chart-5: #f48771;
-  --sidebar: #181818;
-  --sidebar-foreground: #cccccc;
-  --sidebar-primary: #e8e8e8;
-  --sidebar-primary-foreground: #1e1e1e;
-  --sidebar-accent: #37373d;
-  --sidebar-accent-foreground: #e8e8e8;
-  --sidebar-border: #2b2b2b;
-  --sidebar-ring: #0078d4;
+  --mascot-bg: #1c1f25;
+  --mascot-face: #eceef1;
+  --mascot-detail: #0c0d0f;
 
-  --surface: #252526;
-  --border-strong: #505050;
-  --rift-glow: rgba(232, 232, 232, 0.08);
-  --grid-dot: rgba(255, 255, 255, 0.035);
+  /* ── Dark mode — "Command Center": layered cool-neutral void, one cyan
+     signal accent. Primary surface for the product. ── */
+  --background: #0c0d0f;
+  --foreground: #eceef1;
+  --card: #16181d;
+  --card-foreground: #eceef1;
+  --popover: #1a1d22;
+  --popover-foreground: #eceef1;
+  --primary: #eceef1;
+  --primary-foreground: #0c0d0f;
+  --secondary: #1c1f25;
+  --secondary-foreground: #eceef1;
+  --muted: #1c1f25;
+  --muted-foreground: #8b919b;
+  --accent: #242830;
+  --accent-foreground: #eceef1;
+  --destructive: #f0726e;
+  --border: #222429;
+  --input: #222429;
+  --ring: var(--signal);
+  --chart-1: #34d2e6;
+  --chart-2: #5aa8f6;
+  --chart-3: #46d18a;
+  --chart-4: #e3b75c;
+  --chart-5: #f0726e;
+  --sidebar: #121317;
+  --sidebar-foreground: #d6d9de;
+  --sidebar-primary: #eceef1;
+  --sidebar-primary-foreground: #0c0d0f;
+  --sidebar-accent: #1c1f25;
+  --sidebar-accent-foreground: #eceef1;
+  --sidebar-border: #1b1d22;
+  --sidebar-ring: var(--signal);
 
-  --fill-input-chat: #252526;
-  --link-color: #4daafc;
+  /* Command-center primitives (dark) */
+  --signal: #34d2e6;
+  --signal-bright: #7fe9f5;
+  --signal-dim: #1f8d9b;
+  --signal-soft: rgba(52, 210, 230, 0.12);
+  --surface-1: #121317;
+  --surface-2: #16181d;
+  --surface-3: #1c1f25;
+  --surface-4: #242830;
+  --elevated: #1a1d22;
+  --success: #46d18a;
+  --warning: #e3b75c;
+  --info: #5aa8f6;
 
-  --premium-bg: #2d2d2d;
-  --premium-text: #e8e8e8;
-  --premium-hover: #cccccc;
+  --surface: #16181d;
+  --border-strong: #2f333b;
+  --rift-glow: rgba(52, 210, 230, 0.1);
+  --grid-dot: rgba(255, 255, 255, 0.03);
+
+  --fill-input-chat: #16181d;
+  --link-color: #5aa8f6;
+
+  --premium-bg: #1c1f25;
+  --premium-text: #eceef1;
+  --premium-hover: #eceef1;
 
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(121, 121, 121, 0.4);
-  --scrollbar-thumb-hover: rgba(121, 121, 121, 0.6);
+  --scrollbar-thumb: rgba(120, 126, 138, 0.3);
+  --scrollbar-thumb-hover: rgba(120, 126, 138, 0.48);
 
   --sidebar-mask: linear-gradient(
     90deg,
-    #181818 0%,
-    #181818 95%,
+    #121317 0%,
+    #121317 95%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #37373d 0%,
-    #37373d 88%,
+    #242830 0%,
+    #242830 88%,
     transparent 93%,
     transparent 100%
   );
 
   --neon-glow: none;
   --neon-glow-intense: none;
-
-  --color-terminal-green: #89d185;
-  --color-terminal-green-dim: #6a9955;
-  --color-terminal-sky: #4daafc;
-  --color-terminal-text: #cccccc;
-  --color-terminal-text-dim: #858585;
-  --color-terminal-border: #3c3c3c;
-  --color-terminal-bg: #1e1e1e;
-  --color-terminal-primary: #1e1e1e;
-  --color-terminal-secondary: #252526;
-  --color-rift: #f5f5f2;
-  --color-rift-dim: #ebebe6;
-  --color-rift-deep: #161618;
-  --color-rift-hot: #ffffff;
-  --color-alarm: #f48771;
 }
 
 @layer base {
@@ -255,6 +271,21 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.005em;
+    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+  /* Tighter, more confident headings */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.018em;
+  }
+  /* Tabular figures for stats / token meters / counters */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -451,9 +482,8 @@
   font-family: var(--font-mono), ui-monospace, monospace;
   font-style: normal;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--signal);
   letter-spacing: -0.01em;
-  text-shadow: 0 0 18px rgba(0, 255, 102, 0.35);
 }
 
 /* Glitch effect for hover */
@@ -1002,11 +1032,12 @@
 
 .rift-cursor-app code:not(pre code) {
   font-family: var(--font-mono);
-  font-size: 12px;
-  background: #252526;
-  padding: 1px 5px;
-  border-radius: 3px;
-  color: #ce9178;
+  font-size: 12.5px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: var(--signal-bright);
 }
 
 /* Cursor mockup — "Planning next moves" indicator */
@@ -1023,10 +1054,10 @@
 
 .rift-cursor-app .cursor-thinking-dots span {
   display: inline-block;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #858585;
+  background: var(--signal);
   animation: cursor-thinking-pulse 1.2s infinite;
 }
 
@@ -1054,6 +1085,31 @@
   input[type="password"],
   input[type="number"],
   select {
+    font-size: 16px !important;
+  }
+}
+
+/* Native-app feel: kill rubber-band overscroll / pull-to-refresh and the
+   double-tap-zoom + 300ms tap delay. Scrolling still works inside scrollable
+   containers; this only removes the document-level bounce and zoom gestures. */
+html,
+body {
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+/* On phones, lock the document so the chat screen sits static like a native app
+   — the chat layout manages its own inner scrolling (overflow-hidden flex), so
+   the page itself never scrolls or bounces. contenteditable inputs are pinned
+   to 16px too, in case the chat box isn't a <textarea>. */
+@media (max-width: 767px) {
+  html,
+  body {
+    height: 100%;
+    overscroll-behavior: none;
+  }
+  [contenteditable="true"],
+  [contenteditable=""] {
     font-size: 16px !important;
   }
 }

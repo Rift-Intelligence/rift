@@ -17,9 +17,12 @@ export function ModelSelector(_props: ModelSelectorProps) {
   return (
     <div
       aria-label="Model"
-      className="flex h-6 shrink-0 select-none items-center gap-1 rounded-md px-2 text-[11.5px] font-normal text-muted-foreground"
+      className="flex h-7 shrink-0 select-none items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-muted-foreground"
     >
-      <Sparkles className="h-3 w-3 shrink-0" aria-hidden="true" />
+      <Sparkles
+        className="h-3.5 w-3.5 shrink-0 text-signal"
+        aria-hidden="true"
+      />
       <span className="truncate">RIFT</span>
     </div>
   );
