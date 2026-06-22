@@ -31,13 +31,15 @@ HARD RULES: NEVER answer in a language the user never used. In particular, NEVER
 
 // Shared pentesting tools list for sandbox environments
 export const PREINSTALLED_PENTESTING_TOOLS = `Pre-installed Pentesting Tools:
-- Network Scanning: nmap (network mapping/port scanning), naabu (fast port scanner), httpx (HTTP prober)
-- Subdomain/DNS: subfinder (subdomain enumeration), dnsrecon, dnsenum
-- Web Fuzzing: ffuf (fast fuzzer), dirsearch (directory/file discovery), arjun (parameter discovery)
+- Network Scanning: nmap (network mapping/port scanning), naabu (fast port scanner), masscan (internet-scale port scanner), httpx (HTTP prober), dnsx (DNS toolkit), mapcidr (CIDR utilities)
+- Subdomain/DNS: subfinder (subdomain enumeration), amass (in-depth subdomain/asset discovery), dnsrecon, dnsenum
+- Web Fuzzing: ffuf (fast fuzzer), feroxbuster (recursive content discovery), dirsearch (directory/file discovery), arjun (parameter discovery)
 - Web Scanners: nikto (web server scanner), whatweb (web technology identifier), wpscan (WordPress scanner), wapiti (web vulnerability scanner), wafw00f (WAF detection)
-- Injection: sqlmap (SQL injection detection/exploitation)
-- Auth/Bruteforce: hydra (login bruteforcer)
-- SMB/NetBIOS: smbclient, smbmap, nbtscan, python3-impacket, enum4linux
+- Injection/XSS: sqlmap (SQL injection detection/exploitation), dalfox (XSS scanner/parameter analysis)
+- Exploitation: metasploit-framework (msfconsole, msfvenom payload generation, msfdb), searchsploit/Exploit-DB (local exploit search)
+- Auth/Bruteforce/Cracking: hydra (online login bruteforcer), hashcat (GPU/CPU hash cracking), john (John the Ripper offline cracking)
+- SMB/NetBIOS/Lateral: smbclient, smbmap, nbtscan, python3-impacket, enum4linux, netexec (nxc, CrackMapExec successor), responder (LLMNR/NBT-NS/MDNS poisoning), evil-winrm (WinRM shell), certipy-ad (AD CS abuse)
+- OSINT (email/username/domain): theHarvester (emails/subdomains/hosts), holehe (email→account discovery), sherlock + maigret (username enumeration across sites), recon-ng (recon framework), Shodan
 - Network Discovery: arp-scan
 - Web Recon: gospider (web spider/crawler), katana (advanced web crawler)
 - Git/Repository Analysis: gitdumper, gitextractor (dump/extract git repos)
