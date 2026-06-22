@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { toast } from "sonner";
-import { DESKTOP_UPDATE_URL, navigateToAuth } from "../useTauri";
+import { navigateToAuth } from "../useTauri";
 
 jest.mock("@tauri-apps/api/core", () => ({
   invoke: jest.fn(),
@@ -64,18 +64,14 @@ describe("navigateToAuth", () => {
     expect(mockToastError).not.toHaveBeenCalled();
   });
 
-  it("opens the latest desktop release when the secure auth bridge is missing", async () => {
+  it("falls back to in-webview sign-in when the desktop auth bridge is missing", async () => {
     mockInvoke.mockRejectedValue(new Error("unknown command"));
 
     await navigateToAuth("/login");
 
-    expect(mockToastError).toHaveBeenCalledWith(
-      "Update RIFT Desktop to sign in",
-      expect.objectContaining({
-        description: expect.stringContaining("secure sign-in bridge"),
-      }),
-    );
-    expect(mockOpenUrl).toHaveBeenCalledTimes(1);
-    expect(mockOpenUrl).toHaveBeenCalledWith(DESKTOP_UPDATE_URL);
+    // No "update your desktop" toast and no external browser bridge — sign-in
+    // happens directly inside the app webview (Password auth needs no redirect).
+    expect(mockToastError).not.toHaveBeenCalled();
+    expect(mockOpenUrl).not.toHaveBeenCalled();
   });
 });

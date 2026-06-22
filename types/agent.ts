@@ -39,6 +39,8 @@ export interface SandboxManager {
   isSandboxUnavailable(): boolean;
   /** Whether the effective sandbox can create interactive PTY sessions. */
   supportsInteractivePty?(): Promise<boolean>;
+  /** True when an E2B sandbox instance is already booted and cached (warm). False during cold start. */
+  isE2BSandboxBooted?(): boolean;
 }
 
 export interface SandboxBootInfo {

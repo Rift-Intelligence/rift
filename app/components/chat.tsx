@@ -22,6 +22,7 @@ import Footer from "./Footer";
 import { useMessageScroll } from "../hooks/useMessageScroll";
 import { useChatHandlers } from "../hooks/useChatHandlers";
 import { useGlobalState } from "../contexts/GlobalState";
+import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 import { useInputApi } from "../contexts/InputContext";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useDocumentDragAndDrop } from "../hooks/useDocumentDragAndDrop";
@@ -58,6 +59,7 @@ import { parseRateLimitWarning } from "@/lib/utils/parse-rate-limit-warning";
 import Loading from "@/components/ui/loading";
 
 import { HackingSuggestions } from "./HackingSuggestions";
+import { RiftBrandBar } from "./rift/RiftBrandBar";
 
 // --- Streaming ephemeral state reducer ---
 // Consolidates high-frequency streaming state updates into a single dispatch
@@ -192,6 +194,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   const params = useParams();
   const routeChatId = params?.id as string | undefined;
   const router = useRouter();
+  const { basePath } = useAppShell();
   const isMobile = useIsMobile();
   const { setDataStream, setIsAutoResuming } = useDataStreamDispatch();
   const [streamingState, dispatchStreaming] = useReducer(
@@ -617,7 +620,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
       if (!isExistingChatRef.current && !isTemporaryChat) {
         // Update URL without full navigation so this Chat stays mounted and
         // status can transition to "ready" (stop button → send button).
-        window.history.replaceState({}, "", `/c/${chatId}`);
+        window.history.replaceState({}, "", chatRoute(basePath, chatId));
         removeDraft("new");
         setIsExistingChat(true);
       }
@@ -1119,7 +1122,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
         return;
       }
       initializeChat(newChatId);
-      router.push(`/c/${newChatId}`);
+      router.push(chatRoute(basePath, newChatId));
     } catch (error) {
       console.error("Failed to branch chat:", error);
       toast.error("Failed to branch chat. Please try again.");
@@ -1189,7 +1192,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             : !!chatData?.active_stream_id || !!chatData?.active_trigger_run_id
         }
       />
-      <div className="flex min-h-0 flex-1 w-full flex-col bg-transparent overflow-hidden">
+      <div className="flex min-h-0 flex-1 w-full flex-col bg-transparent overflow-x-hidden">
         <div className="flex min-h-0 flex-1 min-w-0 relative">
           {/* Left side - Chat content */}
           <div className="flex min-h-0 flex-col flex-1 min-w-0">
@@ -1211,41 +1214,14 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
               {/* Terminal titlebar with the mascot RIFT — pinned to the top of
                   the terminal; messages scroll beneath it and never overlap. */}
               {!isChatNotFound && (
-                <div className="terminal-titlebar terminal-border relative z-20 mx-auto mt-2 flex h-10 w-full max-w-full items-center gap-2.5 overflow-hidden px-3 sm:max-w-[768px]">
-                  <span className="text-xs text-primary">▸</span>
-                  <span className="truncate text-xs text-terminal-green/80">
-                    root@rift: ~/session
-                  </span>
-                  {/* session mode: normal vs incognito (new chats only) */}
-                  {!isExistingChat && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setTemporaryChatsEnabled(!temporaryChatsEnabled)
-                      }
-                      className="ml-auto flex items-center gap-1.5 border border-sidebar-border px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-                      aria-pressed={temporaryChatsEnabled}
-                      title="Toggle incognito (temporary) session"
-                    >
-                      <span
-                        className={`inline-block size-1.5 rounded-full ${
-                          temporaryChatsEnabled
-                            ? "bg-muted-foreground"
-                            : "bg-primary rift-live"
-                        }`}
-                      />
-                      {temporaryChatsEnabled ? "incognito" : "normal"}
-                    </button>
-                  )}
-                  <span
-                    className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-primary ${
-                      isExistingChat ? "ml-auto" : ""
-                    }`}
-                  >
-                    <span className="inline-block size-1.5 rounded-full bg-primary rift-live" />
-                    watching
-                  </span>
-                </div>
+                <RiftBrandBar
+                  cwd="~/session"
+                  status={
+                    !isExistingChat && temporaryChatsEnabled
+                      ? { label: "incognito", tone: "muted" }
+                      : { label: "sandbox ready", tone: "ok" }
+                  }
+                />
               )}
               {/* Messages area */}
               {isChatNotFound ? (
@@ -1259,6 +1235,14 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                         This chat doesn&apos;t exist or you don&apos;t have
                         permission to view it.
                       </p>
+                      <a
+                        href="/"
+                        className="mt-6 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-5 py-2.5 font-mono text-sm uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                      >
+                        <span aria-hidden>$</span>
+                        Start new session
+                        <span aria-hidden>▸</span>
+                      </a>
                     </div>
                   </div>
                 </div>

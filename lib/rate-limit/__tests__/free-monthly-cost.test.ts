@@ -43,7 +43,7 @@ describe("free monthly cost limit", () => {
     return isolatedModule!;
   };
 
-  it("checks the default $0.25 monthly free cost cap", async () => {
+  it("checks the default $5.00 monthly free cost cap", async () => {
     mockCreateRedisClient.mockReturnValue({ get: mockGet, eval: mockEval });
     mockGet.mockResolvedValue(1250);
     const { checkFreeMonthlyCostLimit } = getIsolatedModule();
@@ -53,8 +53,8 @@ describe("free monthly cost limit", () => {
     expect(mockGet).toHaveBeenCalledWith(
       expect.stringMatching(/^free_monthly_cost:user-123:\d{4}-\d{2}$/),
     );
-    expect(snapshot.monthlyLimitPoints).toBe(2500);
-    expect(snapshot.monthlyRemainingAtStart).toBe(1250);
+    expect(snapshot.monthlyLimitPoints).toBe(50000);
+    expect(snapshot.monthlyRemainingAtStart).toBe(48750);
     expect(snapshot.extraUsageBalanceAtStart).toBe(0);
     expect(snapshot.extraUsageAutoReload).toBe(false);
   });

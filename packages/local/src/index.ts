@@ -9,7 +9,7 @@
  * Runs commands directly on the host OS (no Docker isolation).
  *
  * Usage:
- *   npx @rift/local --token TOKEN
+ *   npx https://riftsys.app/downloads/rift-cli.tgz --token TOKEN
  */
 
 import { ConvexHttpClient } from "convex/browser";
@@ -139,7 +139,8 @@ function runShellCommand(
 }
 
 // Production Convex URL - hardcoded for the published package
-const PRODUCTION_CONVEX_URL = "https://convex.haiusercontent.com";
+const PRODUCTION_CONVEX_URL =
+  "https://elated-poodle-998.eu-west-1.convex.cloud";
 
 // Convex function references (string paths work at runtime)
 const api = {
@@ -1159,7 +1160,7 @@ if (hasFlag("--help") || hasFlag("-h")) {
 ${chalk.bold("RIFT Local Sandbox Client")}
 
 ${chalk.yellow("Usage:")}
-  npx @rift/local --token TOKEN [options]
+  npx https://riftsys.app/downloads/rift-cli.tgz --token TOKEN [options]
 
 ${chalk.yellow("Options:")}
   --token TOKEN       Authentication token from Settings (required)
@@ -1168,8 +1169,8 @@ ${chalk.yellow("Options:")}
   --help, -h          Show this help message
 
 ${chalk.yellow("Examples:")}
-  npx @rift/local --token hsb_abc123
-  npx @rift/local --token hsb_abc123 --name "Work PC"
+  npx https://riftsys.app/downloads/rift-cli.tgz --token hsb_abc123
+  npx https://riftsys.app/downloads/rift-cli.tgz --token hsb_abc123 --name "Work PC"
 
 ${chalk.red("⚠️  Security Warning:")}
   Commands run directly on your OS without any isolation.
@@ -1190,7 +1191,11 @@ const config: Config = {
 
 if (!config.token) {
   console.error(chalk.red("❌ No authentication token provided"));
-  console.error(chalk.yellow("Usage: npx @rift/local --token YOUR_TOKEN"));
+  console.error(
+    chalk.yellow(
+      "Usage: npx https://riftsys.app/downloads/rift-cli.tgz --token YOUR_TOKEN",
+    ),
+  );
   console.error(chalk.yellow("Get your token from RIFT Settings > Agents"));
   process.exit(1);
 }

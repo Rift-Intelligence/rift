@@ -1,40 +1,66 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { ChatLayout } from "@/app/components/ChatLayout";
+import {
+  AppShellProvider,
+  type AppShellVariant,
+} from "@/app/contexts/AppShellContext";
 import Loading from "@/components/ui/loading";
 
-const fullWidthShell = (
-  <div className="h-dvh min-h-0 flex flex-col bg-transparent overflow-hidden">
-    <div className="flex-1 flex items-center justify-center min-h-0">
-      <Loading />
+function shellVariant(pathname: string): AppShellVariant {
+  return pathname.startsWith("/studio") ? "studio" : "glass";
+}
+
+function shellClass(variant: AppShellVariant) {
+  return variant === "studio" ? "app-studio-shell" : "app-rift2-shell";
+}
+
+function LoadingShell({ variant }: { variant: AppShellVariant }) {
+  return (
+    <div
+      className={`${shellClass(variant)} flex h-dvh min-h-0 flex-col overflow-hidden`}
+    >
+      <div className="flex min-h-0 flex-1 items-center justify-center">
+        <Loading />
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 /**
- * Shared layout for / and /c/[id]. Renders the Chat Sidebar only when authenticated
- * so it stays mounted across navigations within the group. AuthLoading and
- * Unauthenticated get a full-width shell (no sidebar).
+ * Shared layout for /, /c/[id], and /studio/*. Renders the Chat Sidebar only when
+ * authenticated so it stays mounted across navigations within the group.
  */
 export default function ChatRouteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const variant = shellVariant(pathname);
+  const rootClass = shellClass(variant);
+
   return (
-    <>
-      <AuthLoading>{fullWidthShell}</AuthLoading>
+    <AppShellProvider variant={variant}>
+      <AuthLoading>
+        <LoadingShell variant={variant} />
+      </AuthLoading>
       <Unauthenticated>
-        <div className="h-dvh min-h-0 flex flex-col bg-transparent overflow-hidden">
+        <div
+          className={`${rootClass} flex h-dvh min-h-0 flex-col overflow-hidden`}
+        >
           {children}
         </div>
       </Unauthenticated>
       <Authenticated>
-        <div className="h-dvh min-h-0 flex flex-col bg-transparent overflow-hidden">
+        <div
+          className={`${rootClass} flex h-dvh min-h-0 flex-col overflow-hidden`}
+        >
           <ChatLayout>{children}</ChatLayout>
         </div>
       </Authenticated>
-    </>
+    </AppShellProvider>
   );
 }

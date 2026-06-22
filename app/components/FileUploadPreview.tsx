@@ -111,7 +111,7 @@ export const FileUploadPreview = ({
                 data-testid="attached-file"
               >
                 <div
-                  className={`relative overflow-hidden border rounded-2xl ${
+                  className={`relative overflow-hidden border rounded-lg ${
                     filePreview.error
                       ? "border-red-500 border-2 bg-red-50 dark:bg-red-950/20"
                       : isImageFile(filePreview.file)
@@ -190,7 +190,9 @@ export const FileUploadPreview = ({
                         <div className="flex flex-row items-center gap-2">
                           <div
                             className={`relative h-10 w-10 shrink-0 overflow-hidden rounded-lg flex items-center justify-center ${
-                              filePreview.error ? "bg-red-500" : "bg-[#FF5588]"
+                              filePreview.error
+                                ? "bg-destructive"
+                                : "bg-surface-3"
                             }`}
                           >
                             {filePreview.uploading ? (

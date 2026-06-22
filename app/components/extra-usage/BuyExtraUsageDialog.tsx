@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Bitcoin } from "lucide-react";
+import { Bitcoin, CreditCard } from "lucide-react";
 import {
   TOKEN_PACKAGES,
   MIN_CUSTOM_TOPUP_USD,
@@ -24,6 +24,7 @@ type BuyExtraUsageDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onPurchase: (amountDollars: number) => Promise<void>;
+  onCardPurchase?: (amountDollars: number) => Promise<void>;
   isLoading: boolean;
   title?: string;
   description?: string;
@@ -32,23 +33,21 @@ type BuyExtraUsageDialogProps = {
 
 const MAX_AMOUNT = 999_999;
 
-/** Format number with commas (e.g., 1000 -> 1,000) */
 const formatWithCommas = (value: string): string => {
-  // Remove existing commas
   const cleanValue = value.replace(/,/g, "");
-  // Format with commas (whole dollars only)
   return cleanValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-/** Remove commas for parsing */
 const removeCommas = (value: string): string => value.replace(/,/g, "");
 
-/** Total displayed tokens (base + bonus) for a dollar amount. */
 const totalTokensForDollars = (dollars: number): number =>
   dollars * POINTS_PER_DOLLAR + bonusPointsForDollars(dollars);
 
+type PaymentMethod = "card" | "crypto";
+
 type ContentProps = {
   onPurchase: (amountDollars: number) => Promise<void>;
+  onCardPurchase?: (amountDollars: number) => Promise<void>;
   isLoading: boolean;
   onClose: () => void;
   title: string;
@@ -58,16 +57,19 @@ type ContentProps = {
 
 const BuyExtraUsageDialogContent = ({
   onPurchase,
+  onCardPurchase,
   isLoading,
   title,
   description,
   lineItemLabel,
 }: ContentProps) => {
-  // Selected package id, or "custom" for a free-form amount.
   const [selected, setSelected] = useState<TokenPackage["id"] | "custom">(
     "plus",
   );
   const [customAmount, setCustomAmount] = useState<string>("50");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    onCardPurchase ? "card" : "crypto",
+  );
 
   const selectedPackage =
     selected === "custom"
@@ -102,8 +104,14 @@ const BuyExtraUsageDialogContent = ({
 
   const handlePurchase = async () => {
     if (!isValidAmount) return;
-    await onPurchase(amountDollars);
+    if (paymentMethod === "card" && onCardPurchase) {
+      await onCardPurchase(amountDollars);
+    } else {
+      await onPurchase(amountDollars);
+    }
   };
+
+  const hasCard = !!onCardPurchase;
 
   return (
     <>
@@ -211,33 +219,72 @@ const BuyExtraUsageDialogContent = ({
             </span>
           </div>
         </div>
-        <div className="mt-2">
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-4">
-            <span className="text-sm font-medium">Payment method</span>
-            <p className="flex items-center gap-2 text-sm">
-              <Bitcoin className="h-5 w-5 text-primary" />
-              Crypto (BTC, ETH, USDT…)
-            </p>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            You&apos;ll be taken to a secure NowPayments page to pay. Tokens are
-            credited once the payment is confirmed on-chain (usually a few
-            minutes).
+
+        {/* Payment method selector */}
+        <div>
+          {hasCard && (
+            <div className="mb-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("card")}
+                aria-pressed={paymentMethod === "card"}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors",
+                  paymentMethod === "card"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50",
+                )}
+              >
+                <CreditCard className="h-4 w-4" />
+                Card
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("crypto")}
+                aria-pressed={paymentMethod === "crypto"}
+                className={cn(
+                  "flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 text-sm font-medium transition-colors",
+                  paymentMethod === "crypto"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50",
+                )}
+              >
+                <Bitcoin className="h-4 w-4" />
+                Crypto
+              </button>
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            {paymentMethod === "card"
+              ? "You'll be redirected to Stripe for secure card payment."
+              : "BTC, ETH, USDT… Tokens are credited after on-chain confirmation (usually a few minutes)."}
           </p>
+
+          {!hasCard && (
+            <div className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+              <CreditCard className="h-3.5 w-3.5" />
+              <span>
+                Credit card payments —{" "}
+                <span className="font-medium text-foreground">coming soon</span>
+              </span>
+            </div>
+          )}
         </div>
-        <div className="flex flex-col gap-3">
-          <Button
-            onClick={handlePurchase}
-            disabled={isLoading || !isValidAmount}
-            className="w-full h-11"
-          >
-            {isLoading
-              ? "Processing..."
-              : isValidAmount
-                ? `Pay with crypto — ${formatTokens(totalTokens)} tokens`
-                : "Buy tokens"}
-          </Button>
-        </div>
+
+        <Button
+          onClick={handlePurchase}
+          disabled={isLoading || !isValidAmount}
+          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-[15px] shadow-md hover:opacity-90 hover:bg-primary disabled:opacity-50"
+        >
+          {isLoading
+            ? "Processing…"
+            : isValidAmount
+              ? paymentMethod === "card"
+                ? `Pay $${amountDollars} with card`
+                : `Pay with crypto — ${formatTokens(totalTokens)} tokens`
+              : "Buy tokens"}
+        </Button>
       </div>
     </>
   );
@@ -247,21 +294,19 @@ const BuyExtraUsageDialog = ({
   open,
   onOpenChange,
   onPurchase,
+  onCardPurchase,
   isLoading,
   title = "Buy tokens",
   description = "Top up your token balance. Bigger packs include bonus tokens.",
   lineItemLabel = "Tokens",
 }: BuyExtraUsageDialogProps) => {
-  const handleOpenChange = (newOpen: boolean) => {
-    onOpenChange(newOpen);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         {open && (
           <BuyExtraUsageDialogContent
             onPurchase={onPurchase}
+            onCardPurchase={onCardPurchase}
             isLoading={isLoading}
             onClose={() => onOpenChange(false)}
             title={title}

@@ -12,6 +12,7 @@ describe("checkRateLimit", () => {
   const mockCheckTokenBucketLimit = jest.fn();
   const mockCheckBalanceLimit = jest.fn();
   const mockCreateRedisClient = jest.fn();
+  const mockCheckFreeMonthlyCostLimit = jest.fn();
 
   beforeEach(() => {
     jest.resetModules();
@@ -19,6 +20,16 @@ describe("checkRateLimit", () => {
 
     // Default mock responses
     mockEvalFn.mockResolvedValue([1, 5]);
+
+    // Default: monthly free budget has room (not exhausted).
+    mockCheckFreeMonthlyCostLimit.mockResolvedValue({
+      monthlyLimitPoints: 2500,
+      monthlyRemainingAtStart: 2500,
+      monthlyResetTime: new Date(),
+      extraUsageBalanceAtStart: 0,
+      extraUsageAutoReload: false,
+      monthlyExhausted: false,
+    });
 
     mockCheckTokenBucketLimit.mockResolvedValue({
       remaining: 5000,
@@ -48,6 +59,11 @@ describe("checkRateLimit", () => {
         getSubscriptionPrice: jest.fn(),
       }));
 
+      jest.doMock("../free-monthly-cost", () => ({
+        checkFreeMonthlyCostLimit: mockCheckFreeMonthlyCostLimit,
+        recordFreeMonthlyCost: jest.fn(),
+      }));
+
       isolatedModule = require("../index");
     });
 
@@ -55,7 +71,7 @@ describe("checkRateLimit", () => {
   };
 
   describe("free users", () => {
-    it("should use the shared free rate limit with cost 2 in agent mode", async () => {
+    it("should use the shared free rate limit with cost 1 in agent mode", async () => {
       const { checkRateLimit } = getIsolatedModule();
 
       mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
@@ -68,7 +84,7 @@ describe("checkRateLimit", () => {
           expect.stringMatching(/^free_limit:user-123:free:\d+$/),
           "free_referral_bonus:user-123",
         ],
-        [10, 2, expect.any(Number)],
+        [1, 1, expect.any(Number)],
       );
       expect(mockCheckTokenBucketLimit).not.toHaveBeenCalled();
       expect(result.remaining).toBe(5);
@@ -87,7 +103,7 @@ describe("checkRateLimit", () => {
           expect.stringMatching(/^free_limit:user-123:free:\d+$/),
           "free_referral_bonus:user-123",
         ],
-        [10, 1, expect.any(Number)],
+        [1, 1, expect.any(Number)],
       );
       expect(mockCheckTokenBucketLimit).not.toHaveBeenCalled();
       expect(result.remaining).toBe(5);
@@ -99,8 +115,8 @@ describe("checkRateLimit", () => {
       mockCreateRedisClient.mockReturnValue(null);
 
       const result = await checkRateLimit("user-123", "ask", "free", 0);
-      expect(result.remaining).toBe(10);
-      expect(result.limit).toBe(10);
+      expect(result.remaining).toBe(1);
+      expect(result.limit).toBe(1);
       expect(result.rateLimitSkipped).toBe(true);
     });
 
@@ -159,6 +175,51 @@ describe("checkRateLimit", () => {
       } catch (error: any) {
         expect(error.cause).toContain("out of tokens");
       }
+    });
+
+    it("should fall through to the prepaid balance when the MONTHLY free cap is exhausted, without consuming the daily window", async () => {
+      const { checkRateLimit } = getIsolatedModule();
+
+      mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
+      // Daily window still has room — but it must NOT be consumed because the
+      // monthly cap is spent and we route straight to balance.
+      mockEvalFn.mockResolvedValue([1, 5]);
+      mockCheckFreeMonthlyCostLimit.mockResolvedValue({
+        monthlyLimitPoints: 2500,
+        monthlyRemainingAtStart: 0,
+        monthlyResetTime: new Date(),
+        extraUsageBalanceAtStart: 0,
+        extraUsageAutoReload: false,
+        monthlyExhausted: true,
+      });
+      mockCheckBalanceLimit.mockResolvedValue({
+        remaining: 4900,
+        resetTime: new Date(),
+        limit: 5000,
+        pointsDeducted: 100,
+        extraUsagePointsDeducted: 100,
+        servedFrom: "balance",
+      });
+
+      const cfg = { enabled: true, hasBalance: true, autoReloadEnabled: false };
+      const result = await checkRateLimit(
+        "user-123",
+        "ask",
+        "free",
+        1000,
+        cfg,
+        "model-x",
+      );
+
+      expect(mockCheckBalanceLimit).toHaveBeenCalledWith(
+        "user-123",
+        1000,
+        "model-x",
+        cfg,
+      );
+      // Daily sliding-window script must not run when the month is exhausted.
+      expect(mockEvalFn).not.toHaveBeenCalled();
+      expect(result.servedFrom).toBe("balance");
     });
   });
 

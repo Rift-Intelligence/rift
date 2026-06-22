@@ -35,17 +35,16 @@ describe("ModelSelector tier ↔ provider drift", () => {
     expect(resolveTierToProviderKey("rift-standard", "ask")).toBe(
       "model-gemini-3-flash",
     );
+    // Agent mode → Grok 4.3 (Chinese models refuse OSINT).
     expect(resolveTierToProviderKey("rift-standard", "agent")).toBe(
-      "model-kimi-k2.6",
+      "model-grok-4.3",
     );
   });
 
-  it("RIFT Pro and Max resolve to the same provider in both modes", () => {
-    expect(resolveTierToProviderKey("rift-pro", "ask")).toBe(
-      "model-kimi-k2.7-code",
-    );
+  it("RIFT Pro and Max resolve to Grok 4.3 in both modes", () => {
+    expect(resolveTierToProviderKey("rift-pro", "ask")).toBe("model-grok-4.3");
     expect(resolveTierToProviderKey("rift-pro", "agent")).toBe(
-      "model-kimi-k2.7-code",
+      "model-grok-4.3",
     );
     expect(resolveTierToProviderKey("rift-max", "ask")).toBe("model-grok-4.3");
     expect(resolveTierToProviderKey("rift-max", "agent")).toBe(

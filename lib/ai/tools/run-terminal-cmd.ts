@@ -42,6 +42,18 @@ import {
 
 const DEFAULT_STREAM_TIMEOUT_SECONDS = 60;
 const MAX_TIMEOUT_SECONDS = 600;
+
+// Bound the kill+recreate recovery path. A fresh sandbox that passes its health
+// check calls resetHealthFailures(), so the health-failure counter never
+// accumulates across the multiple commands of one request — without a separate
+// cap, a sandbox that keeps dying (e.g. an agent repeatedly filling the disk
+// with large outputs) would spiral through kill+recreate for many minutes with
+// no visible progress. This counter is NOT reset on transient success, so after
+// MAX_SANDBOX_RECREATES rebuilds in a single request we surface a clear,
+// actionable error instead. Keyed by sandboxManager so it persists across the
+// request's commands but resets naturally for the next request.
+const sandboxRecreateCounts = new WeakMap<object, number>();
+const MAX_SANDBOX_RECREATES = 3;
 // Once an interactive PTY emits its first bytes, treat `quietMs` of silence
 // as "settled" (prompt drew, REPL banner finished, etc.). Lets `bash`/`python3`
 // return in ~half a second instead of blocking the user-supplied timeout
@@ -187,6 +199,23 @@ In using these tools, adhere to the following guidelines:
           );
       };
       const drainEmitQueue = () => emitQueue;
+
+      // Emit a boot-progress line into the LiveTerminalTail so the user sees
+      // feedback during E2B cold start (3-8 min) instead of a blank chip.
+      // Only fires when the sandbox hasn't been provisioned yet this session.
+      let bootProgressCounter = 0;
+      const emitBootProgress = (text: string) => {
+        writer.write({
+          type: "data-terminal",
+          id: `boot-progress-${toolCallId}-${++bootProgressCounter}`,
+          data: {
+            terminal: text,
+            toolCallId,
+            action: "exec",
+          } as unknown as { terminal: string; toolCallId: string },
+        });
+      };
+
       // Calculate effective stream timeout (capped at MAX_TIMEOUT_SECONDS)
       // This controls how long we wait for output, not how long the command runs
       const effectiveStreamTimeout = Math.min(
@@ -211,6 +240,11 @@ In using these tools, adhere to the following guidelines:
       // ─── Interactive PTY exec branch ─────────────────────────────────
       if (interactive) {
         try {
+          if (!sandboxManager.isE2BSandboxBooted?.()) {
+            emitBootProgress(
+              "\x1b[33m⟳ Starting secure environment...\x1b[0m\r\n",
+            );
+          }
           const { sandbox } = await sandboxManager.getSandbox();
           const isCentrifugo = isCentrifugoSandbox(sandbox);
           const isE2B = isE2BSandbox(sandbox);
@@ -345,6 +379,11 @@ In using these tools, adhere to the following guidelines:
       }
 
       try {
+        if (!sandboxManager.isE2BSandboxBooted?.()) {
+          emitBootProgress(
+            "\x1b[33m⟳ Starting secure environment...\x1b[0m\r\n",
+          );
+        }
         // Get fresh sandbox and verify it's ready
         const { sandbox } = await sandboxManager.getSandbox();
 
@@ -399,6 +438,28 @@ In using these tools, adhere to the following guidelines:
                 },
               };
             }
+
+            // Stop the kill+recreate spiral: if we've already rebuilt the
+            // sandbox several times this request and it still won't pass a
+            // health check, recreating again won't help (the agent is likely
+            // exhausting resources faster than each fresh sandbox provides).
+            // Surface a clear, actionable error instead of looping silently.
+            const recreatesSoFar =
+              sandboxRecreateCounts.get(sandboxManager) ?? 0;
+            if (recreatesSoFar >= MAX_SANDBOX_RECREATES) {
+              console.error(
+                `[Terminal Command] Sandbox recreate cap (${MAX_SANDBOX_RECREATES}) reached; not rebuilding again`,
+              );
+              return {
+                result: {
+                  output: "",
+                  exitCode: 1,
+                  error:
+                    "The sandbox keeps running out of resources (most likely disk space from large command outputs). Stop retrying this command. Reduce the output size — redirect large output to a file and grep for only what you need (e.g. `cmd 2>&1 | tee out.txt` then `grep -E 'pattern' out.txt`), or run smaller/targeted scans — then try again. If it keeps failing, tell the user to wait a moment and retry.",
+                },
+              };
+            }
+            sandboxRecreateCounts.set(sandboxManager, recreatesSoFar + 1);
 
             // Sandbox health check failed - log diagnostics and wait briefly before recreating
             const diagnostics = await getSandboxDiagnostics(sandbox).catch(

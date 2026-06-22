@@ -6,9 +6,12 @@ import { useGlobalState } from "../contexts/GlobalState";
 import { useChats } from "../hooks/useChats";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MainSidebar from "./Sidebar";
+import SidebarUserNav from "./SidebarUserNav";
 import { SettingsDialog } from "./SettingsDialog";
-import { BiosStatusBar } from "./BiosStatusBar";
+import { ChatTitlebar } from "./ChatTitlebar";
 import { onOpenSettingsDialog } from "@/lib/utils/settings-dialog";
+import { useAppShell } from "../contexts/AppShellContext";
+import { AppVariantSwitcher } from "./AppVariantSwitcher";
 
 /**
  * Shared layout for chat routes: Chat Sidebar (left) + main content slot.
@@ -17,7 +20,8 @@ import { onOpenSettingsDialog } from "@/lib/utils/settings-dialog";
  */
 export function ChatLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
-  const { chatSidebarOpen, setChatSidebarOpen } = useGlobalState();
+  const { sidebarClass, panelClass } = useAppShell();
+  const { chatSidebarOpen, setChatSidebarOpen, sidebarOpen } = useGlobalState();
   const panelRef = useRef<HTMLDivElement>(null);
   // Keep chat list subscription in layout so it doesn't refetch when sidebar opens/closes
   const chatListData = useChats();
@@ -121,29 +125,51 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
   }, [isMobile, chatSidebarOpen, setChatSidebarOpen]);
 
   return (
-    <div className="flex min-h-0 flex-1 w-full flex-col overflow-hidden terminal-screen">
+    <div className="flex min-h-0 flex-1 w-full flex-col overflow-hidden">
+      <ChatTitlebar chatListData={chatListData} />
       <div className="flex min-h-0 flex-1 w-full overflow-hidden">
         {/* Chat Sidebar - Desktop: only mount once isMobile is resolved to avoid flash on mobile */}
         {isMobile === false && (
           <div
             data-testid="sidebar"
-            className={`relative z-10 min-w-0 shrink-0 overflow-hidden bg-sidebar terminal-sidebar terminal-border transition-all duration-300 ${
-              chatSidebarOpen ? "w-80" : "w-12"
+            className={`${sidebarClass} relative flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r transition-[width] duration-300 ${
+              chatSidebarOpen ? "w-[260px]" : "w-0 border-r-0"
             }`}
           >
-            <SidebarProvider
-              open={chatSidebarOpen}
-              onOpenChange={setChatSidebarOpen}
-              defaultOpen={true}
-              style={{ "--sidebar-width": "20rem" } as React.CSSProperties}
-            >
-              <MainSidebar chatListData={chatListData} />
-            </SidebarProvider>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <SidebarProvider
+                open={chatSidebarOpen}
+                onOpenChange={setChatSidebarOpen}
+                defaultOpen={true}
+                className="h-full min-h-0"
+                style={{ "--sidebar-width": "260px" } as React.CSSProperties}
+              >
+                <MainSidebar chatListData={chatListData} />
+              </SidebarProvider>
+            </div>
+            {chatSidebarOpen ? (
+              <div
+                data-testid="sidebar-session-dock"
+                className="shrink-0 border-t border-border/40 bg-surface-1/50 px-2 pb-2 pt-2 backdrop-blur-md"
+              >
+                <SidebarUserNav />
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        {/* Session dock when sidebar column is hidden — hide when terminal panel is open */}
+        {isMobile === false && !chatSidebarOpen && !sidebarOpen && (
+          <div
+            data-testid="sidebar-session-dock-floating"
+            className={`${panelClass} fixed bottom-0 left-0 z-30 w-[260px] px-2 pb-2 pt-2 shadow-lg`}
+          >
+            <SidebarUserNav />
           </div>
         )}
 
         {/* Main content slot - pages render here */}
-        <div className="flex min-h-0 flex-1 min-w-0 flex-col relative terminal-scrollbar">
+        <div className="rift-cursor-app relative flex min-h-0 min-w-0 flex-1 flex-col">
           {children}
         </div>
 
@@ -158,7 +184,7 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="w-full max-w-80 h-full bg-background terminal-panel shadow-lg transform transition-transform duration-300 ease-in-out terminal-border"
+              className={`${panelClass} h-full w-full max-w-80 transform shadow-lg transition-transform duration-300 ease-in-out`}
               onClick={(e) => e.stopPropagation()}
             >
               <MainSidebar isMobileOverlay={true} chatListData={chatListData} />
@@ -171,9 +197,8 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
           onOpenChange={setSettingsDialogOpen}
           initialTab={settingsDialogTab}
         />
+        <AppVariantSwitcher />
       </div>
-      {/* RIFT OS BIOS status strip */}
-      <BiosStatusBar />
     </div>
   );
 }

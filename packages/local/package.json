@@ -1,9 +1,9 @@
 {
-  "name": "@rift/local",
+  "name": "rift-cli",
   "version": "0.8.3",
-  "description": "RIFT Local Sandbox Client - Execute commands on your local machine",
+  "description": "RIFT CLI — run RIFT commands on your local machine from the terminal",
   "bin": {
-    "rift-local": "./dist/index.js"
+    "rift-cli": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

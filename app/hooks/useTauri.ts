@@ -12,10 +12,61 @@ declare global {
   }
 }
 
+const LITE_STORAGE_KEY = "rift_desktop_lite";
+
 function detectTauri(): boolean {
-  return (
-    typeof window !== "undefined" && window.__TAURI_INTERNALS__ !== undefined
-  );
+  if (typeof window === "undefined") {
+    return false;
+  }
+  // The RIFT Desktop "lite" wrapper is a thin native window around the cloud
+  // app. It opts out of native desktop features (local sandbox bridge, command
+  // server, desktop-only agent routing) and behaves exactly like the web
+  // client — avoiding "desktop sandbox failed / update desktop" errors for a
+  // bridge it does not ship. Full native desktop builds never signal lite.
+  //
+  // Signal channels, in order of reliability on remote URLs:
+  //   1. RIFTWrapperLite user-agent marker (present on every request, client
+  //      AND server, every navigation — the most deterministic signal).
+  //   2. ?rift_desktop=lite query param (persisted to localStorage so the
+  //      opt-out survives navigation + relaunch).
+  //   3. window.__RIFT_DESKTOP_LITE__ init-script flag (backup).
+  try {
+    if (window.navigator?.userAgent?.includes("RIFTWrapperLite")) {
+      return false;
+    }
+  } catch {
+    /* ignore UA access errors */
+  }
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("rift_desktop") === "lite") {
+      try {
+        window.localStorage.setItem(LITE_STORAGE_KEY, "1");
+      } catch {
+        /* storage unavailable — query param already proves lite mode */
+      }
+      return false;
+    }
+    try {
+      if (window.localStorage.getItem(LITE_STORAGE_KEY) === "1") {
+        return false;
+      }
+    } catch {
+      /* ignore storage errors */
+    }
+  } catch {
+    /* ignore URL parse errors */
+  }
+
+  if (
+    (window as unknown as { __RIFT_DESKTOP_LITE__?: boolean })
+      .__RIFT_DESKTOP_LITE__ === true
+  ) {
+    return false;
+  }
+
+  return window.__TAURI_INTERNALS__ !== undefined;
 }
 
 export function isTauriEnvironment(): boolean {
@@ -39,18 +90,6 @@ export async function openInBrowser(url: string): Promise<boolean> {
   } catch (err) {
     console.error("[Tauri] Failed to open URL in browser:", url, err);
     return false;
-  }
-}
-
-async function promptDesktopUpdate(): Promise<void> {
-  toast.error("Update RIFT Desktop to sign in", {
-    description:
-      "This version is missing the secure sign-in bridge. Opening the latest desktop download in your browser.",
-  });
-
-  const opened = await openInBrowser(DESKTOP_UPDATE_URL);
-  if (!opened) {
-    window.location.href = DESKTOP_UPDATE_URL;
   }
 }
 
@@ -101,7 +140,9 @@ export async function navigateToAuth(
         ({ invoke } = await import("@tauri-apps/api/core"));
       } catch (err) {
         console.error("[Tauri] Failed to load Tauri invoke API:", err);
-        await promptDesktopUpdate();
+        // No Tauri invoke bridge in this build — sign in directly inside the
+        // app webview (Password auth needs no external redirect).
+        window.location.href = resolvedPath;
         return;
       }
 
@@ -112,7 +153,9 @@ export async function navigateToAuth(
         authSearchParams.set("desktop_state", desktopAuthState);
       } catch (err) {
         console.error("[Tauri] Failed to prepare desktop auth state:", err);
-        await promptDesktopUpdate();
+        // No desktop sign-in bridge available — fall back to signing in
+        // directly inside the app webview instead of prompting an update.
+        window.location.href = resolvedPath;
         return;
       }
 

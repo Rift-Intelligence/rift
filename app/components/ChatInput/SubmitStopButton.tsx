@@ -9,7 +9,7 @@ import type { ChatStatus } from "@/types";
 import type { ChatMode } from "@/types/chat";
 import type { UploadedFileState } from "@/types/file";
 
-const BASE_BUTTON_CLASSES = "rounded-full p-0 w-8 h-8 min-w-0";
+const BASE_BUTTON_CLASSES = "rounded-md p-0 w-6 h-6 min-w-0";
 
 const STOP_BUTTON_VARIANT_CLASSES: Record<ChatMode, string> = {
   agent:
@@ -22,9 +22,7 @@ function getStopButtonVariantClasses(mode: ChatMode): string {
 }
 
 function getSubmitButtonVariantClasses(_mode: ChatMode): string {
-  // Send is always the primary cyan action (default Button variant). Red is
-  // reserved for the Stop/alarm state only.
-  return "";
+  return "bg-foreground text-background hover:bg-foreground/90 disabled:bg-muted disabled:text-muted-foreground";
 }
 
 function getSendButtonTooltip(

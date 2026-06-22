@@ -1,11 +1,7 @@
-const GITHUB_RELEASE_BASE =
-  "https://github.com/rift-tech/rift/releases/latest/download";
-
+// Desktop installers are served as static assets from the app's own public
+// folder (riftsys.app/downloads/...), so they're publicly downloadable
+// without exposing the private source repo or a separate releases repo.
 export const downloadLinks = {
-  macos: `${GITHUB_RELEASE_BASE}/RIFT-universal.dmg`,
-  windows: `${GITHUB_RELEASE_BASE}/RIFT-windows-x64.exe`,
-  linuxAppImage: `${GITHUB_RELEASE_BASE}/RIFT-linux-x64.AppImage`,
-  linuxArm64AppImage: `${GITHUB_RELEASE_BASE}/RIFT-linux-arm64.AppImage`,
-  linuxDeb: `${GITHUB_RELEASE_BASE}/RIFT-linux-x64.deb`,
-  linuxArm64Deb: `${GITHUB_RELEASE_BASE}/RIFT-linux-arm64.deb`,
+  macos: "/downloads/RIFT-mac.dmg",
+  windows: "/downloads/RIFT-windows-x64-setup.exe",
 };

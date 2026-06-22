@@ -5,6 +5,7 @@ import { FilePartRenderer } from "./FilePartRenderer";
 import { MessageEditor, EditableFile } from "./MessageEditor";
 import { FeedbackInput } from "./FeedbackInput";
 import { BranchIndicator } from "./BranchIndicator";
+import { MessageSenderMark } from "./MessageSenderMark";
 import { FinishReasonNotice } from "./FinishReasonNotice";
 import { splitWorkedForParts } from "./worked-for-parts";
 import { Shimmer } from "@/components/ai-elements/shimmer";
@@ -14,6 +15,7 @@ import {
   WorkedForTrigger,
 } from "@/components/ai-elements/worked-for";
 import { ChevronDown, ChevronUp, FileSearch, WandSparkles } from "lucide-react";
+import { CursorThinking } from "@/components/ui/cursor-thinking";
 import {
   extractMessageText,
   hasTextContent,
@@ -336,211 +338,226 @@ export const MessageItem = memo(function MessageItem({
   if (isLastAssistantMessage && !hasAnyContent && showingLoadingIndicator) {
     return null;
   }
+  // Skip rendering empty historical assistant messages (only metadata parts,
+  // no text/tool/file content) — they produce empty bubbles with just action buttons.
+  if (!isUser && !hasAnyContent && !isLastAssistantMessage) {
+    return null;
+  }
 
   return (
     <Fragment>
       <div
         data-testid={isUser ? "user-message" : "assistant-message"}
-        className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+        className="flex w-full flex-col"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={onMouseLeave}
       >
         {isEditing && isUser ? (
-          <div className="w-full">
-            <MessageEditor
-              initialContent={messageText}
-              initialFiles={editableFiles}
-              onSave={onSaveEdit}
-              onCancel={onCancelEdit}
-            />
+          <div className="flex w-full gap-3">
+            <MessageSenderMark role="user" />
+            <div className="min-w-0 flex-1">
+              <MessageEditor
+                initialContent={messageText}
+                initialFiles={editableFiles}
+                onSave={onSaveEdit}
+                onCancel={onCancelEdit}
+              />
+            </div>
           </div>
         ) : (
-          <div
-            className={`${
-              isUser
-                ? "w-full flex flex-col gap-1 items-end"
-                : "w-full text-foreground"
-            } overflow-hidden`}
-          >
-            {/* Render file parts first for user messages */}
-            {isUser && fileParts.length > 0 && (
-              <div className="flex flex-wrap items-center justify-end gap-2 w-full">
-                {fileParts.map((part, partIndex) => (
-                  <FilePartRenderer
-                    key={`${message.id}-file-${partIndex}`}
-                    part={part}
-                    partIndex={partIndex}
-                    messageId={message.id}
-                    totalFileParts={fileParts.length}
-                  />
-                ))}
-              </div>
-            )}
+          <div className="flex w-full items-start gap-3">
+            <MessageSenderMark role={isUser ? "user" : "assistant"} />
+            <div
+              className={`min-w-0 flex-1 overflow-hidden ${
+                isUser ? "flex flex-col gap-1" : "text-foreground"
+              }`}
+            >
+              {/* Render file parts first for user messages */}
+              {isUser && fileParts.length > 0 && (
+                <div className="flex flex-wrap items-center justify-end gap-2 w-full">
+                  {fileParts.map((part, partIndex) => (
+                    <FilePartRenderer
+                      key={`${message.id}-file-${partIndex}`}
+                      part={part}
+                      partIndex={partIndex}
+                      messageId={message.id}
+                      totalFileParts={fileParts.length}
+                    />
+                  ))}
+                </div>
+              )}
 
-            {/* Render text and other parts */}
-            {nonFileParts.length > 0 && (
-              <div
-                data-testid="message-content"
-                className={`${
-                  isUser
-                    ? "max-w-[80%] bg-secondary rounded-[18px] px-4 py-1.5 data-[multiline]:py-3 rounded-se-lg text-foreground border border-border"
-                    : "w-full prose space-y-3 max-w-none dark:prose-invert min-w-0"
-                } overflow-hidden`}
-              >
-                {isUser ? (
-                  <div className="whitespace-pre-wrap break-words">
-                    {shouldCollapseUserMessage && !isUserMessageExpanded ? (
-                      <>
-                        <div>{collapsedUserMessageText}</div>
-                        <div aria-hidden="true">...</div>
-                        <button
-                          type="button"
-                          onClick={handleShowFullUserMessage}
-                          aria-expanded={false}
-                          className="mt-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <span>Show fulll message</span>
-                          <ChevronDown className="size-4 shrink-0" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        {nonFileParts.map((part, partIndex) => (
-                          <MessagePartHandler
-                            key={`${message.id}-${partIndex}`}
-                            message={message}
-                            part={part}
-                            partIndex={partIndex}
-                            status={effectiveStatus}
-                            terminalOutputByToolCallId={
-                              terminalOutputByToolCallId
-                            }
-                          />
-                        ))}
-                        {shouldCollapseUserMessage && isUserMessageExpanded && (
+              {/* Render text and other parts */}
+              {nonFileParts.length > 0 && (
+                <div
+                  data-testid="message-content"
+                  className={`${
+                    isUser
+                      ? "w-full text-sm leading-[1.7] text-foreground bg-surface-2 rounded-lg px-3.5 py-2.5 border border-border"
+                      : "w-full prose space-y-3 max-w-none text-[15px] leading-[1.65] text-foreground dark:prose-invert min-w-0"
+                  } overflow-hidden`}
+                >
+                  {isUser ? (
+                    <div className="whitespace-pre-wrap break-words">
+                      {shouldCollapseUserMessage && !isUserMessageExpanded ? (
+                        <>
+                          <div>{collapsedUserMessageText}</div>
+                          <div aria-hidden="true">...</div>
                           <button
                             type="button"
-                            onClick={handleShowLessUserMessage}
-                            aria-expanded={true}
+                            onClick={handleShowFullUserMessage}
+                            aria-expanded={false}
                             className="mt-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
                           >
-                            <span>Show less</span>
-                            <ChevronUp className="size-4 shrink-0" />
+                            <span>Show fulll message</span>
+                            <ChevronDown className="size-4 shrink-0" />
                           </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ) : !shouldUseWorkedFor ? (
-                  nonFileParts.map((part, partIndex) => (
-                    <MessagePartHandler
-                      key={`${message.id}-${partIndex}`}
-                      message={message}
-                      part={part}
-                      partIndex={partIndex}
-                      status={effectiveStatus}
-                      isLastMessage={isLastMessage}
-                      terminalOutputByToolCallId={terminalOutputByToolCallId}
-                      sharedFileDetails={effectiveFileDetails}
-                    />
-                  ))
-                ) : shouldShowWorkingTimer ? (
-                  <>
-                    {workParts.length > 0 && (
-                      <WorkedFor
-                        key="work"
-                        hasWork
-                        defaultOpen
-                        isTiming={shouldShowWorkingTimer}
-                      >
-                        <WorkedForTrigger
-                          isTiming
-                          startedAt={generationStartedAt}
-                        />
-                        <WorkedForContent>
-                          {workParts.map(renderAssistantPart)}
-                        </WorkedForContent>
-                      </WorkedFor>
-                    )}
-                    {trailingTextParts.length > 0 && (
-                      <div
-                        className={
-                          workParts.length > 0 ? "mt-4 space-y-3" : "space-y-3"
-                        }
-                      >
-                        {trailingTextParts.map((part, partIndex) =>
-                          renderAssistantPart(
-                            part,
-                            workParts.length + partIndex,
-                          ),
-                        )}
-                      </div>
-                    )}
-                  </>
-                ) : trailingTextParts.length === 0 ? (
-                  // If a run stops before producing final text, keep the work
-                  // visible inline instead of leaving only a collapsed header.
-                  nonFileParts.map((part, partIndex) => (
-                    <MessagePartHandler
-                      key={`${message.id}-${partIndex}`}
-                      message={message}
-                      part={part}
-                      partIndex={partIndex}
-                      status={effectiveStatus}
-                      isLastMessage={isLastMessage}
-                      terminalOutputByToolCallId={terminalOutputByToolCallId}
-                      sharedFileDetails={effectiveFileDetails}
-                    />
-                  ))
-                ) : (
-                  <>
-                    {workParts.length > 0 && (
-                      <WorkedFor
-                        key="work"
-                        hasWork
-                        isTiming={shouldShowWorkingTimer}
-                      >
-                        <WorkedForTrigger durationMs={generationTimeMs} />
-                        <WorkedForContent>
-                          {() => workParts.map(renderAssistantPart)}
-                        </WorkedForContent>
-                      </WorkedFor>
-                    )}
-                    {trailingTextParts.length > 0 && (
-                      <div
-                        className={
-                          workParts.length > 0 ? "mt-4 space-y-3" : "space-y-3"
-                        }
-                      >
-                        {trailingTextParts.map((part, partIndex) =>
-                          renderAssistantPart(
-                            part,
-                            workParts.length + partIndex,
-                          ),
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+                        </>
+                      ) : (
+                        <>
+                          {nonFileParts.map((part, partIndex) => (
+                            <MessagePartHandler
+                              key={`${message.id}-${partIndex}`}
+                              message={message}
+                              part={part}
+                              partIndex={partIndex}
+                              status={effectiveStatus}
+                              terminalOutputByToolCallId={
+                                terminalOutputByToolCallId
+                              }
+                            />
+                          ))}
+                          {shouldCollapseUserMessage &&
+                            isUserMessageExpanded && (
+                              <button
+                                type="button"
+                                onClick={handleShowLessUserMessage}
+                                aria-expanded={true}
+                                className="mt-2 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                <span>Show less</span>
+                                <ChevronUp className="size-4 shrink-0" />
+                              </button>
+                            )}
+                        </>
+                      )}
+                    </div>
+                  ) : !shouldUseWorkedFor ? (
+                    nonFileParts.map((part, partIndex) => (
+                      <MessagePartHandler
+                        key={`${message.id}-${partIndex}`}
+                        message={message}
+                        part={part}
+                        partIndex={partIndex}
+                        status={effectiveStatus}
+                        isLastMessage={isLastMessage}
+                        terminalOutputByToolCallId={terminalOutputByToolCallId}
+                        sharedFileDetails={effectiveFileDetails}
+                      />
+                    ))
+                  ) : shouldShowWorkingTimer ? (
+                    <>
+                      {workParts.length > 0 && (
+                        <WorkedFor
+                          key="work"
+                          hasWork
+                          defaultOpen
+                          isTiming={shouldShowWorkingTimer}
+                        >
+                          <WorkedForTrigger
+                            isTiming
+                            startedAt={generationStartedAt}
+                          />
+                          <WorkedForContent>
+                            {workParts.map(renderAssistantPart)}
+                          </WorkedForContent>
+                        </WorkedFor>
+                      )}
+                      {trailingTextParts.length > 0 && (
+                        <div
+                          className={
+                            workParts.length > 0
+                              ? "mt-4 space-y-3"
+                              : "space-y-3"
+                          }
+                        >
+                          {trailingTextParts.map((part, partIndex) =>
+                            renderAssistantPart(
+                              part,
+                              workParts.length + partIndex,
+                            ),
+                          )}
+                        </div>
+                      )}
+                    </>
+                  ) : trailingTextParts.length === 0 ? (
+                    // If a run stops before producing final text, keep the work
+                    // visible inline instead of leaving only a collapsed header.
+                    nonFileParts.map((part, partIndex) => (
+                      <MessagePartHandler
+                        key={`${message.id}-${partIndex}`}
+                        message={message}
+                        part={part}
+                        partIndex={partIndex}
+                        status={effectiveStatus}
+                        isLastMessage={isLastMessage}
+                        terminalOutputByToolCallId={terminalOutputByToolCallId}
+                        sharedFileDetails={effectiveFileDetails}
+                      />
+                    ))
+                  ) : (
+                    <>
+                      {workParts.length > 0 && (
+                        <WorkedFor
+                          key="work"
+                          hasWork
+                          isTiming={shouldShowWorkingTimer}
+                        >
+                          <WorkedForTrigger durationMs={generationTimeMs} />
+                          <WorkedForContent>
+                            {() => workParts.map(renderAssistantPart)}
+                          </WorkedForContent>
+                        </WorkedFor>
+                      )}
+                      {trailingTextParts.length > 0 && (
+                        <div
+                          className={
+                            workParts.length > 0
+                              ? "mt-4 space-y-3"
+                              : "space-y-3"
+                          }
+                        >
+                          {trailingTextParts.map((part, partIndex) =>
+                            renderAssistantPart(
+                              part,
+                              workParts.length + partIndex,
+                            ),
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {isStreamingThisMessage ? <CursorThinking /> : null}
+                </div>
+              )}
 
-            {/* For assistant messages without the user-specific styling, render files mixed with content */}
-            {!isUser && fileParts.length > 0 && nonFileParts.length === 0 && (
-              <div className="prose space-y-3 max-w-none dark:prose-invert min-w-0 overflow-hidden">
-                {message.parts.map((part, partIndex) => (
-                  <MessagePartHandler
-                    key={`${message.id}-${partIndex}`}
-                    message={message}
-                    part={part}
-                    partIndex={partIndex}
-                    status={effectiveStatus}
-                    terminalOutputByToolCallId={terminalOutputByToolCallId}
-                    sharedFileDetails={effectiveFileDetails}
-                  />
-                ))}
-              </div>
-            )}
+              {/* For assistant messages without the user-specific styling, render files mixed with content */}
+              {!isUser && fileParts.length > 0 && nonFileParts.length === 0 && (
+                <div className="prose space-y-3 max-w-none dark:prose-invert min-w-0 overflow-hidden">
+                  {message.parts.map((part, partIndex) => (
+                    <MessagePartHandler
+                      key={`${message.id}-${partIndex}`}
+                      message={message}
+                      part={part}
+                      partIndex={partIndex}
+                      status={effectiveStatus}
+                      terminalOutputByToolCallId={terminalOutputByToolCallId}
+                      sharedFileDetails={effectiveFileDetails}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

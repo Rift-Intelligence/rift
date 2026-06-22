@@ -153,122 +153,34 @@ describe("limitImageParts", () => {
 // ==========================================================================
 // selectModel - Model selection logic
 // ==========================================================================
-describe("selectModel", () => {
-  // Default model selection by mode
-  describe("default models (no override)", () => {
-    it("should return agent-model for agent mode", () => {
-      expect(selectModel("agent", "pro")).toBe("agent-model");
-    });
-
-    it("should return ask-model-free (DeepSeek) for paid ask with no image/PDF", () => {
-      expect(selectModel("ask", "pro")).toBe("ask-model-free");
-    });
-
-    it("should return ask-model (Gemini) for paid ask when an image/PDF is attached", () => {
-      expect(selectModel("ask", "pro", undefined, true)).toBe("ask-model");
-    });
-
-    it("should return ask-model-free for ask mode (free)", () => {
-      expect(selectModel("ask", "free")).toBe("ask-model-free");
-    });
-
-    it("should return ask-model-free for ultra subscription with no image/PDF", () => {
-      expect(selectModel("ask", "ultra")).toBe("ask-model-free");
-    });
-
-    it("should return ask-model-free for team subscription with no image/PDF", () => {
-      expect(selectModel("ask", "team")).toBe("ask-model-free");
-    });
+describe("selectModel (single-model product)", () => {
+  // Every mode, subscription, tier override, and attachment state resolves to
+  // the one model (Grok 4.3). No tier selection is offered in the UI.
+  it("returns the single model regardless of mode", () => {
+    expect(selectModel("agent", "pro")).toBe("model-grok-4.3");
+    expect(selectModel("ask", "pro")).toBe("model-grok-4.3");
   });
 
-  // Tier override — Pro/Max map to the same provider key in both modes
-  describe("tier override for ask mode (paid users)", () => {
-    it("should map RIFT Pro to Kimi K2.7-code in ask mode", () => {
-      expect(selectModel("ask", "ultra", "rift-pro")).toBe(
-        "model-kimi-k2.7-code",
-      );
-    });
-
-    it("should map RIFT Pro to Kimi K2.7-code for team users", () => {
-      expect(selectModel("ask", "team", "rift-pro")).toBe(
-        "model-kimi-k2.7-code",
-      );
-    });
-
-    it("should map RIFT Standard to DeepSeek V4 Flash when no image/PDF", () => {
-      expect(selectModel("ask", "pro", "rift-standard")).toBe(
-        "model-deepseek-v4-flash",
-      );
-    });
-
-    it("should promote RIFT Standard to Gemini 3 Flash when an image/PDF is attached", () => {
-      expect(selectModel("ask", "pro", "rift-standard", true)).toBe(
-        "model-gemini-3-flash",
-      );
-    });
-
-    it("should map RIFT Max to Grok 4.3", () => {
-      expect(selectModel("ask", "pro", "rift-max")).toBe("model-grok-4.3");
-    });
+  it("returns the single model regardless of subscription", () => {
+    expect(selectModel("agent", "free")).toBe("model-grok-4.3");
+    expect(selectModel("ask", "free")).toBe("model-grok-4.3");
+    expect(selectModel("agent", "ultra")).toBe("model-grok-4.3");
+    expect(selectModel("ask", "team")).toBe("model-grok-4.3");
   });
 
-  // Agent mode — Lite resolves to Kimi instead of Gemini
-  describe("tier override in agent mode", () => {
-    it("should map RIFT Standard to Kimi K2.6 in agent mode", () => {
-      expect(selectModel("agent", "pro", "rift-standard")).toBe(
-        "model-kimi-k2.6",
-      );
-    });
-
-    it("should map RIFT Pro to Kimi K2.7-code in agent mode", () => {
-      expect(selectModel("agent", "pro", "rift-pro")).toBe(
-        "model-kimi-k2.7-code",
-      );
-    });
-
-    it("should map RIFT Max to Grok 4.3 in agent mode", () => {
-      expect(selectModel("agent", "pro", "rift-max")).toBe("model-grok-4.3");
-    });
-
-    it("should default to agent-model when no model selected", () => {
-      expect(selectModel("agent", "pro")).toBe("agent-model");
-      expect(selectModel("agent", "pro", "auto")).toBe("agent-model");
-    });
+  it("ignores any tier override", () => {
+    expect(selectModel("agent", "pro", "rift-standard")).toBe("model-grok-4.3");
+    expect(selectModel("agent", "pro", "rift-pro")).toBe("model-grok-4.3");
+    expect(selectModel("agent", "pro", "rift-max")).toBe("model-grok-4.3");
+    expect(selectModel("ask", "pro", "rift-max")).toBe("model-grok-4.3");
+    expect(selectModel("agent", "pro", "auto")).toBe("model-grok-4.3");
   });
 
-  // Free user guard
-  describe("free user guard", () => {
-    it("should ignore tier override for free users in agent mode", () => {
-      expect(selectModel("agent", "free", "rift-pro")).toBe("agent-model-free");
-    });
-
-    it("should ignore tier override for free users in ask mode", () => {
-      expect(selectModel("ask", "free", "rift-pro")).toBe("ask-model-free");
-    });
-  });
-
-  // "auto" override
-  describe("auto override", () => {
-    it("should treat 'auto' as no override in agent mode", () => {
-      expect(selectModel("agent", "pro", "auto")).toBe("agent-model");
-    });
-
-    it("should treat 'auto' as no override in ask mode (text-only → DeepSeek)", () => {
-      expect(selectModel("ask", "pro", "auto")).toBe("ask-model-free");
-    });
-
-    it("should treat 'auto' as no override in ask mode with image/PDF → Gemini", () => {
-      expect(selectModel("ask", "pro", "auto", true)).toBe("ask-model");
-    });
-  });
-
-  // Undefined override
-  describe("undefined override", () => {
-    it("should use default when override is undefined", () => {
-      expect(selectModel("agent", "pro", undefined)).toBe("agent-model");
-      expect(selectModel("ask", "pro", undefined)).toBe("ask-model-free");
-      expect(selectModel("ask", "pro", undefined, true)).toBe("ask-model");
-    });
+  it("ignores image/PDF attachment state", () => {
+    expect(selectModel("ask", "pro", undefined, true)).toBe("model-grok-4.3");
+    expect(selectModel("ask", "pro", "rift-standard", true)).toBe(
+      "model-grok-4.3",
+    );
   });
 });
 

@@ -114,32 +114,28 @@ export function ChatInputTextarea({
   }, [handlePasteEvent, subscription]);
 
   return (
-    <div className="overflow-y-auto pl-4 pr-2">
-      <div className="terminal-prompt">
-        <TextareaAutosize
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={
-            placeholder !== undefined
-              ? placeholder
-              : chatMode === "agent"
-                ? "target acquired — enter exploit objective..."
-                : "enter query..."
+    <div className="overflow-y-auto">
+      <TextareaAutosize
+        ref={textareaRef}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder={
+          placeholder !== undefined
+            ? placeholder
+            : "Plan, @ for context, / for commands"
+        }
+        className="flex w-full min-h-[22px] max-h-[200px] flex-1 resize-none overflow-hidden border-0 bg-transparent p-0 text-[16px] md:text-[13px] leading-normal text-foreground shadow-none placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+        minRows={minRows}
+        autoFocus={autoFocus}
+        disabled={disabled}
+        data-testid="chat-input"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            onEnterSubmit(e);
           }
-          className="flex rounded-md border-input focus-visible:outline-none focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 overflow-hidden flex-1 bg-transparent p-0 pt-[1px] border-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full placeholder:text-muted-foreground text-base shadow-none resize-none min-h-[28px] terminal-input"
-          minRows={minRows}
-          autoFocus={autoFocus}
-          disabled={disabled}
-          data-testid="chat-input"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              onEnterSubmit(e);
-            }
-          }}
-        />
-      </div>
+        }}
+      />
     </div>
   );
 }

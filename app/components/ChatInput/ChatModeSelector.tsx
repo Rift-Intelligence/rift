@@ -1,15 +1,17 @@
 "use client";
 
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-import { ModeSelectorTrigger, ModeSelectorContent } from "./ModeSelectorMenu";
 import { useGlobalState } from "@/app/contexts/GlobalState";
 import { useAuth } from "@/app/hooks/useAuth";
 import { toast } from "sonner";
 import { navigateToAuth } from "@/app/hooks/useTauri";
+import type { ChatMode } from "@/types/chat";
 
 export interface ChatModeSelectorProps {
   className?: string;
 }
+
+const pillBase =
+  "inline-flex h-6 items-center gap-1.5 rounded-md border-0 px-2 text-[11.5px] transition-colors";
 
 export function ChatModeSelector({ className }: ChatModeSelectorProps) {
   const {
@@ -36,9 +38,6 @@ export function ChatModeSelector({ className }: ChatModeSelectorProps) {
       });
       return;
     }
-    // Agent mode is available to every signed-in user (billing/tiers removed).
-    // Cloud E2B is the default sandbox; if a local sandbox is configured, honor
-    // the user's local preference.
     setChatMode("agent");
     if (hasLocalSandbox) {
       if (sandboxPreference === "e2b" || !sandboxPreference) {
@@ -52,18 +51,37 @@ export function ChatModeSelector({ className }: ChatModeSelectorProps) {
     }
   };
 
+  const setMode = (mode: ChatMode) => {
+    if (mode === "agent") handleAgentModeClick();
+    else setChatMode("ask");
+  };
+
   return (
-    <div
-      className={`flex items-center gap-1.5 min-w-0 overflow-hidden ${className ?? ""}`}
-    >
-      <DropdownMenu>
-        <ModeSelectorTrigger chatMode={chatMode} />
-        <ModeSelectorContent
-          setChatMode={setChatMode}
-          onAgentModeClick={handleAgentModeClick}
-          temporaryChatsEnabled={temporaryChatsEnabled}
-        />
-      </DropdownMenu>
+    <div className={`flex items-center gap-0.5 ${className ?? ""}`}>
+      <button
+        type="button"
+        data-testid="mode-agent-pill"
+        onClick={() => setMode("agent")}
+        className={`${pillBase} ${
+          chatMode === "agent"
+            ? "bg-accent text-foreground"
+            : "bg-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+        }`}
+      >
+        Agent
+      </button>
+      <button
+        type="button"
+        data-testid="mode-ask-pill"
+        onClick={() => setMode("ask")}
+        className={`${pillBase} ${
+          chatMode === "ask"
+            ? "bg-accent text-foreground"
+            : "bg-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+        }`}
+      >
+        Ask
+      </button>
     </div>
   );
 }

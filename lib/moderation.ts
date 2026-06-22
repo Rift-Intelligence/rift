@@ -3,6 +3,17 @@ import { encode, decode } from "gpt-tokenizer";
 
 const MODERATION_TOKEN_LIMIT = 512;
 
+// Build the OpenAI client once per process instead of on every request — the
+// constructor sets up connection pooling/keep-alive, so reusing it avoids a
+// fresh TLS handshake to the moderation endpoint on the chat hot path.
+let openaiSingleton: OpenAI | null = null;
+function getOpenAIClient(apiKey: string): OpenAI {
+  if (!openaiSingleton) {
+    openaiSingleton = new OpenAI({ apiKey });
+  }
+  return openaiSingleton;
+}
+
 export async function getModerationResult(
   messages: any[],
   isPaidUser: boolean,
@@ -13,7 +24,7 @@ export async function getModerationResult(
     return { shouldUncensorResponse: false, moderationText: "" };
   }
 
-  const openai = new OpenAI({ apiKey: openaiApiKey });
+  const openai = getOpenAIClient(openaiApiKey);
 
   // Find the last user message that exceeds the minimum length
   const targetMessage = findTargetMessage(messages, 30);
@@ -169,33 +180,24 @@ function calculateModerationLevel(
 }
 
 function determineShouldUncensorResponse(
-  moderationLevel: number,
+  _moderationLevel: number,
   hazardCategories: string[],
-  isPaidUser: boolean,
+  _isPaidUser: boolean,
 ): boolean {
-  const forbiddenCategories = [
-    "sexual",
-    "sexual/minors",
-    "hate",
-    "hate/threatening",
-    "harassment",
-    "harassment/threatening",
-    "self-harm",
-    "self-harm/intent",
-    "self-harm/instruction",
-    "violence",
-    "violence/graphic",
-  ];
+  // The platform pre-verifies authorization and the system prompt already
+  // establishes it; the auth disclaimer is reinforcement. Apply it to ANY
+  // request that is not in a genuinely harmful category, regardless of tier or
+  // moderation score. This removes false refusals on legitimate (including
+  // aggressive) authorized-pentest requests — the prior gating required the
+  // message to score within a narrow 0.1–0.9/0.98 band, so most security asks
+  // (which OpenAI moderation barely scores) never got the authorization framing
+  // and free users got it even less than paid. The forbidden categories below
+  // STILL gate it: sexual content (especially involving minors / CSAM) is never
+  // "uncensored". This is the one hard safety line and must stay.
+  const forbiddenCategories = ["sexual", "sexual/minors"];
   const hasForbiddenCategory = hazardCategories.some((category) =>
     forbiddenCategories.includes(category),
   );
 
-  // 0.1 is the minimum moderation level for the model to be used
-  const minModerationLevel = 0.1;
-  const maxModerationLevel = isPaidUser ? 0.98 : 0.9;
-  return (
-    moderationLevel >= minModerationLevel &&
-    moderationLevel <= maxModerationLevel &&
-    !hasForbiddenCategory
-  );
+  return !hasForbiddenCategory;
 }

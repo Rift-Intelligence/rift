@@ -7,11 +7,7 @@ import {
   getMaxFilesLimitForMode,
   isSupportedImageMediaType,
 } from "@/lib/utils/file-utils";
-import {
-  isAnthropicModel,
-  resolveTierToProviderKey,
-  type ModelName,
-} from "@/lib/ai/providers";
+import { isAnthropicModel, type ModelName } from "@/lib/ai/providers";
 import { AUTH_DISCLAIMER, detectLang } from "@/lib/chat/auth-disclaimer";
 import {
   ABORTED_TOOL_ERROR_TEXT,
@@ -39,43 +35,21 @@ export const getMaxStepsForUser = (
  *   Gemini 3 Flash so vision/document parts are actually understood.
  * @returns Model name to use
  */
+// Single-model product: every user, every mode, every tier resolves to one
+// model. No tier selection is offered in the UI. Grok 4.3 is the single model —
+// the most capable PERMISSIVE model (it actually serves offensive-security
+// output). The literally-priciest models (Opus/Sonnet) are NOT used: Anthropic's
+// real-time cyber content-filter empties out pentest output, which would
+// reintroduce the exact refusals this product depends on avoiding.
+const SINGLE_MODEL: ModelName = "model-grok-4.3";
+
 export function selectModel(
-  mode: ChatMode,
-  subscription: SubscriptionTier,
-  selectedModel?: SelectedModel,
-  hasImageOrPdf?: boolean,
+  _mode: ChatMode,
+  _subscription: SubscriptionTier,
+  _selectedModel?: SelectedModel,
+  _hasImageOrPdf?: boolean,
 ): ModelName {
-  const isAgent = isAgentMode(mode);
-  // ASK takes the cheap DeepSeek text path for free users (always) and for
-  // paid users only when no image/PDF is attached — DeepSeek is text-only,
-  // so we promote to Gemini 3 Flash when vision/document parts are present.
-  const askUsesDeepSeek =
-    !isAgent && (subscription === "free" || !hasImageOrPdf);
-
-  const autoModel: ModelName = isAgent
-    ? subscription === "free"
-      ? "agent-model-free"
-      : "agent-model"
-    : askUsesDeepSeek
-      ? "ask-model-free"
-      : "ask-model";
-
-  // Free users always route through the auto router; paid users may pick a
-  // tier explicitly. The tier id is mode-aware via resolveTierToProviderKey.
-  if (!selectedModel || selectedModel === "auto" || subscription === "free") {
-    return autoModel;
-  }
-
-  // Paid ASK Standard mirrors the auto-route split, but uses the explicit
-  // `model-deepseek-v4-flash` / `model-gemini-3-flash` keys so any UI that
-  // reads `getModelDisplayName` shows the picked model rather than the
-  // auto-router label.
-  if (selectedModel === "rift-standard" && !isAgent) {
-    return askUsesDeepSeek ? "model-deepseek-v4-flash" : "model-gemini-3-flash";
-  }
-
-  const providerKey = resolveTierToProviderKey(selectedModel, mode);
-  return providerKey ?? autoModel;
+  return SINGLE_MODEL;
 }
 
 /**
@@ -628,6 +602,7 @@ export async function processChatMessages({
   uploadBasePath,
   modelOverride,
   allowLocalDesktopFiles = false,
+  deferModeration = false,
 }: {
   messages: UIMessage[];
   mode: ChatMode;
@@ -636,6 +611,14 @@ export async function processChatMessages({
   uploadBasePath?: string;
   modelOverride?: SelectedModel;
   allowLocalDesktopFiles?: boolean;
+  /**
+   * When true, skip the (blocking) moderation round-trip here and let the
+   * caller run it concurrently with the rest of preflight (token estimate,
+   * rate-limit). The caller is then responsible for awaiting moderation and
+   * calling `addAuthMessage` on the returned `processedMessages` before
+   * streaming. Keeps the moderation HTTPS RTT off the serial critical path.
+   */
+  deferModeration?: boolean;
 }) {
   // Filter out UI-only parts (data-summarization) that AI providers don't understand
   const messagesWithoutUIOnlyParts = messages.map(filterUIOnlyParts);
@@ -719,15 +702,19 @@ export async function processChatMessages({
   // Strip originalContent from file edit outputs (large data not needed by model)
   const cleanedMessages = stripOriginalContentFromMessages(sanitizedMessages);
 
-  // Check moderation for the last user message
-  const moderationResult = await getModerationResult(
-    cleanedMessages,
-    subscription !== "free",
-  );
+  // Check moderation for the last user message. When deferModeration is set,
+  // the caller runs this concurrently with the rest of preflight and applies
+  // addAuthMessage itself — keeping the moderation RTT off the serial path.
+  if (!deferModeration) {
+    const moderationResult = await getModerationResult(
+      cleanedMessages,
+      subscription !== "free",
+    );
 
-  // If moderation allows, add authorization message
-  if (moderationResult.shouldUncensorResponse) {
-    addAuthMessage(cleanedMessages, moderationResult.moderationText);
+    // If moderation allows, add authorization message
+    if (moderationResult.shouldUncensorResponse) {
+      addAuthMessage(cleanedMessages, moderationResult.moderationText);
+    }
   }
 
   return {

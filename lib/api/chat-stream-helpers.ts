@@ -570,7 +570,11 @@ export function buildProviderOptions(
               // takes a qualitative effort level; everyone else (Anthropic
               // Opus/Sonnet) takes a token budget. 2048 is plenty for the
               // step-level planning these agent turns actually need.
-              ...(isDeepSeekV4 ? { effort: "xhigh" } : { max_tokens: 2048 }),
+              // Only reached when reasoning is enabled (agent mode — ASK runs
+              // reasoning-disabled). DeepSeek-V4 backs the free agent path;
+              // `xhigh` ran an open-ended max-effort think pass before the first
+              // token (1-4s of TTFT) — the opposite of the latency intent above.
+              ...(isDeepSeekV4 ? { effort: "low" } : { max_tokens: 2048 }),
             },
           }
         : { reasoning: { enabled: false } }),

@@ -29,13 +29,13 @@ const MODEL_PRICING_MAP: Record<string, { input: number; output: number }> = {
   "model-opus-4.8": { input: 5.0, output: 25.0 },
   "model-grok-4.3": { input: 1.25, output: 2.5 },
   "model-kimi-k2.7-code": { input: 0.75, output: 3.5 },
-  // "agent-model", "agent-model-free", and "model-kimi-k2.6" all route to
-  // moonshotai/kimi-k2.6:exacto via lib/ai/providers.ts. Rates from Moonshot AI
-  // direct provider (int4): $0.95 in / $4.00 out per 1M tokens. Cache-read
-  // discount ($0.16/M) applies when provider cost is available via usage.raw.cost.
-  "agent-model": { input: 0.95, output: 4.0 },
-  "agent-model-free": { input: 0.95, output: 4.0 },
   "model-kimi-k2.6": { input: 0.95, output: 4.0 },
+  // All agent routes (auto + free + every tier) now resolve to x-ai/grok-4.3 —
+  // see resolveTierToProviderKey in lib/ai/providers.ts. Mirror the
+  // model-grok-4.3 rate ($1.25 in / $2.50 out) so burn is priced right.
+  "agent-model": { input: 1.25, output: 2.5 },
+  "ask-model-free": { input: 1.25, output: 2.5 },
+  "agent-model-free": { input: 1.25, output: 2.5 },
 };
 
 const getModelPricing = (modelName?: string) =>
