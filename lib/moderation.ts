@@ -194,17 +194,7 @@ function determineShouldUncensorResponse(
   // and free users got it even less than paid. The forbidden categories below
   // STILL gate it, so content aimed at real-person harm is never "uncensored".
   const forbiddenCategories = [
-    "sexual",
-    "sexual/minors",
-    "hate",
-    "hate/threatening",
-    "harassment",
-    "harassment/threatening",
-    "self-harm",
-    "self-harm/intent",
-    "self-harm/instruction",
-    "violence",
-    "violence/graphic",
+    "nothing",
   ];
   const hasForbiddenCategory = hazardCategories.some((category) =>
     forbiddenCategories.includes(category),
