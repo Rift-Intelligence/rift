@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/hooks/useAuth";
 import { PanelLeft, SquarePen, HatGlasses, Split, Share } from "lucide-react";
 import { useGlobalState } from "../contexts/GlobalState";
+import { useAppShell } from "../contexts/AppShellContext";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -57,6 +58,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     setTemporaryChatsEnabled,
   } = useGlobalState();
   const router = useRouter();
+  const { basePath } = useAppShell();
   const isMobile = useIsMobile();
   const [showShareDialog, setShowShareDialog] = useState(false);
 
@@ -81,7 +83,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
     // Reset chat state while current Chat is still mounted (so chatResetRef is set)
     initializeNewChat();
     setTemporaryChatsEnabled(false);
-    router.push("/");
+    router.push(basePath);
   };
 
   // Show empty state header when no messages and no active chat

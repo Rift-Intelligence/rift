@@ -14,6 +14,7 @@ import {
 import { useSidebar } from "@/components/ui/sidebar";
 import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
 import { useGlobalState } from "../contexts/GlobalState";
+import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChats } from "../hooks/useChats";
 import { MessageSearchDialog } from "./MessageSearchDialog";
@@ -47,6 +48,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
     initializeNewChat,
     setTemporaryChatsEnabled,
   } = useGlobalState();
+  const { basePath, displayClass } = useAppShell();
 
   // Search dialog state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -93,7 +95,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
     // Reset chat state while current Chat is still mounted (so chatResetRef is set)
     initializeNewChat();
     setTemporaryChatsEnabled(false);
-    router.push("/");
+    router.push(basePath);
   };
 
   const handleSearchOpen = () => {
@@ -178,7 +180,7 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
           type="button"
           onClick={handleNewChat}
           aria-label="Start new chat"
-          className="flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md text-[12.5px] text-foreground transition-colors hover:bg-sidebar-accent"
+          className={`${displayClass} studio-new-chat flex h-8 flex-1 items-center justify-center gap-1.5 rounded-full border border-border/60 bg-surface-2/50 text-[12px] font-medium text-foreground transition-colors hover:border-signal/40 hover:bg-surface-3/60`}
         >
           <Plus className="size-3.5" />
           New Chat
@@ -187,14 +189,14 @@ const SidebarHeaderContentImpl: FC<SidebarHeaderContentImplProps> = ({
           type="button"
           onClick={handleSearchOpen}
           aria-label="Search chat history"
-          className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+          className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-colors hover:bg-surface-2/60 hover:text-foreground"
         >
           <History className="size-4" />
         </button>
       </div>
 
       <div className="px-2 pb-2">
-        <div className="flex h-7 items-center gap-2 rounded-md bg-input px-2 text-[12px] text-muted-foreground">
+        <div className="studio-search flex h-8 items-center gap-2 rounded-full border border-border/50 bg-surface-1/60 px-3 text-[12px] text-muted-foreground backdrop-blur-sm">
           <Search className="size-3.5 shrink-0" />
           <input
             type="text"

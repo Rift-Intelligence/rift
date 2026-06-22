@@ -94,8 +94,8 @@ export const MessageEditor = ({
               className="group relative inline-block text-sm"
             >
               <div
-                className={`relative overflow-hidden border rounded-2xl ${
-                  isImage(file.mediaType) ? "bg-background" : "bg-primary"
+                className={`relative overflow-hidden border border-border rounded-xl ${
+                  isImage(file.mediaType) ? "bg-background" : "bg-surface-2"
                 }`}
               >
                 {isImage(file.mediaType) && file.url ? (
@@ -111,8 +111,8 @@ export const MessageEditor = ({
                 ) : (
                   <div className="p-2 w-64">
                     <div className="flex flex-row items-center gap-2">
-                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-[#FF5588] flex items-center justify-center">
-                        <File className="h-6 w-6 text-white" />
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-surface-3 flex items-center justify-center">
+                        <File className="h-6 w-6 text-muted-foreground" />
                       </div>
                       <div className="overflow-hidden flex-1">
                         <div className="truncate font-semibold text-sm">
@@ -134,7 +134,7 @@ export const MessageEditor = ({
                   onClick={() => handleRemoveFile(file.fileId)}
                   variant="secondary"
                   size="sm"
-                  className="transition-colors flex h-6 w-6 items-center justify-center rounded-full border-[rgba(0,0,0,0.1)] bg-black text-white dark:border-[rgba(255,255,255,0.1)] dark:bg-white dark:text-black p-0"
+                  className="transition-colors duration-150 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-foreground text-background p-0"
                   aria-label={`Remove ${file.name}`}
                   data-testid="remove-edit-file"
                 >

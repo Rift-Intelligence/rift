@@ -3,7 +3,6 @@
 import { AtSign } from "lucide-react";
 import { AttachmentButton } from "@/app/components/AttachmentButton";
 import { ChatModeSelector } from "./ChatModeSelector";
-import { ModelSelector } from "@/app/components/ModelSelector";
 import {
   SubmitStopButton,
   type SubmitStopButtonProps,
@@ -12,7 +11,6 @@ import {
   ContextUsageIndicator,
   type ContextUsageData,
 } from "@/app/components/ContextUsageIndicator";
-import { useGlobalState } from "@/app/contexts/GlobalState";
 
 export interface ChatInputToolbarProps extends SubmitStopButtonProps {
   onAttachClick: () => void;
@@ -32,8 +30,6 @@ export function ChatInputToolbar({
   chatMode,
   ...submitStopProps
 }: ChatInputToolbarProps) {
-  const { selectedModel, setSelectedModel } = useGlobalState();
-
   return (
     <div className="flex items-center gap-0.5 min-w-0">
       <button
@@ -48,11 +44,6 @@ export function ChatInputToolbar({
         <AttachmentButton onAttachClick={onAttachClick} />
       </div>
       <ChatModeSelector />
-      <ModelSelector
-        value={selectedModel}
-        onChange={setSelectedModel}
-        mode={chatMode}
-      />
       <div className="ml-auto shrink-0 flex items-center gap-2">
         {showContextIndicator && contextUsage && (
           <ContextUsageIndicator

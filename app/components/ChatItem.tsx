@@ -54,6 +54,7 @@ import { removeDraft } from "@/lib/utils/client-storage";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ShareDialog } from "./ShareDialog";
 import { usePinChat, useUnpinChat } from "../hooks/useChats";
+import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 
 interface ChatItemProps {
   id: string;
@@ -98,9 +99,10 @@ const ChatItem: React.FC<ChatItemProps> = ({
   const renameChat = useMutation(api.chats.renameChat);
   const pinChat = usePinChat();
   const unpinChat = useUnpinChat();
+  const { basePath } = useAppShell();
 
   // Check if this chat is currently active based on URL (usePathname so we re-render when route changes)
-  const isCurrentlyActive = pathname === `/c/${id}`;
+  const isCurrentlyActive = pathname === chatRoute(basePath, id);
 
   const handleClick = () => {
     // Don't navigate if dialog is open or dropdown is open
@@ -120,7 +122,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
     }
 
     // Navigate to the chat route
-    router.push(`/c/${id}`);
+    router.push(chatRoute(basePath, id));
   };
 
   const [isDeleting, setIsDeleting] = useState(false);
@@ -148,7 +150,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
       // If we're deleting the currently active chat, navigate to home
       if (isCurrentlyActive) {
         initializeNewChat();
-        router.push("/");
+        router.push(basePath);
       }
     } catch (error: any) {
       // Extract error message
@@ -167,7 +169,7 @@ const ChatItem: React.FC<ChatItemProps> = ({
         removeDraft(id);
         if (isCurrentlyActive) {
           initializeNewChat();
-          router.push("/");
+          router.push(basePath);
         }
       } else {
         console.error("Failed to delete chat:", error);

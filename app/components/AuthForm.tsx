@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { ArrowRight } from "lucide-react";
-import { RiftMascot } from "./rift/RiftMascot";
 
 /**
- * Email/password auth — Cursor / landing style.
+ * Email/password auth — Rift 2 landing aesthetic.
  */
 export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
   const { signIn } = useAuthActions();
@@ -41,49 +40,57 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
   };
 
   return (
-    <div className="w-full max-w-[400px]">
-      <div className="mb-8 flex flex-col items-center text-center">
-        <div className="relative mb-5">
-          <div
-            className="pointer-events-none absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-2xl"
-            aria-hidden
-          />
-          <div className="relative scale-[1.35]">
-            <RiftMascot
-              cell={5}
-              variant="hero"
-              className="drop-shadow-[0_8px_32px_rgba(255,255,255,0.15)]"
-            />
-          </div>
-        </div>
-        <h1 className="text-balance text-2xl font-semibold tracking-tight text-[#e8e8e8] sm:text-[1.75rem]">
-          {isSignUp ? "Create your account" : "Welcome back"}
+    <div className="w-full max-w-[420px]">
+      <div className="mb-8 text-center sm:text-left">
+        <p className="rift2-display text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+          {isSignUp ? "Get started" : "Welcome back"}
+        </p>
+        <h1 className="rift2-display mt-3 text-[clamp(1.75rem,5vw,2.25rem)] font-medium leading-[1.05] tracking-[-0.03em]">
+          {isSignUp ? (
+            <>
+              Create your
+              <br />
+              <span className="rift2-serif italic text-foreground/90">
+                account
+              </span>
+            </>
+          ) : (
+            <>
+              Sign in to
+              <br />
+              <span className="rift2-serif italic text-foreground/90">
+                RIFT
+              </span>
+            </>
+          )}
         </h1>
-        <p className="mt-2 max-w-xs text-pretty text-[14px] leading-relaxed text-[#858585]">
+        <p className="mt-3 max-w-sm text-[14px] leading-relaxed text-muted-foreground sm:text-[15px]">
           {isSignUp
-            ? "Start running autonomous pentest ops in an isolated sandbox."
-            : "Sign in to continue to your sessions and agent workspace."}
+            ? "Autonomous pentest ops in an isolated cloud sandbox."
+            : "Continue to your sessions and agent workspace."}
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-lg border border-[#3c3c3c] bg-[#252526] p-5 sm:p-6"
+        className="rounded-2xl border border-border/60 bg-background/70 p-5 shadow-[0_24px_80px_-32px_rgba(0,0,0,0.65)] backdrop-blur-md sm:p-6"
       >
         <label className="block">
-          <span className="text-[12px] font-medium text-[#858585]">Email</span>
+          <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+            Email
+          </span>
           <input
             name="email"
             type="email"
             autoComplete="email"
             required
             placeholder="you@company.com"
-            className="mt-1.5 w-full rounded-md border border-[#3c3c3c] bg-[#1e1e1e] px-3 py-2.5 text-[13px] text-[#e8e8e8] outline-none transition-colors placeholder:text-[#6e6e6e] focus:border-[#505050] focus:ring-1 focus:ring-[#505050]"
+            className="mt-2 w-full rounded-xl border border-border/70 bg-surface-1/80 px-3.5 py-2.5 text-[13px] text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-signal/50 focus:ring-1 focus:ring-signal/20"
           />
         </label>
 
         <label className="mt-4 block">
-          <span className="text-[12px] font-medium text-[#858585]">
+          <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
             Password
           </span>
           <input
@@ -93,12 +100,12 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
             required
             minLength={8}
             placeholder="••••••••"
-            className="mt-1.5 w-full rounded-md border border-[#3c3c3c] bg-[#1e1e1e] px-3 py-2.5 text-[13px] text-[#e8e8e8] outline-none transition-colors placeholder:text-[#6e6e6e] focus:border-[#505050] focus:ring-1 focus:ring-[#505050]"
+            className="mt-2 w-full rounded-xl border border-border/70 bg-surface-1/80 px-3.5 py-2.5 text-[13px] text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-signal/50 focus:ring-1 focus:ring-signal/20"
           />
         </label>
 
         {error ? (
-          <p className="mt-4 text-[13px] text-[#f48771]" role="alert">
+          <p className="mt-4 text-[13px] text-destructive" role="alert">
             {error}
           </p>
         ) : null}
@@ -106,7 +113,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
         <button
           type="submit"
           disabled={submitting}
-          className="mt-6 flex h-10 w-full items-center justify-center gap-2 rounded-md bg-[#e8e8e8] text-[13px] font-medium text-[#1e1e1e] transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-full bg-foreground text-[13px] font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-60"
         >
           {submitting ? (
             "Please wait…"
@@ -119,13 +126,13 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-[13px] text-[#858585]">
+      <p className="mt-6 text-center text-[13px] text-muted-foreground sm:text-left">
         {isSignUp ? (
           <>
             Already have an account?{" "}
             <Link
               href="/login"
-              className="text-[#e8e8e8] underline-offset-4 hover:underline"
+              className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-signal/50"
             >
               Sign in
             </Link>
@@ -135,7 +142,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
             New to RIFT?{" "}
             <Link
               href="/signup"
-              className="text-[#e8e8e8] underline-offset-4 hover:underline"
+              className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-signal/50"
             >
               Create an account
             </Link>
@@ -143,8 +150,8 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
         )}
       </p>
 
-      <p className="mt-4 text-center text-[11px] text-[#6e6e6e]">
-        No credit card · Cloud sandbox included · Beta access
+      <p className="mt-4 text-center text-[11px] uppercase tracking-[0.08em] text-muted-foreground/70 sm:text-left">
+        No credit card · Cloud sandbox · Beta access
       </p>
     </div>
   );

@@ -88,7 +88,7 @@ const SettingsDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           data-testid="settings-dialog"
-          className="w-[380px] max-w-[98%] md:w-[95vw] md:max-w-[920px] max-h-[95%] md:h-[672px] p-0 overflow-hidden rounded-[20px]"
+          className="w-[380px] max-w-[98%] md:w-[95vw] md:max-w-[920px] max-h-[95%] md:h-[672px] overflow-hidden rounded-2xl border-border/60 bg-background/95 p-0 backdrop-blur-md"
           showCloseButton={!isMobile}
         >
           {/* Accessibility: Always include DialogTitle */}

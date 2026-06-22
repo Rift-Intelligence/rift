@@ -7,13 +7,18 @@ import { useAuth } from "@/app/hooks/useAuth";
 import { useGlobalState } from "@/app/contexts/GlobalState";
 import type { ChatListData } from "./Sidebar";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
+import {
+  chatRoute,
+  isHomePath,
+  useAppShell,
+} from "@/app/contexts/AppShellContext";
 
 interface ChatTitlebarProps {
   chatListData: ChatListData;
 }
 
 function getChatIdFromPath(pathname: string): string | null {
-  const match = pathname.match(/^\/c\/([^/]+)/);
+  const match = pathname.match(/\/c\/([^/]+)/);
   return match?.[1] ?? null;
 }
 
@@ -28,6 +33,7 @@ export function ChatTitlebar({ chatListData }: ChatTitlebarProps) {
     chatSidebarOpen,
   } = useGlobalState();
 
+  const { titlebarClass, basePath, variant } = useAppShell();
   const currentChatId = getChatIdFromPath(pathname);
   const chats = chatListData.results ?? [];
 
@@ -46,7 +52,7 @@ export function ChatTitlebar({ chatListData }: ChatTitlebarProps) {
   const handleNewChat = () => {
     closeSidebar();
     initializeNewChat();
-    router.push("/");
+    router.push(basePath);
   };
 
   const shortTitle = (title?: string | null) => {
@@ -56,23 +62,29 @@ export function ChatTitlebar({ chatListData }: ChatTitlebarProps) {
 
   return (
     <header
-      className="rift-titlebar flex h-[35px] shrink-0 items-center border-b border-sidebar-border bg-sidebar px-3 pl-[78px] max-md:pl-3"
+      className={`${titlebarClass} flex h-10 shrink-0 items-center border-b px-3 pl-[78px] max-md:pl-3`}
       data-testid="chat-titlebar"
     >
-      <div className="flex min-w-0 flex-1 items-center gap-0.5">
+      <div className="flex min-w-0 flex-1 items-center gap-1">
         {tabChats.map((chat) => {
           const isActive =
             chat.id === currentChatId ||
-            (!currentChatId && pathname === "/" && tabChats[0]?.id === chat.id);
+            (!currentChatId &&
+              isHomePath(pathname, basePath) &&
+              tabChats[0]?.id === chat.id);
           return (
             <button
               key={chat.id}
               type="button"
-              onClick={() => router.push(`/c/${chat.id}`)}
-              className={`group flex h-[26px] max-w-[200px] items-center gap-1.5 rounded px-2.5 text-xs transition-colors ${
+              onClick={() => router.push(chatRoute(basePath, chat.id))}
+              className={`group flex h-7 max-w-[200px] items-center gap-1.5 px-3 text-[11px] transition-colors ${
+                variant === "studio"
+                  ? "studio-title-pill rounded-md"
+                  : "rounded-full"
+              } ${
                 isActive
-                  ? "bg-background text-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  ? "border border-border/60 bg-background/80 text-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-surface-2/60 hover:text-foreground"
               }`}
             >
               <MessageCircle className="size-3.5 shrink-0 opacity-70" />
@@ -83,17 +95,11 @@ export function ChatTitlebar({ chatListData }: ChatTitlebarProps) {
             </button>
           );
         })}
-        {!currentChatId && pathname === "/" && tabChats.length === 0 && (
-          <div className="flex h-[26px] items-center gap-1.5 rounded bg-background px-2.5 text-xs text-foreground">
-            <MessageCircle className="size-3.5 shrink-0 opacity-70" />
-            <span>New Chat</span>
-          </div>
-        )}
         <button
           type="button"
           onClick={handleNewChat}
           aria-label="New chat"
-          className="flex h-[26px] w-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-surface-2/60 hover:text-foreground"
         >
           <Plus className="size-4" />
         </button>
@@ -103,7 +109,7 @@ export function ChatTitlebar({ chatListData }: ChatTitlebarProps) {
           type="button"
           onClick={toggleChatSidebar}
           aria-label="Toggle sidebar"
-          className="flex h-[26px] w-[26px] items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-surface-2/60 hover:text-foreground"
         >
           <PanelLeft className="size-4" />
         </button>
@@ -111,7 +117,7 @@ export function ChatTitlebar({ chatListData }: ChatTitlebarProps) {
           type="button"
           onClick={() => openSettingsDialog()}
           aria-label="Settings"
-          className="flex h-[26px] w-[26px] items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-surface-2/60 hover:text-foreground"
         >
           <Settings className="size-4" />
         </button>
