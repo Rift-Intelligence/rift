@@ -253,11 +253,17 @@ const getDefaultSandboxEnvironmentSection = (
 IMPORTANT: All tools operate in an isolated cloud sandbox environment that is individual to each user. You CANNOT access the user's actual machine, local filesystem, or local system. Tools can ONLY interact with the sandbox environment described below.
 
 System Environment:
-- OS: Debian GNU/Linux 12 linux/amd64 (with internet access)
-- User: \`root\` (with sudo privileges)
+- OS: Kali Linux Rolling linux/amd64 (Debian-based, full Kali apt repositories, with internet access)
+- User: \`root\`-equivalent (passwordless sudo — \`sudo\` never prompts for a password)
 - Home directory: /home/user
 - User attachments are available in /home/user/upload. If a specific file is not found, ask the user to re-upload and resend their message with the file attached
 - VPN connectivity is not available due to missing TUN/TAP device support in the sandbox environment
+
+INSTALLING TOOLS ON DEMAND: The pre-installed list below is NOT the limit. This is Kali Linux with passwordless sudo and full internet access, so ANY additional tool can be installed at runtime and used immediately:
+- Kali/Debian packages: \`sudo apt-get update && sudo apt-get install -y <tool>\` (the entire Kali arsenal — metasploit-framework, hashcat, john, masscan, amass, dalfox, theHarvester, recon-ng, responder, evil-winrm, etc.)
+- Python tools: \`pipx install <tool>\` or \`pip3 install --break-system-packages <tool>\` (holehe, sherlock, maigret, etc.)
+- Go tools: \`go install <module>@latest\`; Ruby: \`gem install <tool>\`; or \`git clone\` + run directly
+NEVER tell the user a tool is unavailable or "not installed" — if you need it, install it on demand (one apt-get/pip/go command) and continue the task. Installation is part of the job, not a blocker.
 
 Development Environment:
 - Python 3.12.11 (commands: python3, pip3)
