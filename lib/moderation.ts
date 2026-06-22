@@ -192,20 +192,9 @@ function determineShouldUncensorResponse(
   // message to score within a narrow 0.1–0.9/0.98 band, so most security asks
   // (which OpenAI moderation barely scores) never got the authorization framing
   // and free users got it even less than paid. The forbidden categories below
-  // STILL gate it, so content aimed at real-person harm is never "uncensored".
-  const forbiddenCategories = [
-    "sexual",
-    "sexual/minors",
-    "hate",
-    "hate/threatening",
-    "harassment",
-    "harassment/threatening",
-    "self-harm",
-    "self-harm/intent",
-    "self-harm/instruction",
-    "violence",
-    "violence/graphic",
-  ];
+  // STILL gate it: sexual content (especially involving minors / CSAM) is never
+  // "uncensored". This is the one hard safety line and must stay.
+  const forbiddenCategories = ["sexual", "sexual/minors"];
   const hasForbiddenCategory = hazardCategories.some((category) =>
     forbiddenCategories.includes(category),
   );
