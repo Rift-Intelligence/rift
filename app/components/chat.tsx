@@ -1274,7 +1274,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
               ) : (
                 <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden bg-transparent">
                   {/* Background is the global RiftBackdrop (mounted in layout) */}
-                  <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 min-h-0">
+                  <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 pb-[14vh] min-h-0">
                     <div className="w-full max-w-full sm:max-w-[768px] sm:min-w-[390px] flex flex-col items-center">
                       <div className="text-center">
                         {temporaryChatsEnabled ? (

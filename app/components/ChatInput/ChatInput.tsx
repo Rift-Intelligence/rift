@@ -265,10 +265,6 @@ export const ChatInput = ({
           </div>
         )}
 
-        <p className="mt-2 text-center text-[11px] text-muted-foreground/70">
-          RIFT runs real tools in an isolated sandbox. Review actions on
-          production targets.
-        </p>
         {onScrollToBottom && (
           <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-40">
             <ScrollToBottomButton
