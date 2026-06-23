@@ -114,7 +114,7 @@ export const RateLimitWarning = ({
   return (
     <div
       data-testid="rate-limit-warning"
-      className={`mb-2 px-3 py-2.5 border rounded-xl flex items-center justify-between gap-2 ${WARNING_STYLES}`}
+      className={`mb-2 px-3 py-2.5 border rounded-[22px] flex items-center justify-between gap-2 ${WARNING_STYLES}`}
     >
       <div className="flex-1 flex items-center gap-2 flex-wrap">
         <span className="text-foreground text-sm">{message}</span>

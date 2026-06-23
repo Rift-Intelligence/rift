@@ -101,8 +101,8 @@ const FileItem = ({
         </Button>
       )}
 
-      <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-surface-3">
-        <File className="w-6 h-6 text-muted-foreground" />
+      <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-[#FF5588]">
+        <File className="w-6 h-6 text-white" />
       </div>
 
       <div className="flex flex-col gap-1 flex-grow flex-1 min-w-0">
@@ -361,7 +361,7 @@ const AllFilesDialog = ({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="bg-background rounded-xl border border-border fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[95%] max-h-[95%] overflow-auto h-[680px] flex flex-col p-0"
+        className="bg-background rounded-[20px] border border-border fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[95%] max-h-[95%] overflow-auto h-[680px] flex flex-col p-0"
         style={{ width: "600px" }}
         showCloseButton={false}
       >

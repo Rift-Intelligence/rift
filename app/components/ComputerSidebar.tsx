@@ -464,7 +464,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
   return (
     <div className="h-full w-full top-0 left-0 desktop:top-auto desktop:left-auto desktop:right-auto z-50 fixed desktop:relative desktop:h-full desktop:mr-4 flex-shrink-0">
       <div className="h-full w-full">
-        <div className="rift2-glass-panel flex h-full w-full rounded-2xl shadow-[0_24px_80px_-32px_rgba(0,0,0,0.55)]">
+        <div className="shadow-[0px_0px_8px_0px_rgba(0,0,0,0.02)] border border-border/20 dark:border-border flex h-full w-full bg-background rounded-[22px]">
           <div className="flex-1 min-w-0 p-4 flex flex-col h-full">
             {/* Header */}
             <div className="flex items-center gap-2 w-full">
@@ -475,7 +475,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                 <span
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.15em] shrink-0 ${
                     isLive
-                      ? "border-success/50 bg-success/10 text-success"
+                      ? "border-terminal-green/50 bg-terminal-green/10 text-terminal-green"
                       : "border-border bg-muted/30 text-muted-foreground"
                   }`}
                   aria-live="polite"
@@ -483,7 +483,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
                       isLive
-                        ? "bg-success animate-pulse"
+                        ? "bg-terminal-green animate-pulse"
                         : "bg-muted-foreground/50"
                     }`}
                   />
@@ -579,9 +579,9 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                 </div>
 
                 {/* Content Container */}
-                <div className="flex flex-col rounded-lg overflow-hidden bg-muted/20 border border-border/30 dark:border-black/30 shadow-md flex-1 min-h-0 mt-[16px]">
+                <div className="flex flex-col rounded-lg overflow-hidden bg-muted/20 border border-border/30 dark:border-black/30 shadow-[0px_4px_32px_0px_rgba(0,0,0,0.04)] flex-1 min-h-0 mt-[16px]">
                   {/* Unified Header */}
-                  <div className="h-[36px] flex items-center justify-between px-3 w-full bg-muted/30 border-b border-border rounded-t-lg">
+                  <div className="h-[36px] flex items-center justify-between px-3 w-full bg-muted/30 border-b border-border rounded-t-lg shadow-[inset_0px_1px_0px_0px_rgba(255,255,255,0.1)]">
                     {/* Title - far left */}
                     <div className="flex items-center gap-2">
                       {isProxy ? (
@@ -994,7 +994,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                         className={`flex items-center justify-center w-[24px] h-[24px] transition-colors cursor-pointer ${
                           !canGoPrev
                             ? "text-muted-foreground/30 cursor-not-allowed"
-                            : "text-muted-foreground hover:text-signal"
+                            : "text-muted-foreground hover:text-blue-500"
                         }`}
                         aria-label="Previous tool execution"
                       >
@@ -1007,7 +1007,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                         className={`flex items-center justify-center w-[24px] h-[24px] transition-colors cursor-pointer ${
                           !canGoNext
                             ? "text-muted-foreground/30 cursor-not-allowed"
-                            : "text-muted-foreground hover:text-signal"
+                            : "text-muted-foreground hover:text-blue-500"
                         }`}
                         aria-label="Next tool execution"
                       >
@@ -1030,7 +1030,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                     >
                       <span className="relative h-full w-full rounded-full bg-muted">
                         <span
-                          className="absolute h-full rounded-full bg-signal"
+                          className="absolute h-full rounded-full bg-blue-500"
                           style={{
                             left: "0%",
                             width: `${getProgressPercentage}%`,
@@ -1051,7 +1051,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                             aria-valuemax={maxIndex}
                             aria-valuenow={currentIndex}
                             aria-label={`Tool execution ${currentIndex + 1}`}
-                            className="relative block h-[14px] w-[14px] rounded-full bg-signal transition-all focus:outline-none focus:ring-2 focus:ring-signal focus:ring-offset-2 border-2 border-background drop-shadow-sm"
+                            className="relative block h-[14px] w-[14px] rounded-full bg-blue-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border-2 border-background drop-shadow-[0px_1px_4px_rgba(0,0,0,0.06)]"
                           ></span>
                         </span>
                       )}
@@ -1060,7 +1060,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                       <div
                         className={`h-[8px] w-[8px] rounded-full ${
                           status === "streaming"
-                            ? "bg-success"
+                            ? "bg-green-500"
                             : "bg-muted-foreground"
                         }`}
                       ></div>
@@ -1077,7 +1077,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                     {!isAtLive && (
                       <button
                         onClick={handleJumpToLive}
-                        className="h-10 px-4 border border-border flex items-center gap-2 bg-background hover:bg-muted shadow-lg rounded-full cursor-pointer absolute left-[50%] translate-x-[-50%]"
+                        className="h-10 px-4 border border-border flex items-center gap-2 bg-background hover:bg-muted shadow-[0px_5px_16px_0px_rgba(0,0,0,0.1),0px_0px_1.25px_0px_rgba(0,0,0,0.1)] rounded-full cursor-pointer absolute left-[50%] translate-x-[-50%]"
                         style={{ bottom: "calc(100% + 10px)" }}
                         aria-label="Jump to live"
                       >

@@ -22,7 +22,6 @@ import { ChatInputTextarea } from "./ChatInputTextarea";
 import { ChatInputToolbar } from "./ChatInputToolbar";
 import { type ContextUsageData } from "../ContextUsageIndicator";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useAppShell } from "@/app/contexts/AppShellContext";
 
 interface ChatInputProps {
   onSubmit: (e: React.FormEvent) => void;
@@ -83,7 +82,6 @@ export const ChatInput = ({
     hasLocalSandbox,
     defaultLocalSandboxPreference,
   } = useGlobalState();
-  const { composerClass } = useAppShell();
   const isMobile = useIsMobile();
   const {
     fileInputRef,
@@ -222,7 +220,7 @@ export const ChatInput = ({
         />
 
         <div
-          className={`order-2 sm:order-1 flex max-h-[300px] min-w-0 flex-col overflow-hidden ${composerClass} ${uploadedFiles && uploadedFiles.length > 0 ? "rounded-t-none border-t-0" : ""}`}
+          className={`order-2 sm:order-1 flex max-h-[300px] min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-input-chat transition-[border-color] duration-200 focus-within:border-[#505050] ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
         >
           <div className="flex flex-col gap-2 px-3 py-2.5 pb-2">
             <ChatInputTextarea
@@ -267,6 +265,10 @@ export const ChatInput = ({
           </div>
         )}
 
+        <p className="mt-2 text-center text-[11px] text-muted-foreground/70">
+          RIFT runs real tools in an isolated sandbox. Review actions on
+          production targets.
+        </p>
         {onScrollToBottom && (
           <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-40">
             <ScrollToBottomButton

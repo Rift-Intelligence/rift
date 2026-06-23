@@ -1,8 +1,7 @@
 "use client";
 
-import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
+import { RiftMascot } from "./RiftMascot";
 import { RiftWordmark } from "@/components/icons/rift-wordmark";
-import { useAppShell } from "@/app/contexts/AppShellContext";
 
 interface RiftBrandBarProps {
   version?: string;
@@ -17,39 +16,33 @@ export function RiftBrandBar({
   status,
   className = "",
 }: RiftBrandBarProps) {
-  const { panelClass, displayClass } = useAppShell();
-
   return (
     <div
-      className={`${panelClass} flex w-full shrink-0 items-center gap-3 border-b border-border/40 px-5 py-2.5 ${className}`}
+      className={`flex w-full shrink-0 items-center gap-3 overflow-visible border-b border-sidebar-border bg-background px-5 py-3 ${className}`}
       data-testid="rift-brand-bar"
     >
-      <RiftPixelMark size={22} className="shrink-0" />
+      <div className="flex shrink-0 items-end overflow-visible pb-0.5">
+        <RiftMascot variant="banner" className="rift-mascot-glow shrink-0" />
+      </div>
       <div className="min-w-0 leading-tight">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline gap-1.5">
           <RiftWordmark height={11} className="text-foreground" />
-          <span
-            className={`${displayClass} text-[10px] font-normal text-muted-foreground`}
-          >
+          <span className="text-[11px] font-normal text-muted-foreground">
             {version}
           </span>
         </div>
-        <div className="truncate font-mono text-[10px] text-muted-foreground">
-          {cwd}
-        </div>
+        <div className="truncate text-[11px] text-muted-foreground">{cwd}</div>
       </div>
       {status ? (
-        <span className="ml-auto flex shrink-0 items-center gap-2 rounded-full border border-border/60 bg-surface-2/80 px-2.5 py-1 text-[10px] uppercase tracking-[0.06em] text-muted-foreground backdrop-blur-sm">
-          <span
-            className={`size-1.5 rounded-full ${
-              status.tone === "warn"
-                ? "bg-warning"
-                : status.tone === "ok"
-                  ? "bg-success"
-                  : "bg-muted-foreground"
-            }`}
-            aria-hidden
-          />
+        <span
+          className={`ml-auto shrink-0 text-[11px] ${
+            status.tone === "warn"
+              ? "text-amber-400/90"
+              : status.tone === "ok"
+                ? "text-emerald-400/80"
+                : "text-muted-foreground"
+          }`}
+        >
           {status.label}
         </span>
       ) : null}

@@ -398,217 +398,6 @@
   background-size: 28px 28px;
 }
 
-.landing-rift2-bg {
-  background:
-    radial-gradient(
-      ellipse 120% 80% at 70% 10%,
-      rgba(52, 210, 230, 0.05),
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 90% 70% at 10% 90%,
-      rgba(80, 60, 40, 0.04),
-      transparent 50%
-    ),
-    var(--background);
-}
-
-/* Authenticated app shell — same family as landing, tuned quieter */
-.app-rift2-shell {
-  background:
-    radial-gradient(
-      ellipse 110% 70% at 72% 0%,
-      rgba(52, 210, 230, 0.035),
-      transparent 52%
-    ),
-    radial-gradient(
-      ellipse 85% 65% at 8% 100%,
-      rgba(80, 60, 40, 0.025),
-      transparent 48%
-    ),
-    var(--background);
-}
-
-.rift2-glass-panel {
-  border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
-  background: color-mix(in oklab, var(--background) 68%, transparent);
-  backdrop-filter: blur(14px);
-}
-
-.rift2-shell-sidebar {
-  background: color-mix(in oklab, var(--surface-1) 82%, transparent);
-  backdrop-filter: blur(18px);
-  border-color: color-mix(in oklab, var(--border) 42%, transparent);
-}
-
-.rift2-titlebar {
-  background: color-mix(in oklab, var(--surface-1) 75%, transparent);
-  backdrop-filter: blur(16px);
-  border-color: color-mix(in oklab, var(--border) 40%, transparent);
-}
-
-/* App Studio — warm editorial void, violet signal, solid panels */
-.app-studio-shell {
-  background:
-    radial-gradient(
-      ellipse 90% 55% at 50% -8%,
-      rgba(167, 139, 250, 0.07),
-      transparent 52%
-    ),
-    radial-gradient(
-      ellipse 70% 45% at 100% 100%,
-      rgba(212, 165, 116, 0.045),
-      transparent 48%
-    ),
-    #0a0908;
-}
-
-.dark .app-studio-shell {
-  --background: #0a0908;
-  --foreground: #edeae6;
-  --card: #141312;
-  --card-foreground: #edeae6;
-  --popover: #181716;
-  --popover-foreground: #edeae6;
-  --muted: #1a1918;
-  --muted-foreground: #9a9590;
-  --accent: #242220;
-  --border: #2a2826;
-  --input: #2a2826;
-  --fill-input-chat: #121110;
-  --signal: #b794f6;
-  --signal-bright: #d6bcfa;
-  --signal-dim: #805ad5;
-  --signal-soft: rgba(183, 148, 246, 0.12);
-  --surface-1: #11100f;
-  --surface-2: #181716;
-  --surface-3: #201f1d;
-  --surface-4: #2a2826;
-  --elevated: #1c1b19;
-  --border-strong: #3a3734;
-  --sidebar: #11100f;
-  --sidebar-foreground: #d8d4cf;
-  --sidebar-accent: #1a1918;
-  --sidebar-border: #242220;
-}
-
-.studio-shell-sidebar {
-  background: var(--surface-1);
-  border-color: color-mix(in oklab, var(--border) 70%, transparent);
-}
-
-.studio-titlebar {
-  background: var(--surface-1);
-  border-color: color-mix(in oklab, var(--border) 55%, transparent);
-}
-
-.studio-panel {
-  position: relative;
-  border-bottom: 1px solid color-mix(in oklab, var(--border) 65%, transparent);
-  background: var(--surface-2);
-}
-
-.studio-panel::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in oklab, var(--signal-dim) 80%, transparent),
-    var(--signal)
-  );
-  opacity: 0.85;
-}
-
-.studio-display {
-  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
-  letter-spacing: -0.02em;
-}
-
-.studio-composer {
-  border-radius: 0.875rem;
-  border: 1px solid color-mix(in oklab, var(--border) 85%, transparent);
-  background: var(--fill-input-chat);
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklab, white 4%, transparent),
-    0 10px 36px -18px rgba(0, 0, 0, 0.65);
-}
-
-.app-studio-shell .studio-new-chat {
-  border-radius: 0.625rem;
-  border-color: color-mix(in oklab, var(--border) 75%, transparent);
-  background: var(--surface-2);
-  font-family: var(--font-serif), Georgia, serif;
-  letter-spacing: -0.01em;
-}
-
-.app-studio-shell .studio-new-chat:hover {
-  border-color: color-mix(in oklab, var(--signal) 35%, var(--border));
-  background: var(--surface-3);
-}
-
-.app-studio-shell .studio-search {
-  border-radius: 0.625rem;
-  background: var(--surface-1);
-}
-
-.app-studio-shell .studio-title-pill {
-  border-radius: 0.5rem;
-}
-
-.app-studio-shell .studio-hero-title {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 500;
-  letter-spacing: -0.03em;
-}
-
-.rift2-display {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
-}
-
-.rift2-serif {
-  font-family: var(--font-serif), Georgia, serif;
-}
-
-.rift2-demo-tilt {
-  transform: rotateX(2.5deg);
-  transform-origin: center top;
-}
-
-@media (min-width: 1024px) {
-  .rift2-demo-stage .rift2-demo-tilt {
-    animation: rift2-demo-float 9s ease-in-out infinite;
-  }
-}
-
-@keyframes rift2-demo-float {
-  0%,
-  100% {
-    transform: rotateX(2.5deg) translateY(0);
-  }
-  50% {
-    transform: rotateX(1.5deg) translateY(-8px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rift2-demo-stage .rift2-demo-tilt {
-    animation: none;
-    transform: rotateX(1deg);
-  }
-}
-
-.landing-rift3 {
-  background: var(--background);
-}
-
-.landing-rift3 article strong {
-  font-weight: 500;
-}
-
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -999,19 +788,7 @@
   }
 }
 
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 /* ---- application utilities ---- */
-.animate-marquee {
-  animation: marquee 36s linear infinite;
-}
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out both;
 }
@@ -1044,7 +821,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-marquee,
   .animate-fade-in-up,
   .animate-view-enter,
   .animate-hero-highlight,
@@ -1248,7 +1024,7 @@
   }
 }
 
-/* RIFT app shell — chat workspace typography */
+/* Cursor mockup layout — authenticated chat shell */
 .rift-cursor-app {
   font-size: 13px;
   line-height: 1.5;

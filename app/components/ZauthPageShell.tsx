@@ -1,9 +1,9 @@
 import Link from "next/link";
+import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
 import { RiftWordmark } from "@/components/icons/rift-wordmark";
-import { AuthPageBackground } from "@/app/components/AuthPageBackground";
 
 /**
- * Public auth shell — Rift 2 / Extropic-aligned layout.
+ * Public auth shell — Cursor / landing-aligned dark layout.
  */
 export default function ZauthPageShell({
   children,
@@ -21,22 +21,20 @@ export default function ZauthPageShell({
   const showAuthChrome = center || header;
 
   return (
-    <div className="landing-rift2-bg relative flex min-h-screen flex-col text-foreground">
-      {showAuthChrome ? <AuthPageBackground /> : null}
-
+    <div className="landing-grid-bg flex min-h-screen flex-col bg-background text-foreground">
       {showAuthChrome ? (
-        <header className="absolute inset-x-0 top-0 z-50 px-4 pt-5 sm:px-8">
-          <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <header className="sticky top-0 z-10 shrink-0 border-b border-border/60 bg-background/80 backdrop-blur-md">
+          <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4 sm:px-6">
             <Link
               href="/"
-              className="rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              aria-label="RIFT home"
+              className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <RiftWordmark height={14} className="text-foreground" />
+              <RiftPixelMark size={22} />
+              <RiftWordmark height={13} />
             </Link>
             <Link
               href="/"
-              className="rounded-full border border-border/50 bg-background/40 px-4 py-1.5 text-[12px] font-medium text-muted-foreground backdrop-blur-md transition-colors hover:bg-surface-2/80 hover:text-foreground"
+              className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
             >
               Back to home
             </Link>
@@ -45,13 +43,13 @@ export default function ZauthPageShell({
       ) : null}
 
       <main
-        className={`relative z-10 flex-1 ${center ? "flex items-center justify-center px-4 py-20 sm:py-24" : ""} ${className ?? ""}`}
+        className={`relative flex-1 ${center ? "flex items-center justify-center px-4 py-10 sm:py-14" : ""} ${className ?? ""}`}
       >
         {children}
       </main>
 
       {footer || center ? (
-        <footer className="relative z-10 shrink-0 border-t border-border/30 py-6 text-center text-[12px] text-muted-foreground">
+        <footer className="shrink-0 border-t border-border/40 py-6 text-center text-[12px] text-muted-foreground">
           <Link href="/terms-of-service" className="hover:text-foreground">
             Terms
           </Link>

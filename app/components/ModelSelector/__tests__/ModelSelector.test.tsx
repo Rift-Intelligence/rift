@@ -8,11 +8,10 @@ const { ModelSelector } = jest.requireActual<
 
 describe("ModelSelector (single-model)", () => {
   it("renders a static, non-interactive model badge with no tier choices", () => {
-    const { container } = render(
-      <ModelSelector value="auto" onChange={jest.fn()} mode="agent" />,
-    );
+    render(<ModelSelector value="auto" onChange={jest.fn()} mode="agent" />);
 
-    expect(container.firstChild).toBeNull();
+    // Single-model product: shows one static label, no dropdown/options.
+    expect(screen.getByText("RIFT")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
     expect(screen.queryByText(/Recon|Strike|Dominate/)).not.toBeInTheDocument();
   });

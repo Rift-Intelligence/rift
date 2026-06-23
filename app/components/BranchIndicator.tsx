@@ -3,7 +3,6 @@
 import { memo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useGlobalState } from "../contexts/GlobalState";
-import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BranchIndicatorProps {
@@ -18,7 +17,6 @@ export const BranchIndicator = memo(function BranchIndicator({
   onNavigate,
 }: BranchIndicatorProps) {
   const router = useRouter();
-  const { basePath } = useAppShell();
   const { initializeChat, closeSidebar, setChatSidebarOpen } = useGlobalState();
   const isMobile = useIsMobile();
 
@@ -34,7 +32,7 @@ export const BranchIndicator = memo(function BranchIndicator({
     }
 
     initializeChat(branchedFromChatId);
-    router.push(chatRoute(basePath, branchedFromChatId));
+    router.push(`/c/${branchedFromChatId}`);
   }, [
     onNavigate,
     branchedFromChatId,
@@ -43,7 +41,6 @@ export const BranchIndicator = memo(function BranchIndicator({
     setChatSidebarOpen,
     initializeChat,
     router,
-    basePath,
   ]);
 
   return (

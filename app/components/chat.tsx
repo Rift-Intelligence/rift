@@ -22,7 +22,6 @@ import Footer from "./Footer";
 import { useMessageScroll } from "../hooks/useMessageScroll";
 import { useChatHandlers } from "../hooks/useChatHandlers";
 import { useGlobalState } from "../contexts/GlobalState";
-import { chatRoute, useAppShell } from "../contexts/AppShellContext";
 import { useInputApi } from "../contexts/InputContext";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useDocumentDragAndDrop } from "../hooks/useDocumentDragAndDrop";
@@ -194,7 +193,6 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   const params = useParams();
   const routeChatId = params?.id as string | undefined;
   const router = useRouter();
-  const { basePath } = useAppShell();
   const isMobile = useIsMobile();
   const { setDataStream, setIsAutoResuming } = useDataStreamDispatch();
   const [streamingState, dispatchStreaming] = useReducer(
@@ -620,7 +618,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
       if (!isExistingChatRef.current && !isTemporaryChat) {
         // Update URL without full navigation so this Chat stays mounted and
         // status can transition to "ready" (stop button → send button).
-        window.history.replaceState({}, "", chatRoute(basePath, chatId));
+        window.history.replaceState({}, "", `/c/${chatId}`);
         removeDraft("new");
         setIsExistingChat(true);
       }
@@ -1122,7 +1120,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
         return;
       }
       initializeChat(newChatId);
-      router.push(chatRoute(basePath, newChatId));
+      router.push(`/c/${newChatId}`);
     } catch (error) {
       console.error("Failed to branch chat:", error);
       toast.error("Failed to branch chat. Please try again.");

@@ -52,7 +52,7 @@ export const QueuedMessagesPanel = ({
   ];
 
   return (
-    <div className="mx-4 rounded-t-xl shadow-md border border-border border-b-0 bg-input-chat">
+    <div className="mx-4 rounded-[22px_22px_0px_0px] shadow-[0px_12px_32px_0px_rgba(0,0,0,0.02)] border border-black/8 dark:border-border border-b-0 bg-input-chat">
       {/* Header */}
       <div className="flex items-center px-4 transition-all duration-300 py-2">
         <button

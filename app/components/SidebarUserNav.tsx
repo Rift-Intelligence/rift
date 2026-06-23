@@ -518,7 +518,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="min-w-[240px] rounded-xl py-1.5"
+            className="min-w-[240px] rounded-2xl py-1.5"
             align="center"
             side="top"
             sideOffset={4}
@@ -599,7 +599,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[240px] rounded-xl py-1.5"
+                  className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[240px] rounded-2xl py-1.5"
                   align="center"
                   side="top"
                   sideOffset={4}
