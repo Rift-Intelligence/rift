@@ -60,8 +60,15 @@ export function Reasoning({
   const [duration, setDuration] = useState(0);
   const startRef = useRef<number | null>(null);
 
+  // Auto-open when reasoning starts streaming; never auto-close, so the
+  // transcript stays visible after it finishes — the user keeps the terminal
+  // experience and can collapse it by hand.
+  const wasStreaming = useRef(false);
   useEffect(() => {
-    setIsOpen(isStreaming);
+    if (isStreaming && !wasStreaming.current) {
+      setIsOpen(true);
+    }
+    wasStreaming.current = isStreaming;
   }, [isStreaming, setIsOpen]);
 
   useEffect(() => {

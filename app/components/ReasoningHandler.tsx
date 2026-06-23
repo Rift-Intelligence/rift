@@ -97,11 +97,7 @@ export const ReasoningHandler = memo(function ReasoningHandler({
     isLastPart;
 
   return (
-    <Reasoning
-      isStreaming={isStreaming}
-      defaultOpen={isStreaming}
-      className="my-1"
-    >
+    <Reasoning isStreaming={isStreaming} defaultOpen className="my-1">
       <ReasoningTrigger
         getThinkingMessage={(streaming) =>
           streaming ? "thinking" : "thought process"
