@@ -4,6 +4,8 @@ import {
   Geist,
   Space_Grotesk,
   Instrument_Serif,
+  Montserrat,
+  Pixelify_Sans,
 } from "next/font/google";
 import "./globals.css";
 
@@ -44,6 +46,24 @@ const instrumentSerif = Instrument_Serif({
   variable: "--font-serif",
   weight: "400",
   style: ["normal", "italic"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Montserrat = bold, geometric display sans for the high-energy landing
+// (heavy UPPERCASE headlines, à la the snulja reference).
+const montserrat = Montserrat({
+  variable: "--font-montserrat-src",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Pixelify Sans = chunky pixel display, standing in for the snulja "Pixeloid"
+// brand/accent face (big RIFT wordmark, pixel numerals, kicker labels).
+const pixelifySans = Pixelify_Sans({
+  variable: "--font-pixel-src",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -147,7 +167,7 @@ export default function RootLayout({
           <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         </head>
         <body
-          className={`${jetbrainsMono.variable} ${geist.variable} ${spaceGrotesk.variable} ${instrumentSerif.variable} antialiased h-full`}
+          className={`${jetbrainsMono.variable} ${geist.variable} ${spaceGrotesk.variable} ${instrumentSerif.variable} ${montserrat.variable} ${pixelifySans.variable} antialiased h-full`}
           suppressHydrationWarning
         >
           <ThemeProvider>

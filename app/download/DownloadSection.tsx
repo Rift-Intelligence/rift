@@ -117,7 +117,11 @@ export function DownloadSection() {
         <PlatformIcon platform={detected.platform} />
       </div>
 
-      <Button asChild size="lg" className="mb-4 text-lg">
+      <Button
+        asChild
+        size="lg"
+        className="mb-4 rounded-full bg-[#ff6309] text-lg font-semibold text-[#1c1c1c] hover:bg-[#ff7e28]"
+      >
         <a href={detected.downloadUrl}>
           <DownloadIcon />
           Download for {detected.displayName}

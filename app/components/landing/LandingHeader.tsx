@@ -18,7 +18,7 @@ function scrollTo(id: string) {
 
 export function LandingHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4 sm:px-6">
         <button
           type="button"
@@ -62,7 +62,7 @@ export function LandingHeader() {
             onClick={() =>
               navigateToAuth("/signup", { preferSignInForReturningUser: true })
             }
-            className="rounded-md bg-foreground px-3 py-1.5 text-[13px] font-medium text-background transition-opacity hover:opacity-90"
+            className="rounded-full bg-[#ff6309] px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-[#1c1c1c] transition-colors hover:bg-[#ff7e28]"
           >
             Get started
           </button>
