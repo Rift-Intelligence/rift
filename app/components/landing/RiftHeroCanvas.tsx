@@ -13,7 +13,7 @@ import { useEffect, useRef } from "react";
 
 type Pt = { x: number; y: number };
 
-const SIGNAL = "52, 210, 230"; // --signal (dark) as rgb
+const SIGNAL = "217, 119, 87"; // --signal (dark) as rgb
 const FORMS = ["cloud", "wordmark", "panda", "cloud"] as const;
 
 // RIFT panda mark — 8×8 pixel cells (matches RiftPixelMark)

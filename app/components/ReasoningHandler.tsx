@@ -89,5 +89,29 @@ export const ReasoningHandler = memo(function ReasoningHandler({
   if (!combined || REDACTED_PATTERN.test(combined.trim())) return null;
 
   const isLastPart = partIndex === parts.length - 1;
-  return null;
+  // Reasoning is actively streaming while it's the last part of the last message
+  // and the run is still producing tokens — that's when we show the live "thinking".
+  const isStreaming =
+    (status === "streaming" || status === "submitted") &&
+    !!isLastMessage &&
+    isLastPart;
+
+  return (
+    <Reasoning
+      isStreaming={isStreaming}
+      defaultOpen={isStreaming}
+      className="my-1"
+    >
+      <ReasoningTrigger
+        getThinkingMessage={(streaming) =>
+          streaming ? "thinking" : "thought process"
+        }
+      />
+      <ReasoningContent>
+        <div className="font-mono text-[12px] leading-relaxed text-muted-foreground/85 [&_p]:my-1.5">
+          <MemoizedMarkdown content={combined} />
+        </div>
+      </ReasoningContent>
+    </Reasoning>
+  );
 }, areReasoningPropsEqual);

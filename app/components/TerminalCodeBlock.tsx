@@ -300,7 +300,7 @@ export const TerminalCodeBlock = ({
       {/* xterm manages its own viewport + scrollbar; AnsiCodeBlock needs the
           wrapper to scroll. Avoid double scrollbars by toggling overflow. */}
       <div
-        className={`h-full w-full bg-background ${useXterm ? "overflow-hidden" : "overflow-auto"}`}
+        className={`h-full w-full bg-transparent ${useXterm ? "overflow-hidden" : "overflow-auto"}`}
       >
         {isExecuting && !output && status === "streaming" ? (
           isInteractiveAction ? (

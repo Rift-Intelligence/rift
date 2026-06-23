@@ -470,9 +470,9 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         <DropdownMenuItem
           data-testid="buy-tokens-button"
           onSelect={() => setShowBuyDialog(true)}
-          className="py-1.5 text-primary focus:text-primary"
+          className="py-1.5"
         >
-          <Zap className="mr-2 h-4 w-4 text-primary" />
+          <Zap className="mr-2 h-4 w-4 text-foreground" />
           <span>Buy tokens</span>
         </DropdownMenuItem>
       )}

@@ -447,6 +447,12 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
   const headerTitle = isProxy ? "RIFT\u2019s Proxy" : "RIFT\u2019s Computer";
   const isLive = status === "streaming" || status === "submitted";
 
+  // The terminal / code / diff "screen" should always read as a real dark
+  // terminal \u2014 light text on a dark surface \u2014 regardless of the app's light or
+  // dark theme. (Image/PDF previews, web search, notes keep the themed surface.)
+  const isCodeScreen =
+    isTerminal || isProxy || (isFile && resolvedFile?.action !== "viewing");
+
   const handleClose = () => {
     closeSidebar();
   };
@@ -665,7 +671,11 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 min-h-0 w-full overflow-hidden bg-background">
+                  <div
+                    className={`flex-1 min-h-0 w-full overflow-hidden ${
+                      isCodeScreen ? "dark bg-[#1c1b1a]" : "bg-background"
+                    }`}
+                  >
                     <div className="flex flex-col min-h-0 h-full relative">
                       <div className="focus-visible:outline-none flex-1 min-h-0 h-full text-sm flex flex-col py-0 outline-none">
                         <div

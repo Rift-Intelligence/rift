@@ -116,7 +116,7 @@ export function LandingPageRift2() {
           <div className="absolute inset-x-0 top-0 h-[640px] opacity-[0.28]">
             <RiftHeroCanvas />
           </div>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_80%_20%,rgba(52,210,230,0.1),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_80%_20%,rgba(217, 119, 87,0.1),transparent_55%)]" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
         </div>
 

@@ -8,13 +8,21 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { ChevronDownIcon } from "lucide-react";
-import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ComponentProps, ReactNode } from "react";
 
 type ReasoningContextValue = {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   isStreaming: boolean;
+  duration: number;
 };
 
 const ReasoningContext = createContext<ReasoningContextValue | null>(null);
@@ -46,13 +54,37 @@ export function Reasoning({
     onChange: onOpenChange,
   });
 
+  // Live "background is working" signal: count seconds while the model is
+  // actively reasoning, then freeze the total so the trigger can read
+  // "thought process · 12s" once it's done.
+  const [duration, setDuration] = useState(0);
+  const startRef = useRef<number | null>(null);
+
   useEffect(() => {
     setIsOpen(isStreaming);
   }, [isStreaming, setIsOpen]);
 
+  useEffect(() => {
+    if (!isStreaming) {
+      // Not streaming (ended or never started): stop the clock. `duration`
+      // keeps its last value so the trigger can read "thought process · 12s".
+      startRef.current = null;
+      return;
+    }
+    // setState lives only inside the interval callback (never synchronously in
+    // the effect body) so we don't trigger cascading renders.
+    startRef.current = Date.now();
+    const id = setInterval(() => {
+      if (startRef.current !== null) {
+        setDuration(Math.floor((Date.now() - startRef.current) / 1000));
+      }
+    }, 250);
+    return () => clearInterval(id);
+  }, [isStreaming]);
+
   const contextValue = useMemo(
-    () => ({ isOpen: !!isOpen, setIsOpen, isStreaming }),
-    [isOpen, setIsOpen, isStreaming],
+    () => ({ isOpen: !!isOpen, setIsOpen, isStreaming, duration }),
+    [isOpen, setIsOpen, isStreaming, duration],
   );
 
   return (
@@ -86,7 +118,7 @@ export function ReasoningTrigger({
   getThinkingMessage = defaultGetThinkingMessage,
   ...props
 }: ReasoningTriggerProps) {
-  const { isOpen, isStreaming } = useReasoning();
+  const { isOpen, isStreaming, duration } = useReasoning();
 
   return (
     <CollapsibleTrigger
@@ -105,6 +137,11 @@ export function ReasoningTrigger({
       <span className="flex-1 text-left">
         {getThinkingMessage(isStreaming)}
         {isStreaming && <span className="text-primary">…</span>}
+        {duration > 0 && (
+          <span className="ml-1.5 text-muted-foreground/50 tabular-nums normal-case tracking-normal">
+            · {duration}s
+          </span>
+        )}
       </span>
       {isStreaming && (
         <span className="relative flex items-center">
@@ -153,6 +190,12 @@ export function ReasoningContent({
       {...props}
     >
       {children}
+      {isStreaming && (
+        <span
+          aria-hidden
+          className="ml-0.5 inline-block h-[1em] w-[7px] translate-y-[2px] rounded-[1px] bg-primary align-text-bottom animate-[cursor-blink_1.1s_step-end_infinite]"
+        />
+      )}
     </CollapsibleContent>
   );
 }

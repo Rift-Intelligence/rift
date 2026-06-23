@@ -245,7 +245,7 @@ export function AppPreview({
   const shellClass = live
     ? "relative mx-auto flex h-[400px] w-full max-w-none flex-col overflow-hidden rounded-xl border border-border bg-surface-2 text-left shadow-[0_40px_120px_-30px_rgba(0,0,0,0.7)] sm:h-[440px]"
     : variant === "hero"
-      ? "relative mx-auto flex h-full min-h-[360px] w-full max-w-none flex-col overflow-hidden rounded-2xl border border-border-strong bg-surface-2 text-left shadow-[0_60px_140px_-40px_rgba(0,0,0,0.85),0_0_100px_-30px_rgba(52,210,230,0.22)] sm:min-h-[420px] lg:min-h-0 lg:rounded-[20px]"
+      ? "relative mx-auto flex h-full min-h-[360px] w-full max-w-none flex-col overflow-hidden rounded-2xl border border-border-strong bg-surface-2 text-left shadow-[0_60px_140px_-40px_rgba(0,0,0,0.85),0_0_100px_-30px_rgba(217, 119, 87,0.22)] sm:min-h-[420px] lg:min-h-0 lg:rounded-[20px]"
       : "relative mx-auto w-full max-w-4xl overflow-hidden rounded-xl border border-border bg-surface-2 text-left shadow-[0_40px_120px_-30px_rgba(0,0,0,0.7)]";
 
   return (
@@ -459,7 +459,7 @@ export function AppPreview({
                 <span className="grid size-7 place-items-center rounded-lg text-muted-foreground">
                   <Paperclip className="size-4" />
                 </span>
-                <span className="ml-auto grid size-7 place-items-center rounded-lg bg-gradient-to-b from-signal-bright to-signal text-background shadow-[0_2px_10px_-2px_rgba(52,210,230,0.5)]">
+                <span className="ml-auto grid size-7 place-items-center rounded-lg bg-gradient-to-b from-signal-bright to-signal text-background shadow-[0_2px_10px_-2px_rgba(217, 119, 87,0.5)]">
                   <ArrowUp className="size-4" strokeWidth={2.5} />
                 </span>
               </div>
