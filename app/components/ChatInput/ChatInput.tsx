@@ -220,7 +220,7 @@ export const ChatInput = ({
         />
 
         <div
-          className={`order-2 sm:order-1 flex max-h-[300px] min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-input-chat transition-[border-color] duration-200 focus-within:border-[#505050] ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
+          className={`order-2 sm:order-1 flex max-h-[300px] min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-input-chat transition-[border-color] duration-200 focus-within:border-border-strong ${uploadedFiles && uploadedFiles.length > 0 ? "border-t-0" : ""}`}
         >
           <div className="flex flex-col gap-2 px-3 py-2.5 pb-2">
             <ChatInputTextarea
