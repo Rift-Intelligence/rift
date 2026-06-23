@@ -49,7 +49,7 @@ export function MessageSenderMark({ role }: { role: "user" | "assistant" }) {
         {user?.profilePictureUrl ? (
           <AvatarImage src={user.profilePictureUrl} alt="" />
         ) : null}
-        <AvatarFallback className="rounded-[6px] bg-secondary text-[9px] font-semibold text-muted-foreground">
+        <AvatarFallback className="rounded-[6px] bg-[#252526] text-[9px] font-semibold text-muted-foreground">
           {initials}
         </AvatarFallback>
       </Avatar>
