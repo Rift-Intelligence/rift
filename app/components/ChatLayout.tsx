@@ -18,7 +18,7 @@ import { onOpenSettingsDialog } from "@/lib/utils/settings-dialog";
  */
 export function ChatLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
-  const { chatSidebarOpen, setChatSidebarOpen, sidebarOpen } = useGlobalState();
+  const { chatSidebarOpen, setChatSidebarOpen } = useGlobalState();
   const panelRef = useRef<HTMLDivElement>(null);
   // Keep chat list subscription in layout so it doesn't refetch when sidebar opens/closes
   const chatListData = useChats();
@@ -152,16 +152,6 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
                 <SidebarUserNav />
               </div>
             ) : null}
-          </div>
-        )}
-
-        {/* Session dock when sidebar column is hidden — hide when terminal panel is open */}
-        {isMobile === false && !chatSidebarOpen && !sidebarOpen && (
-          <div
-            data-testid="sidebar-session-dock-floating"
-            className="fixed bottom-0 left-0 z-30 w-[260px] border-r border-t border-sidebar-border bg-sidebar px-2 pb-2 pt-2 shadow-lg"
-          >
-            <SidebarUserNav />
           </div>
         )}
 

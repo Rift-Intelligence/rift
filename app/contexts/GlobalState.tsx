@@ -241,8 +241,10 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
   ]);
 
   // Initialize chat sidebar state
+  // Claude-Code-style: the sidebar is persistent (open by default) on desktop so
+  // chats + the user account live in it; mobile stays collapsed behind the menu.
   const [chatSidebarOpen, setChatSidebarOpen] = useState(() =>
-    chatSidebarStorage.get(isMobile ?? false),
+    isMobile ? false : true,
   );
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isTodoPanelExpanded, setIsTodoPanelExpanded] = useState(false);
