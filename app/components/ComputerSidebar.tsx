@@ -673,7 +673,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                   {/* Content */}
                   <div
                     className={`flex-1 min-h-0 w-full overflow-hidden ${
-                      isCodeScreen ? "dark bg-[#1c1b1a]" : "bg-background"
+                      isCodeScreen ? "dark bg-[#181818]" : "bg-background"
                     }`}
                   >
                     <div className="flex flex-col min-h-0 h-full relative">

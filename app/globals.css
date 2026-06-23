@@ -181,84 +181,84 @@
 }
 
 .dark {
-  --mascot-bg: #34322e;
-  --mascot-face: #f4f2ec;
-  --mascot-detail: #262624;
+  --mascot-bg: #2e2e2e;
+  --mascot-face: #f4f4f2;
+  --mascot-detail: #1c1c1c;
 
-  /* ── Dark mode — "Claude": warm charcoal surfaces, Claude clay/coral
-     signal accent, cream text. Primary surface for the product. ── */
-  --background: #262624;
-  --foreground: #f4f2ec;
-  --card: #2f2e2b;
-  --card-foreground: #f4f2ec;
-  --popover: #302f2c;
-  --popover-foreground: #f4f2ec;
-  --primary: #d97757;
-  --primary-foreground: #ffffff;
-  --secondary: #343230;
-  --secondary-foreground: #f4f2ec;
-  --muted: #343230;
-  --muted-foreground: #a8a199;
-  --accent: #3b3835;
-  --accent-foreground: #f4f2ec;
-  --destructive: #e5694a;
-  --border: #393631;
-  --input: #393631;
+  /* ── Dark mode — "snulja": neutral near-black surfaces, vivid orange signal
+     accent, near-white text. Matches the marketing landing. ── */
+  --background: #1c1c1c;
+  --foreground: #f4f4f2;
+  --card: #232323;
+  --card-foreground: #f4f4f2;
+  --popover: #242424;
+  --popover-foreground: #f4f4f2;
+  --primary: #ff6309;
+  --primary-foreground: #1c1c1c;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #f4f4f2;
+  --muted: #2a2a2a;
+  --muted-foreground: #a1a1a1;
+  --accent: #2e2e2e;
+  --accent-foreground: #f4f4f2;
+  --destructive: #f0613a;
+  --border: #333333;
+  --input: #333333;
   --ring: var(--signal);
-  --chart-1: #d97757;
-  --chart-2: #d4a857;
-  --chart-3: #7ba05b;
-  --chart-4: #c8956a;
-  --chart-5: #e5694a;
-  --sidebar: #1f1e1c;
-  --sidebar-foreground: #d8d4cb;
-  --sidebar-primary: #d97757;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #312f2b;
-  --sidebar-accent-foreground: #f4f2ec;
-  --sidebar-border: #2a2825;
+  --chart-1: #ff6309;
+  --chart-2: #e3a53d;
+  --chart-3: #7fc593;
+  --chart-4: #ff7e28;
+  --chart-5: #f0613a;
+  --sidebar: #181818;
+  --sidebar-foreground: #d4d4d2;
+  --sidebar-primary: #ff6309;
+  --sidebar-primary-foreground: #1c1c1c;
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #f4f4f2;
+  --sidebar-border: #262626;
   --sidebar-ring: var(--signal);
 
-  /* Claude clay/coral primitives (dark) */
-  --signal: #d97757;
-  --signal-bright: #e8916f;
-  --signal-dim: #b85f42;
-  --signal-soft: rgba(217, 119, 87, 0.13);
-  --surface-1: #1f1e1c;
-  --surface-2: #2a2926;
-  --surface-3: #322f2b;
-  --surface-4: #3a3733;
-  --elevated: #302f2c;
-  --success: #7ba05b;
-  --warning: #d4a857;
+  /* snulja vivid-orange primitives (dark) */
+  --signal: #ff6309;
+  --signal-bright: #ff7e28;
+  --signal-dim: #d8541a;
+  --signal-soft: rgba(255, 99, 9, 0.13);
+  --surface-1: #1f1f1f;
+  --surface-2: #262626;
+  --surface-3: #2e2e2e;
+  --surface-4: #363636;
+  --elevated: #242424;
+  --success: #7fc593;
+  --warning: #e3a53d;
   --info: #c8956a;
 
-  --surface: #2a2926;
-  --border-strong: #463f38;
-  --rift-glow: rgba(217, 119, 87, 0.12);
+  --surface: #262626;
+  --border-strong: #444444;
+  --rift-glow: rgba(255, 99, 9, 0.12);
   --grid-dot: rgba(255, 255, 255, 0.03);
 
-  --fill-input-chat: #2a2926;
-  --link-color: #d97757;
+  --fill-input-chat: #262626;
+  --link-color: #ff6309;
 
-  --premium-bg: #343230;
-  --premium-text: #f4f2ec;
-  --premium-hover: #f4f2ec;
+  --premium-bg: #2a2a2a;
+  --premium-text: #f4f4f2;
+  --premium-hover: #f4f4f2;
 
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(120, 126, 138, 0.3);
-  --scrollbar-thumb-hover: rgba(120, 126, 138, 0.48);
+  --scrollbar-thumb: rgba(160, 160, 160, 0.28);
+  --scrollbar-thumb-hover: rgba(160, 160, 160, 0.45);
 
   --sidebar-mask: linear-gradient(
     90deg,
-    #1f1e1c 0%,
-    #1f1e1c 95%,
+    #181818 0%,
+    #181818 95%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #3a3733 0%,
-    #3a3733 88%,
+    #363636 0%,
+    #363636 88%,
     transparent 93%,
     transparent 100%
   );

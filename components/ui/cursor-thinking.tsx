@@ -4,7 +4,7 @@
 export function CursorThinking() {
   return (
     <div
-      className="cursor-thinking my-2 inline-flex items-center gap-2 text-xs text-[#858585]"
+      className="cursor-thinking my-2 inline-flex items-center gap-2 text-xs text-muted-foreground"
       role="status"
       aria-label="Planning next moves"
     >

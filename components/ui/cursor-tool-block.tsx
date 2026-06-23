@@ -28,7 +28,7 @@ const STATUS_CLASS: Record<CursorToolBlockProps["status"], string> = {
   running: "text-[#cca700]",
   done: "text-[#89d185]",
   error: "text-[#f48771]",
-  stopped: "text-[#858585]",
+  stopped: "text-muted-foreground",
 };
 
 export function CursorToolBlock({
@@ -63,17 +63,17 @@ export function CursorToolBlock({
   };
 
   return (
-    <div className="my-3 overflow-hidden rounded-md border border-[#2b2b2b] bg-[#252526]">
+    <div className="my-3 overflow-hidden rounded-md border border-border bg-card">
       <div
         role={canToggle || isClickable ? "button" : undefined}
         tabIndex={canToggle || isClickable ? 0 : undefined}
         onClick={handleHeaderClick}
         onKeyDown={handleHeaderKeyDown}
-        className="flex cursor-pointer select-none items-center gap-2 px-2.5 py-2 text-xs text-[#858585] hover:bg-[#2a2d2e]"
+        className="flex cursor-pointer select-none items-center gap-2 px-2.5 py-2 text-xs text-muted-foreground hover:bg-accent"
       >
         {canToggle || isRunning ? (
           <span
-            className={`text-[10px] text-[#6e6e6e] transition-transform ${open && !isRunning ? "rotate-90" : ""}`}
+            className={`text-[10px] text-muted-foreground/60 transition-transform ${open && !isRunning ? "rotate-90" : ""}`}
             aria-hidden
           >
             ▶
@@ -82,10 +82,10 @@ export function CursorToolBlock({
           <span className="w-2.5" aria-hidden />
         )}
         <Terminal
-          className="size-3.5 shrink-0 text-[#858585]"
+          className="size-3.5 shrink-0 text-muted-foreground"
           strokeWidth={1.75}
         />
-        <span className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-[#cccccc]">
+        <span className="min-w-0 flex-1 truncate font-mono text-[11.5px] text-foreground">
           {isShimmer ? <Shimmer>{label}</Shimmer> : label}
         </span>
         <span className={`shrink-0 text-[11px] ${STATUS_CLASS[status]}`}>
@@ -93,10 +93,10 @@ export function CursorToolBlock({
         </span>
       </div>
       {open && hasBody && !isRunning ? (
-        <div className="max-h-[180px] overflow-auto border-t border-[#2b2b2b] bg-[#1a1a1a] px-3 py-2.5 font-mono text-[11.5px] leading-[1.7] text-[#858585] whitespace-pre-wrap">
+        <div className="max-h-[180px] overflow-auto border-t border-border bg-[#161616] px-3 py-2.5 font-mono text-[11.5px] leading-[1.7] text-muted-foreground whitespace-pre-wrap">
           {command ? (
             <>
-              <span className="text-[#6e6e6e]">$ </span>
+              <span className="text-muted-foreground/60">$ </span>
               {command}
               {output ? "\n\n" : ""}
             </>
