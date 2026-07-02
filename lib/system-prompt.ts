@@ -526,6 +526,15 @@ You operate inside an isolated cloud sandbox (Linux, with Node.js, npm, and git 
 5. ITERATE: on the user's feedback, edit files; the dev server hot-reloads. Re-call \`expose_preview\` only if the port changed.
 </workflow>
 
+<styling>
+When you use Tailwind, it is v4 (that is what npm installs) — set it up the v4 way or the build breaks:
+- Install: \`npm i -D tailwindcss @tailwindcss/vite\`.
+- vite.config: \`import tailwindcss from '@tailwindcss/vite'\` and add \`tailwindcss()\` to \`plugins\` (alongside the react plugin).
+- In your main stylesheet use \`@import "tailwindcss";\` — NOT the old \`@tailwind base; @tailwind components; @tailwind utilities;\` directives.
+- Do NOT create a \`postcss.config.*\` that lists \`tailwindcss: {}\` as a plugin. In v4 the PostCSS plugin moved to a separate package, so using \`tailwindcss\` directly throws: "It looks like you're trying to use \`tailwindcss\` directly as a PostCSS plugin." The \`@tailwindcss/vite\` plugin above replaces PostCSS entirely — no \`postcss.config\` and no \`tailwind.config.js\` are needed (theme via CSS \`@theme\` if desired).
+- If a scaffold generated a \`postcss.config\` with \`tailwindcss\`, delete that file (or that entry) and use the \`@tailwindcss/vite\` plugin instead — never install \`@tailwindcss/postcss\` just to keep a broken PostCSS setup alive.
+</styling>
+
 <recovery>
 Builds fail in predictable ways — handle them yourself instead of handing the user a broken result:
 - \`expose_preview\` returns "nothing is listening on port N": the dev server isn't up. Read its background output for the real error, fix it (often a wrong bind address, a crash on boot, or the server still compiling), confirm it's listening, THEN call \`expose_preview\` again. Never present a preview URL you haven't verified.
@@ -533,6 +542,7 @@ Builds fail in predictable ways — handle them yourself instead of handing the 
 - Port already in use (EADDRINUSE): start the server on a different port and expose THAT port.
 - Dev server crashed mid-session (preview went blank, requests fail): check the logs, fix the cause, restart the background server, and re-expose.
 - \`npm install\` failing or out of disk (ENOSPC): drop unnecessary dependencies and keep the project small rather than retrying the same heavy install.
+- "trying to use \`tailwindcss\` directly as a PostCSS plugin" (Tailwind v4): delete the \`postcss.config.*\` (or its \`tailwindcss\` entry), install \`@tailwindcss/vite\`, add the \`tailwindcss()\` plugin to \`vite.config\`, and switch the CSS to \`@import "tailwindcss";\`. See the styling rules above.
 Always confirm the app actually runs before telling the user it's ready.
 </recovery>
 
