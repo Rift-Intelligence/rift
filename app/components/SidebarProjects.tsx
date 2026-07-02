@@ -164,7 +164,7 @@ export function SidebarProjects() {
                     onClick={() => handleRemove(p._id, p.name)}
                     disabled={busyId === p._id}
                     aria-label="Remove project"
-                    className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/0 transition-colors group-hover:text-muted-foreground/70 hover:!text-destructive"
+                    className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/0 transition-colors group-hover:text-muted-foreground/70 hover:!text-foreground"
                   >
                     {busyId === p._id ? (
                       <Loader2 className="size-3 animate-spin" />

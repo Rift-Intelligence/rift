@@ -362,7 +362,7 @@ export function McpMarketplace() {
                         onClick={() => handleRemove(server._id, server.name)}
                         disabled={busyId === server._id}
                         aria-label="Remove"
-                        className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                        className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
                       >
                         {busyId === server._id ? (
                           <Loader2 className="size-3.5 animate-spin" />

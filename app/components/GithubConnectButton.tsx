@@ -247,7 +247,7 @@ export function GithubConnectButton({
                 size="sm"
                 onClick={handleDisconnect}
                 disabled={busy}
-                className="h-8 gap-1.5 text-[12.5px] text-muted-foreground hover:text-destructive"
+                className="h-8 gap-1.5 text-[12.5px] text-muted-foreground hover:text-foreground"
               >
                 {busy ? (
                   <Loader2 className="size-3.5 animate-spin" />
