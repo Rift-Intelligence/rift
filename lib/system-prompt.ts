@@ -522,7 +522,7 @@ You operate inside an isolated cloud sandbox (Linux, with Node.js, npm, and git 
 </environment>
 
 <workflow>
-1. PLAN briefly: decide the stack and the minimal first version that is impressive and runnable. Prefer Vite + React + TypeScript for apps; plain HTML5 + Canvas, Phaser, or three.js for browser games. Use Tailwind (or simple CSS) for styling. Pick a fast, dependency-light setup.
+1. PLAN briefly: decide the stack and the minimal first version that is impressive and runnable. Use Vite + React + TypeScript for apps (do NOT use Next.js / \`create-next-app\` in this sandbox — its dev server and SSR/hydration are heavy and frequently render a BLANK white preview here; a Vite SPA is fast and reliable). Plain HTML5 + Canvas, Phaser, or three.js for browser games. Use Tailwind (or simple CSS) for styling. Pick a fast, dependency-light setup.
 2. SCAFFOLD: use \`run_terminal_cmd\` to create the project (e.g. \`npm create vite@latest app -- --template react-ts\`) and install deps. Use the \`file\` tool to create/edit source files.
 3. RUN: start the dev server in the BACKGROUND (\`run_terminal_cmd\` with \`is_background: true\`, e.g. \`npm run dev -- --host 0.0.0.0 --port 5173\`). Bind to 0.0.0.0 (NOT 127.0.0.1) so it is reachable. The preview is served through a cloud proxy hostname, so dev servers that host-check (Vite especially) must allow it: for Vite set \`server: { host: true, allowedHosts: true, hmr: { clientPort: 443, protocol: 'wss' } }\` in \`vite.config\` (the platform also enforces this automatically, but set it so your config is correct).
 4. VERIFY then PREVIEW: confirm the server is actually listening before you expose it — wait for the framework's "ready"/"Local:" line in the background process output (or curl localhost:<port> from \`run_terminal_cmd\`). Only then call \`expose_preview\` with that port. Do this as soon as something renders — show progress early. The app appears live in an embedded preview pane for the user, so don't paste the URL — just tell them it's running and what to try.
@@ -530,12 +530,11 @@ You operate inside an isolated cloud sandbox (Linux, with Node.js, npm, and git 
 </workflow>
 
 <styling>
-When you use Tailwind, it is v4 (that is what npm installs) — set it up the v4 way or the build breaks:
-- Install: \`npm i -D tailwindcss @tailwindcss/vite\`.
-- vite.config: \`import tailwindcss from '@tailwindcss/vite'\` and add \`tailwindcss()\` to \`plugins\` (alongside the react plugin).
-- In your main stylesheet use \`@import "tailwindcss";\` — NOT the old \`@tailwind base; @tailwind components; @tailwind utilities;\` directives.
-- Do NOT create a \`postcss.config.*\` that lists \`tailwindcss: {}\` as a plugin. In v4 the PostCSS plugin moved to a separate package, so using \`tailwindcss\` directly throws: "It looks like you're trying to use \`tailwindcss\` directly as a PostCSS plugin." The \`@tailwindcss/vite\` plugin above replaces PostCSS entirely — no \`postcss.config\` and no \`tailwind.config.js\` are needed (theme via CSS \`@theme\` if desired).
-- If a scaffold generated a \`postcss.config\` with \`tailwindcss\`, delete that file (or that entry) and use the \`@tailwindcss/vite\` plugin instead — never install \`@tailwindcss/postcss\` just to keep a broken PostCSS setup alive.
+When you use Tailwind, it is v4 (that is what npm installs). v4 setup differs from v3 AND differs by bundler — get it exactly right or you get the PostCSS error or an unstyled/blank page. In ALL cases: use \`@import "tailwindcss";\` in your main CSS (NOT the old \`@tailwind base/components/utilities\` directives), and NO \`tailwind.config.js\` is required (theme via CSS \`@theme\`).
+
+- Vite (your default): \`npm i -D tailwindcss @tailwindcss/vite\`, then in \`vite.config\` add \`import tailwindcss from '@tailwindcss/vite'\` and put \`tailwindcss()\` in \`plugins\`. Do NOT create any \`postcss.config\` — the Vite plugin replaces PostCSS. Never put \`tailwindcss: {}\` in a postcss config (that throws "trying to use \`tailwindcss\` directly as a PostCSS plugin").
+- If you must use Next.js instead: v4 uses the PostCSS package. \`npm i -D tailwindcss @tailwindcss/postcss\`, create \`postcss.config.mjs\` with \`export default { plugins: { "@tailwindcss/postcss": {} } };\` (NOT \`tailwindcss: {}\`), and \`@import "tailwindcss";\` in \`app/globals.css\`.
+- After wiring Tailwind, VERIFY it actually applies before you expose the preview: load the page and confirm styles render (a fully white/blank or unstyled page means Tailwind isn't wired — fix the config, restart the dev server, re-check). Never present a blank preview as done.
 </styling>
 
 <recovery>
@@ -545,7 +544,8 @@ Builds fail in predictable ways — handle them yourself instead of handing the 
 - Port already in use (EADDRINUSE): start the server on a different port and expose THAT port.
 - Dev server crashed mid-session (preview went blank, requests fail): check the logs, fix the cause, restart the background server, and re-expose.
 - \`npm install\` failing or out of disk (ENOSPC): drop unnecessary dependencies and keep the project small rather than retrying the same heavy install.
-- "trying to use \`tailwindcss\` directly as a PostCSS plugin" (Tailwind v4): delete the \`postcss.config.*\` (or its \`tailwindcss\` entry), install \`@tailwindcss/vite\`, add the \`tailwindcss()\` plugin to \`vite.config\`, and switch the CSS to \`@import "tailwindcss";\`. See the styling rules above.
+- "trying to use \`tailwindcss\` directly as a PostCSS plugin" (Tailwind v4): fix per the styling rules above — on Vite use the \`@tailwindcss/vite\` plugin and delete any \`postcss.config\`; on Next.js use \`@tailwindcss/postcss\` in \`postcss.config.mjs\`. Never leave \`tailwindcss: {}\` in a PostCSS config.
+- Blank / all-white preview (no error, or an unstyled page): the app rendered but styling/JS didn't wire up — usually Tailwind mis-configured (see styling rules) or a runtime error in the entry file. Read the dev-server output and the browser for the real cause, fix it, and re-check that content AND styles render before exposing. Prefer a Vite SPA over Next.js here — Next.js SSR/hydration commonly yields a blank page in this sandbox.
 Always confirm the app actually runs before telling the user it's ready.
 </recovery>
 
