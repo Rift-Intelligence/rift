@@ -9,11 +9,11 @@
  *    - Single monthly bucket: credits = subscription price, refills every 30 days
  *    - Supports extra usage (prepaid balance) when limits exceeded
  *
- * 2. Fixed Window (Free users):
- *    - Shared request-unit counting within a daily fixed window (resets at midnight UTC)
- *    - Ask mode costs 1 unit
- *    - Agent mode (local sandbox only) costs 2 units
- *    - Default free budget: 10 units/day (FREE_RATE_LIMIT_REQUESTS)
+ * 2. Free users (PAYG):
+ *    - Ask mode: daily fixed-window allowance (FREE_RATE_LIMIT_REQUESTS/day,
+ *      resets at midnight UTC), then the prepaid balance.
+ *    - Agent mode: ONE free run for life (claimed in Convex extra_usage), then
+ *      the prepaid balance — must buy tokens.
  */
 
 import { isAgentMode } from "@/lib/utils/mode-helpers";
@@ -66,7 +66,8 @@ export {
 // Import for internal use
 import { checkTokenBucketLimit, checkBalanceLimit } from "./token-bucket";
 import { checkFreeMonthlyCostLimit } from "./free-monthly-cost";
-import { FREE_AGENT_REQUEST_COST, FREE_ASK_REQUEST_COST } from "./free-config";
+import { FREE_ASK_REQUEST_COST } from "./free-config";
+import { claimFreeAgentRun } from "@/lib/extra-usage";
 import {
   checkFreeUserRateLimit,
   checkFreeAgentRateLimit,
@@ -95,12 +96,38 @@ export const checkRateLimit = async (
   modelName?: string,
   organizationId?: string,
 ): Promise<RateLimitInfo> => {
-  // Free users (PAYG): daily + monthly free budget first, then prepaid balance.
+  // Free users (PAYG).
   if (subscription === "free") {
-    const requestCost = isAgentMode(mode)
-      ? FREE_AGENT_REQUEST_COST
-      : FREE_ASK_REQUEST_COST;
+    // Agent mode: ONE free run per calendar month, then it must be paid from
+    // the prepaid balance. The monthly claim lives in Convex (extra_usage,
+    // keyed by month), separate from the daily ask-mode window.
+    if (isAgentMode(mode)) {
+      const granted = await claimFreeAgentRun(userId);
+      if (granted) {
+        // This month's free agent run — served free, no balance charge.
+        const now = new Date();
+        const nextMonth = new Date(
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+        );
+        return {
+          remaining: 0,
+          limit: 1,
+          resetTime: nextMonth,
+          servedFrom: "free",
+        };
+      }
+      // Free agent run already spent — draw from the prepaid balance; throws a
+      // "buy tokens" error when empty and auto-reload is off.
+      return checkBalanceLimit(
+        userId,
+        estimatedInputTokens || 0,
+        modelName,
+        extraUsageConfig,
+      );
+    }
 
+    // Ask mode: daily free allowance (FREE_RATE_LIMIT_REQUESTS/day), then the
+    // prepaid balance once the day's allowance or the monthly cost cap is spent.
     // Peek the monthly free-cost cap WITHOUT throwing or consuming, so an
     // exhausted month falls through to the prepaid balance instead of a hard
     // block — mirroring the daily-window fall-through below.
@@ -111,7 +138,7 @@ export const checkRateLimit = async (
     if (!monthly.monthlyExhausted) {
       // Monthly budget still has room — consume the daily free window WITHOUT
       // throwing on exhaustion so we can still fall through to balance.
-      const free = await checkFreeUserRateLimit(userId, requestCost, {
+      const free = await checkFreeUserRateLimit(userId, FREE_ASK_REQUEST_COST, {
         throwOnExhaustion: false,
       });
 

@@ -5,8 +5,10 @@ import {
   Space_Grotesk,
   Instrument_Serif,
   Montserrat,
+  Archivo,
   Pixelify_Sans,
 } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -50,11 +52,20 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 });
 
-// Montserrat = bold, geometric display sans for the high-energy landing
-// (heavy UPPERCASE headlines, à la the snulja reference).
+// Montserrat = geometric sans for the landing. Loaded as a VARIABLE font (no
+// fixed weight array) so headings can animate their weight continuously on
+// scroll — the air.dev signature micro-interaction (see WeightyHeading).
 const montserrat = Montserrat({
   variable: "--font-montserrat-src",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Archivo = squarish geometric grotesque, VARIABLE (wght 100–900) — the closest
+// free stand-in for air.dev's "Modul Air" display face. Used for landing
+// headings with the scroll-driven weight animation (see WeightyHeading).
+const archivo = Archivo({
+  variable: "--font-archivo-src",
   subsets: ["latin"],
   display: "swap",
 });
@@ -69,10 +80,10 @@ const pixelifySans = Pixelify_Sans({
 });
 
 const APP_NAME = "RIFT";
-const APP_DEFAULT_TITLE = "RIFT — Autonomous Offensive Intelligence";
+const APP_DEFAULT_TITLE = "RIFT — The Professional AI Agent";
 const APP_TITLE_TEMPLATE = "%s | RIFT";
 const APP_DESCRIPTION =
-  "RIFT is an autonomous offensive-security agent. Point it at a target and it runs recon, exploitation, and reporting on its own — every operation isolated in its own sandbox.";
+  "RIFT is a professional AI agent that builds software, creates images, and runs security tests. Describe what you need and it plans, runs the real tools in an isolated cloud sandbox, and delivers the finished result.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -84,20 +95,19 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   keywords: [
     "rift",
+    "ai agent",
+    "ai app builder",
+    "build apps with ai",
+    "ai coding agent",
+    "ai image generator",
+    "ai photo editor",
+    "autonomous agent",
+    "ai software development",
+    "cloud sandbox",
     "security testing",
-    "penetration testing",
-    "vulnerability scanner",
-    "security automation",
-    "offensive security",
-    "red team",
-    "bug bounty",
-    "cybersecurity ai",
-    "security assessment",
-    "threat analysis",
-    "security platform",
-    "pentest tool",
-    "security research",
-    "vulnerability detection",
+    "ai security assessment",
+    "professional ai",
+    "ai productivity",
   ],
   openGraph: {
     type: "website",
@@ -165,14 +175,37 @@ export default function RootLayout({
             content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
           />
           <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          {/* In the RIFT desktop (Tauri) wrapper, flag the document so the
+              sidebar goes translucent and the macOS window vibrancy shows
+              through as real "glass". Runs before paint (no flash); no-op in a
+              regular browser. */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html:
+                "try{if((navigator.userAgent||'').includes('RIFTWrapperLite')||window.__RIFT_DESKTOP_LITE__===true){document.documentElement.classList.add('rift-vibrancy')}}catch(e){}",
+            }}
+          />
         </head>
         <body
-          className={`${jetbrainsMono.variable} ${geist.variable} ${spaceGrotesk.variable} ${instrumentSerif.variable} ${montserrat.variable} ${pixelifySans.variable} antialiased h-full`}
+          className={`${jetbrainsMono.variable} ${geist.variable} ${spaceGrotesk.variable} ${instrumentSerif.variable} ${montserrat.variable} ${archivo.variable} ${pixelifySans.variable} antialiased h-full`}
           suppressHydrationWarning
         >
           <ThemeProvider>
             <ConvexClientProvider>{content}</ConvexClientProvider>
           </ThemeProvider>
+          {/* Google Ads tag (gtag.js) — conversion tracking */}
+          <Script
+            src="https://www.googletagmanager.com/gtag/js?id=AW-18267889487"
+            strategy="afterInteractive"
+          />
+          <Script id="google-ads-gtag" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-18267889487');
+            `}
+          </Script>
         </body>
       </html>
     </ConvexAuthNextjsServerProvider>

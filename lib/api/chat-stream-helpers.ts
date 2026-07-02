@@ -557,10 +557,17 @@ export function buildProviderOptions(
 ) {
   const modelId = modelName ? resolveSlug(modelName) : undefined;
   const isDeepSeekV4 = modelId?.startsWith("deepseek/deepseek-v4") ?? false;
+  // Some endpoints REQUIRE reasoning and reject `reasoning:{enabled:false}` with
+  // "Reasoning is mandatory for this endpoint and cannot be disabled." Claude
+  // Fable 5 is one — so in non-agent modes (Ask / Plan), where we'd normally
+  // disable reasoning for latency, we must keep it ON for these models (with a
+  // bounded budget) rather than error out and return no response.
+  const reasoningMandatory =
+    (modelId?.includes("fable") || modelName?.includes("fable")) ?? false;
   const fallbackSlugs = getFallbackSlugs(modelName, mode, options);
   return {
     openrouter: {
-      ...(isReasoningModel
+      ...(isReasoningModel || reasoningMandatory
         ? {
             reasoning: {
               enabled: true,
@@ -974,16 +981,31 @@ export async function buildExtraUsageConfig(args: {
     return undefined;
   }
 
-  if (!(userCustomization?.extra_usage_enabled ?? false)) return undefined;
-
   const balanceInfo = await getExtraUsageBalance(userId);
 
   if (!balanceInfo) {
-    console.warn(
-      `[chat-handler] getExtraUsageBalance returned null for user ${userId}, using optimistic extra usage config`,
-    );
-    return { enabled: true, hasBalance: true, autoReloadEnabled: false };
+    // Couldn't read the balance: stay optimistic only if the user explicitly
+    // enabled extra usage; otherwise treat as no extra-usage this request.
+    if (userCustomization?.extra_usage_enabled) {
+      console.warn(
+        `[chat-handler] getExtraUsageBalance returned null for user ${userId}, using optimistic extra usage config`,
+      );
+      return { enabled: true, hasBalance: true, autoReloadEnabled: false };
+    }
+    return undefined;
   }
+
+  // Token-only model: a positive balance (or auto-reload) IS the opt-in. Buying
+  // tokens does not flip the legacy extra_usage_enabled toggle, so gate on
+  // actual spendability — otherwise a user with tokens can't spend them.
+  // Owning tokens overrides the toggle (you bought them, you can spend them).
+  // Auto-reload alone does NOT override an explicit-off toggle, so we never
+  // charge a card for a user who disabled extra usage.
+  const canSpend =
+    (userCustomization?.extra_usage_enabled ?? false) ||
+    balanceInfo.balanceDollars > 0;
+
+  if (!canSpend) return undefined;
 
   if (balanceInfo.balanceDollars > 0 || balanceInfo.autoReloadEnabled) {
     return {

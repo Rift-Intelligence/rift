@@ -257,42 +257,67 @@ export const useFileUpload = (mode: ChatMode = "ask") => {
           sandboxPreference,
         });
 
-        // Step 1: Generate presigned S3 upload URL
-        const { uploadUrl, s3Key, rateLimit } = await generateS3UploadUrlAction(
-          {
-            fileName: file.name,
-            contentType: file.type || "application/octet-stream",
-            size: file.size,
-            mode,
-          },
-        );
-
-        // Show warning if approaching rate limit
-        if (rateLimit) {
-          showRateLimitWarning(rateLimit);
-        }
-
-        // Step 2: Upload file to S3 using presigned URL
-        const uploadResponse = await fetch(uploadUrl, {
-          method: "PUT",
-          body: file,
-          headers: { "Content-Type": file.type || "application/octet-stream" },
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error(
-            `Failed to upload file ${file.name}: ${uploadResponse.statusText}`,
-          );
-        }
-
-        // Step 3: Save file metadata to database with S3 key
-        const { url, fileId, tokens } = await saveFile({
-          s3Key,
-          name: file.name,
-          mediaType: file.type,
+        // Step 1: Ask the backend for an upload target. Returns an S3 presigned
+        // PUT URL when S3 is configured, otherwise a Convex built-in storage
+        // POST URL (no external setup needed).
+        const target = await generateS3UploadUrlAction({
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
           size: file.size,
           mode,
         });
+
+        // Show warning if approaching rate limit
+        if (target.rateLimit) {
+          showRateLimitWarning(target.rateLimit);
+        }
+
+        const contentType = file.type || "application/octet-stream";
+
+        // Step 2 + 3: Upload the bytes, then save metadata with the right
+        // storage reference (Convex storageId vs S3 key).
+        let saved: { url: string; fileId: string; tokens: number };
+        if (target.backend === "convex") {
+          const uploadResponse = await fetch(target.uploadUrl, {
+            method: "POST",
+            body: file,
+            headers: { "Content-Type": contentType },
+          });
+          if (!uploadResponse.ok) {
+            throw new Error(
+              `Failed to upload file ${file.name}: ${uploadResponse.statusText}`,
+            );
+          }
+          const { storageId } = (await uploadResponse.json()) as {
+            storageId: string;
+          };
+          saved = await saveFile({
+            storageId: storageId as Id<"_storage">,
+            name: file.name,
+            mediaType: file.type,
+            size: file.size,
+            mode,
+          });
+        } else {
+          const uploadResponse = await fetch(target.uploadUrl, {
+            method: "PUT",
+            body: file,
+            headers: { "Content-Type": contentType },
+          });
+          if (!uploadResponse.ok) {
+            throw new Error(
+              `Failed to upload file ${file.name}: ${uploadResponse.statusText}`,
+            );
+          }
+          saved = await saveFile({
+            s3Key: target.s3Key,
+            name: file.name,
+            mediaType: file.type,
+            size: file.size,
+            mode,
+          });
+        }
+        const { url, fileId, tokens } = saved;
 
         // Only check token limit for "ask" mode
         // In "agent" mode, files are accessed in sandbox, no token limit applies

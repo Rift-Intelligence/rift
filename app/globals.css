@@ -15,6 +15,7 @@
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-display: var(--font-space-grotesk), sans-serif;
   --font-montserrat: var(--font-montserrat-src), system-ui, sans-serif;
+  --font-archivo: var(--font-archivo-src), system-ui, sans-serif;
   --font-pixel: var(--font-pixel-src), "Courier New", monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -99,79 +100,81 @@
   --mascot-face: #ffffff;
   --mascot-detail: #1a1a1a;
 
-  /* ── Light mode — "Claude": warm paper/cream surfaces, clay/coral accent ── */
-  --background: #faf9f5;
-  --foreground: #2a2622;
-  --card: #f5f3ec;
-  --card-foreground: #2a2622;
+  /* ── Light mode — deployed "development" palette: cool white/neutral-gray
+     surfaces with the Claude clay/coral accent. Matches riftsys.app 1:1. ── */
+  --background: #ffffff;
+  --foreground: #1c1e21;
+  --card: #f7f8fa;
+  --card-foreground: #1c1e21;
   --popover: #ffffff;
-  --popover-foreground: #2a2622;
-  --primary: #c15f3c;
+  --popover-foreground: #1c1e21;
+  --primary: #0169cc;
   --primary-foreground: #ffffff;
-  --secondary: #efece3;
-  --secondary-foreground: #2a2622;
-  --muted: #efece3;
-  --muted-foreground: #6b6358;
-  --accent: #ece8de;
-  --accent-foreground: #2a2622;
-  --destructive: #c1442e;
-  --border: #e6e1d6;
-  --input: #e6e1d6;
+  --secondary: #f1f3f5;
+  --secondary-foreground: #1c1e21;
+  --muted: #f1f3f5;
+  --muted-foreground: #6b7280;
+  --accent: #eef0f3;
+  --accent-foreground: #1c1e21;
+  --destructive: #e02e2a;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
   --ring: var(--signal);
-  --chart-1: #c15f3c;
+  --chart-1: #0169cc;
   --chart-2: #b9822b;
   --chart-3: #5f7a45;
   --chart-4: #a8743f;
   --chart-5: #cc6a4f;
-  --sidebar: #f3f1ea;
-  --sidebar-foreground: #2a2622;
-  --sidebar-primary: #c15f3c;
+  --sidebar: #f8f9fb;
+  --sidebar-foreground: #1c1e21;
+  --sidebar-primary: #0169cc;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ebe7dc;
-  --sidebar-accent-foreground: #2a2622;
-  --sidebar-border: #e4dfd3;
+  --sidebar-accent: #eceef1;
+  --sidebar-accent-foreground: #1c1e21;
+  --sidebar-border: #e7e9ed;
   --sidebar-ring: var(--signal);
 
   /* Claude clay/coral primitives (light) */
-  --signal: #c15f3c;
-  --signal-bright: #d97757;
-  --signal-dim: #a44e30;
-  --signal-soft: rgba(193, 95, 60, 0.1);
-  --surface-1: #f3f1ea;
-  --surface-2: #efece3;
-  --surface-3: #e9e5da;
-  --surface-4: #e1dcd0;
+  --signal: #0169cc;
+  --signal-bright: #0169cc;
+  --signal-dim: #014f9c;
+  --signal-soft: rgba(1, 105, 204, 0.1);
+  --surface-1: #f8f9fb;
+  --surface-2: #f1f3f5;
+  --surface-3: #eaecef;
+  --surface-4: #e2e5e9;
   --elevated: #ffffff;
-  --success: #5f7a45;
+  --success: #00a240;
   --warning: #b9822b;
   --info: #a8743f;
 
-  --surface: #efece3;
-  --border-strong: #d6cfc0;
-  --rift-glow: rgba(193, 95, 60, 0.06);
-  --grid-dot: rgba(0, 0, 0, 0.05);
+  --surface: #f1f3f5;
+  --border-strong: #d1d5db;
+  --rift-glow: rgba(1, 105, 204, 0.06);
+  --grid-dot: rgba(0, 0, 0, 0.043);
 
-  --fill-input-chat: #efece3;
-  --link-color: #c15f3c;
+  /* Chat composer shares the sidebar's elevated tone (see dark note). */
+  --fill-input-chat: #f8f9fb;
+  --link-color: #0169cc;
 
-  --premium-bg: #efece3;
-  --premium-text: #2a2622;
-  --premium-hover: #2a2622;
+  --premium-bg: #f1f3f5;
+  --premium-text: #1c1e21;
+  --premium-hover: #1c1e21;
 
   --scrollbar-track: transparent;
-  --scrollbar-thumb: rgba(0, 0, 0, 0.16);
-  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.28);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.14);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.26);
 
   --sidebar-mask: linear-gradient(
     90deg,
-    #f3f1ea 0%,
-    #f3f1ea 95%,
+    #f8f9fb 0%,
+    #f8f9fb 95%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #e1dcd0 0%,
-    #e1dcd0 88%,
+    #e2e5e9 0%,
+    #e2e5e9 88%,
     transparent 93%,
     transparent 100%
   );
@@ -181,69 +184,78 @@
 }
 
 .dark {
-  --mascot-bg: #34322e;
-  --mascot-face: #f4f2ec;
-  --mascot-detail: #262624;
+  --mascot-bg: #1e1e1e;
+  --mascot-face: #fcfcfc;
+  --mascot-detail: #111111;
 
-  /* ── Dark mode — "Claude": warm charcoal surfaces, Claude clay/coral
-     signal accent, cream text. Primary surface for the product. ── */
-  --background: #262624;
-  --foreground: #f4f2ec;
-  --card: #2f2e2b;
-  --card-foreground: #f4f2ec;
-  --popover: #302f2c;
-  --popover-foreground: #f4f2ec;
-  --primary: #d97757;
+  /* ── Dark mode — "Codex" (Digital Color Meter'dan ölçüldü): warm-neutral
+     yüzeyler — arka plan #111111 (koyu), sidebar #1a1a1a (açık) — parlak mavi
+     aksan, beyaza yakın metin. Ürünün ana yüzeyi. ── */
+  --background: #1a1a1a;
+  --foreground: #fcfcfc;
+  --card: #1c1c1c;
+  --card-foreground: #fcfcfc;
+  --popover: #1e1e1e;
+  --popover-foreground: #fcfcfc;
+  --primary: #0169cc;
   --primary-foreground: #ffffff;
-  --secondary: #343230;
-  --secondary-foreground: #f4f2ec;
-  --muted: #343230;
-  --muted-foreground: #a8a199;
-  --accent: #3b3835;
-  --accent-foreground: #f4f2ec;
-  --destructive: #e5694a;
-  --border: #393631;
-  --input: #393631;
+  --secondary: #1e1e1e;
+  --secondary-foreground: #fcfcfc;
+  --muted: #1e1e1e;
+  --muted-foreground: #9a9a9a;
+  /* Hover / active surface — must sit distinctly above the base surfaces
+     (#1a1a1a bg, #1e1e1e popover) so hover feedback is actually visible. */
+  --accent: #2a2a2a;
+  --accent-foreground: #fcfcfc;
+  --destructive: #e02e2a;
+  --border: #2a2a2a;
+  --input: #2a2a2a;
   --ring: var(--signal);
-  --chart-1: #d97757;
+  --chart-1: #0169cc;
   --chart-2: #d4a857;
   --chart-3: #7ba05b;
   --chart-4: #c8956a;
   --chart-5: #e5694a;
-  --sidebar: #1f1e1c;
-  --sidebar-foreground: #d8d4cb;
-  --sidebar-primary: #d97757;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #312f2b;
-  --sidebar-accent-foreground: #f4f2ec;
-  --sidebar-border: #2a2825;
-  --sidebar-ring: var(--signal);
+  /* Codex sidebar — a DARK, desaturated blue-gray glass panel (measured
+     ≈ rgb(45,51,67)). Monochrome: light item text, muted labels, NO colored
+     accent; hover is just a faint white overlay. Slightly translucent so the
+     container's backdrop-blur + subtle depth gradient reads as glass. */
+  --sidebar: #2b373e;
+  --sidebar-foreground: #fcfcfc;
+  --sidebar-primary: #0169cc;
+  --sidebar-primary-foreground: #1a1e26;
+  --sidebar-accent: rgba(255, 255, 255, 0.06);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+  --sidebar-ring: rgba(150, 165, 190, 0.4);
 
   /* Claude clay/coral primitives (dark) */
-  --signal: #d97757;
+  --signal: #0169cc;
   --signal-bright: #e8916f;
   --signal-dim: #b85f42;
-  --signal-soft: rgba(217, 119, 87, 0.13);
-  --surface-1: #1f1e1c;
-  --surface-2: #2a2926;
-  --surface-3: #322f2b;
-  --surface-4: #3a3733;
-  --elevated: #302f2c;
-  --success: #7ba05b;
+  --signal-soft: rgba(1, 105, 204, 0.13);
+  --surface-1: #1a1a1a;
+  --surface-2: #1a1a1a;
+  --surface-3: #1c1c1c;
+  --surface-4: #1e1e1e;
+  --elevated: #1e1e1e;
+  --success: #00a240;
   --warning: #d4a857;
   --info: #c8956a;
 
-  --surface: #2a2926;
-  --border-strong: #463f38;
-  --rift-glow: rgba(217, 119, 87, 0.12);
+  --surface: #1c1c1c;
+  --border-strong: #333333;
+  --rift-glow: rgba(1, 105, 204, 0.12);
   --grid-dot: rgba(255, 255, 255, 0.03);
 
-  --fill-input-chat: #2a2926;
-  --link-color: #d97757;
+  /* Chat composer shares the sidebar's elevated tone so the two read as one
+     harmonious surface above the darker canvas. */
+  --fill-input-chat: #1a1a1a;
+  --link-color: #0169cc;
 
-  --premium-bg: #343230;
-  --premium-text: #f4f2ec;
-  --premium-hover: #f4f2ec;
+  --premium-bg: #1e1e1e;
+  --premium-text: #fcfcfc;
+  --premium-hover: #fcfcfc;
 
   --scrollbar-track: transparent;
   --scrollbar-thumb: rgba(120, 126, 138, 0.3);
@@ -251,14 +263,14 @@
 
   --sidebar-mask: linear-gradient(
     90deg,
-    #1f1e1c 0%,
-    #1f1e1c 95%,
+    #1a1a1a 0%,
+    #1a1a1a 95%,
     transparent 100%
   );
   --sidebar-mask-active: linear-gradient(
     90deg,
-    #3a3733 0%,
-    #3a3733 88%,
+    #1e1e1e 0%,
+    #1e1e1e 88%,
     transparent 93%,
     transparent 100%
   );
@@ -421,7 +433,7 @@
 .coral-matrix {
   background-image: radial-gradient(
     circle at 1px 1px,
-    rgba(217, 119, 87, 0.16) 1px,
+    rgba(1, 105, 204, 0.16) 1px,
     transparent 0
   );
   background-size: 18px 18px;
@@ -567,6 +579,32 @@
   animation-name: text-shimmer;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
+}
+
+/* Live "thinking" label — a soft light sweeps across the letters. Reads as a
+   premium, high-craft signal that the model is reasoning. */
+.rift-thinking-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    var(--muted-foreground) 34%,
+    var(--signal-bright) 47%,
+    #ffffff 50%,
+    var(--signal-bright) 53%,
+    var(--muted-foreground) 66%
+  );
+  background-size: 220% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: text-shimmer 2.6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rift-thinking-shimmer {
+    animation: none;
+    color: var(--signal-bright);
+    -webkit-text-fill-color: var(--signal-bright);
+  }
 }
 
 .worked-for-content {
@@ -1140,5 +1178,41 @@ body {
   [contenteditable="true"],
   [contenteditable=""] {
     font-size: 16px !important;
+  }
+}
+
+/* ── Landing (air.dev-inspired) ambient background motion ── */
+@keyframes rift-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+@keyframes rift-blob-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -24px, 0);
+  }
+}
+@keyframes rift-twinkle {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rift-motion {
+    animation: none !important;
   }
 }

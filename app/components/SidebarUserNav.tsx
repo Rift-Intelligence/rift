@@ -9,15 +9,15 @@ import {
   LifeBuoy,
   ChevronRight,
   ChevronDown,
+  ChevronsUpDown,
   Settings,
-  CircleUserRound,
   Gauge,
   Download,
   ExternalLink,
   RefreshCw,
   Gift,
   X,
-  Zap,
+  Gem,
   Sun,
   Moon,
 } from "lucide-react";
@@ -47,9 +47,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { openSettingsDialog } from "@/lib/utils/settings-dialog";
 import { ReferralRewardDialog } from "./ReferralRewardDialog";
 import { formatBalanceTokens } from "@/lib/billing/token-display";
-import { BuyExtraUsageDialog } from "./extra-usage/BuyExtraUsageDialog";
 import { RiftPixelMark } from "@/components/icons/rift-pixel-mark";
-import { RiftWordmark } from "@/components/icons/rift-wordmark";
 
 import { toast } from "sonner";
 
@@ -167,7 +165,7 @@ const XIcon = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
 const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const { user } = useAuth();
   const { signOut } = useAuthActions();
-  const { isCheckingProPlan, subscription, chatMode } = useGlobalState();
+  const { isCheckingProPlan, subscription } = useGlobalState();
   const { theme, setTheme } = useTheme();
   const [rateLimitsExpanded, setRateLimitsExpanded] = useState(false);
   const [referralDialogOpen, setReferralDialogOpen] = useState(false);
@@ -186,37 +184,14 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
   const isMobile = useIsMobile();
   const isStandalone = useIsStandalone();
   const isPaidUser = subscription !== "free";
+  // Free / Pro / Pro-plus can still move up a tier; Max & Team can't.
+  const canUpgradePlan =
+    subscription === "free" ||
+    subscription === "pro" ||
+    subscription === "pro-plus";
 
   const getAgentRateLimitStatus = useAction(
     api.rateLimitStatus.getAgentRateLimitStatus,
-  );
-
-  const createCryptoInvoice = useAction(
-    api.extraUsageActions.createCryptoInvoice,
-  );
-  const [showBuyDialog, setShowBuyDialog] = useState(false);
-  const [isPurchasing, setIsPurchasing] = useState(false);
-
-  const handleBuyTokens = useCallback(
-    async (amountDollars: number) => {
-      setIsPurchasing(true);
-      try {
-        const result = await createCryptoInvoice({
-          amountDollars,
-          baseUrl: window.location.origin,
-        });
-        if (result.url) {
-          window.location.href = result.url;
-        } else {
-          toast.error(result.error || "Could not start checkout");
-          setIsPurchasing(false);
-        }
-      } catch {
-        toast.error("Could not start checkout");
-        setIsPurchasing(false);
-      }
-    },
-    [createCryptoInvoice],
   );
 
   const extraUsageSettings = useQuery(api.extraUsage.getExtraUsageSettings);
@@ -298,7 +273,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
 
   const handleGitHub = () => {
     const newWindow = window.open(
-      "https://github.com/rift-tech/rift",
+      "https://github.com/cettocdx/rift",
       "_blank",
       "noopener,noreferrer",
     );
@@ -309,7 +284,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
 
   const handleXCom = () => {
     const newWindow = window.open(
-      "https://x.com/PentestGPT",
+      "https://x.com/rift_sys",
       "_blank",
       "noopener,noreferrer",
     );
@@ -340,8 +315,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
     return user.firstName || user.lastName || "User";
   };
 
-  const modeLabel = chatMode === "agent" ? "EXECUTOR" : "ASK";
-
   const tokenBalanceLabel =
     subscription === "team"
       ? "Team · unlimited"
@@ -349,27 +322,33 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         ? "··· tokens"
         : `${formatBalanceTokens(tokenBalancePoints)} tokens`;
 
-  const handleTokenClick = () => {
-    if (subscription !== "team") {
-      setShowBuyDialog(true);
-    }
-  };
-
   const sessionDockMenu = (
     <>
-      <DropdownMenuLabel className="font-normal py-1.5">
-        <div className="flex items-center space-x-2">
-          <CircleUserRound className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-          <p
-            data-testid="user-email"
-            className="leading-none text-muted-foreground truncate min-w-0 text-sm"
-          >
-            {user.email}
-          </p>
-        </div>
+      <DropdownMenuLabel className="px-2 py-1.5 font-normal">
+        <p
+          data-testid="user-email"
+          className="min-w-0 truncate text-[12px] leading-none text-muted-foreground"
+        >
+          {user.email}
+        </p>
       </DropdownMenuLabel>
 
       <DropdownMenuSeparator />
+
+      {canUpgradePlan && (
+        <DropdownMenuItem
+          data-testid="upgrade-plan-button"
+          onSelect={() => {
+            window.location.href = "/upgrade";
+          }}
+          className="py-1.5"
+        >
+          <span className="mr-2 flex size-5 items-center justify-center rounded-md bg-gradient-to-br from-[var(--signal-bright)] to-primary shadow-sm">
+            <Gem className="size-3 text-white" strokeWidth={2} />
+          </span>
+          <span className="font-medium">Upgrade plan</span>
+        </DropdownMenuItem>
+      )}
 
       {isPaidUser && (
         <div>
@@ -466,16 +445,30 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         </div>
       )}
 
-      {subscription !== "team" && (
-        <DropdownMenuItem
-          data-testid="buy-tokens-button"
-          onSelect={() => setShowBuyDialog(true)}
-          className="py-1.5"
-        >
-          <Zap className="mr-2 h-4 w-4 text-foreground" />
-          <span>Buy tokens</span>
-        </DropdownMenuItem>
-      )}
+      <DropdownMenuItem
+        data-testid="settings-button"
+        onSelect={() => openSettingsDialog()}
+        className="py-1.5"
+      >
+        <Settings className="mr-2 h-4 w-4 text-foreground" />
+        <span>Settings</span>
+      </DropdownMenuItem>
+
+      <DropdownMenuItem
+        data-testid="theme-toggle"
+        onSelect={(e) => {
+          e.preventDefault();
+          setTheme(theme === "dark" ? "light" : "dark");
+        }}
+        className="py-1.5"
+      >
+        {theme === "dark" ? (
+          <Sun className="mr-2 h-4 w-4 text-foreground" />
+        ) : (
+          <Moon className="mr-2 h-4 w-4 text-foreground" />
+        )}
+        <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+      </DropdownMenuItem>
 
       <DropdownMenuSeparator />
 
@@ -497,13 +490,6 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
         onOpenChange={setReferralDialogOpen}
       />
 
-      <BuyExtraUsageDialog
-        open={showBuyDialog}
-        onOpenChange={setShowBuyDialog}
-        onPurchase={handleBuyTokens}
-        isLoading={isPurchasing}
-      />
-
       {isCollapsed ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -518,7 +504,7 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="min-w-[240px] rounded-2xl py-1.5"
+            className="min-w-[240px] rounded-xl py-1"
             align="center"
             side="top"
             sideOffset={4}
@@ -527,89 +513,47 @@ const SidebarUserNav = ({ isCollapsed = false }: { isCollapsed?: boolean }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
-        <div className="rounded-md border border-border bg-card/80 p-2">
-          <div className="flex items-start gap-2.5">
-            <RiftPixelMark size={22} className="mt-0.5 shrink-0" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[12px] font-semibold text-foreground">
-                  <RiftWordmark
-                    height={10}
-                    className="inline-block align-middle"
-                  />{" "}
-                  <span className="font-normal text-muted-foreground">
-                    v1.0
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="flex items-center justify-center size-5 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  aria-label="Toggle theme"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              data-testid="user-menu-button"
+              type="button"
+              className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-haspopup="menu"
+              aria-label={`Account menu for ${getDisplayName()}`}
+            >
+              <Avatar className="size-8 shrink-0">
+                <AvatarImage
+                  src={(user as { image?: string }).image}
+                  alt={getDisplayName()}
+                />
+                <AvatarFallback className="bg-muted text-[11px] font-medium text-foreground">
+                  {getUserInitials()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-medium leading-tight text-foreground">
+                  {getDisplayName()}
+                </p>
+                <p
+                  data-testid="sidebar-user-email"
+                  className="truncate text-[11px] leading-tight text-muted-foreground"
                 >
-                  {theme === "dark" ? (
-                    <Sun className="size-3.5" />
-                  ) : (
-                    <Moon className="size-3.5" />
-                  )}
-                </button>
+                  {user.email}
+                </p>
               </div>
-
-              <button
-                type="button"
-                data-testid="sidebar-token-balance"
-                onClick={handleTokenClick}
-                disabled={subscription === "team"}
-                className="mt-1 flex w-full min-w-0 items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:hover:bg-transparent"
-                aria-label={
-                  subscription === "team"
-                    ? "Team plan"
-                    : `Buy tokens — ${tokenBalanceLabel}`
-                }
-              >
-                <span className="shrink-0 uppercase tracking-[0.04em]">
-                  {modeLabel}
-                </span>
-                <span aria-hidden>·</span>
-                <span
-                  data-testid="subscription-badge"
-                  className="min-w-0 truncate tabular-nums text-foreground"
-                >
-                  {tokenBalanceLabel}
-                </span>
-                {subscription !== "team" ? (
-                  <ChevronRight className="ml-auto size-3 shrink-0 opacity-50" />
-                ) : null}
-              </button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    data-testid="user-menu-button"
-                    type="button"
-                    className="mt-0.5 flex w-full min-w-0 cursor-pointer items-center gap-1 rounded px-0.5 py-0.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    aria-haspopup="menu"
-                    aria-label={`Account menu for ${getDisplayName()}`}
-                  >
-                    <span className="truncate text-muted-foreground">
-                      {getDisplayName()}
-                    </span>
-                    <span className="shrink-0">· ~/session</span>
-                    <ChevronDown className="ml-auto size-3 shrink-0 opacity-60" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[240px] rounded-2xl py-1.5"
-                  align="center"
-                  side="top"
-                  sideOffset={4}
-                >
-                  {sessionDockMenu}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
+              <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[240px] rounded-xl py-1"
+            align="center"
+            side="top"
+            sideOffset={8}
+          >
+            {sessionDockMenu}
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
     </div>
   );

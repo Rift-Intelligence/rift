@@ -11,14 +11,201 @@ export function isChatMode(value: string | null): value is ChatMode {
   return value !== null && (CHAT_MODES as readonly string[]).includes(value);
 }
 
-export type SelectedModel = "auto" | "rift-standard" | "rift-pro" | "rift-max";
+/**
+ * What the agent is FOR — orthogonal to {@link ChatMode} (which is the
+ * execution-path selector: long Trigger worker vs fast ask). `security` is the
+ * original offensive-security agent. `app` is the Claude-Code-style builder
+ * (web apps / browser games) — same runtime, but a different system prompt and
+ * a stronger codegen model. `image` is the image/photo generator — a fast
+ * single-tool flow (Grok + `generate_image`). Stored on the chat row; defaults
+ * to `security`.
+ */
+export type ChatPurpose = "security" | "app" | "image";
+
+export const CHAT_PURPOSES: readonly ChatPurpose[] = [
+  "security",
+  "app",
+  "image",
+];
+
+export function isChatPurpose(value: string | null): value is ChatPurpose {
+  return value !== null && (CHAT_PURPOSES as readonly string[]).includes(value);
+}
+
+/** Narrow any stored value to a ChatPurpose, defaulting to "security". */
+export function coerceChatPurpose(
+  value: string | null | undefined,
+): ChatPurpose {
+  return value === "app" || value === "image" ? value : "security";
+}
+
+export type SelectedModel =
+  | "auto"
+  | "rift-standard"
+  | "rift-pro"
+  | "rift-max"
+  // Build-mode (app builder) picker selections. Orthogonal to the generic
+  // tiers above; only meaningful when purpose === "app".
+  | "build-fast"
+  | "build-balanced"
+  | "build-codex"
+  | "build-max"
+  | "build-gpt55"
+  | "build-glm"
+  | "build-grok"
+  | "build-deepseek"
+  | "build-kimi"
+  | "build-opus46"
+  // Image-mode picker selections. Only meaningful when purpose === "image";
+  // they choose which image model generate_image renders with.
+  | "image-gemini"
+  | "image-nano"
+  | "image-gpt";
 
 export const SELECTABLE_MODELS: readonly SelectedModel[] = [
   "auto",
   "rift-standard",
   "rift-pro",
   "rift-max",
+  "build-fast",
+  "build-balanced",
+  "build-codex",
+  "build-max",
+  "build-gpt55",
+  "build-glm",
+  "build-grok",
+  "build-deepseek",
+  "build-kimi",
+  "build-opus46",
+  "image-gemini",
+  "image-nano",
+  "image-gpt",
 ];
+
+/**
+ * Image-mode picker options. `model` is the OpenRouter image model (only these
+ * are reachable via the chat/completions + modalities route); `cost` is the real
+ * per-image cost (retail margin applied downstream). Ordered cheapest → best.
+ */
+export const IMAGE_MODELS: ReadonlyArray<{
+  id: Extract<SelectedModel, `image-${string}`>;
+  name: string;
+  desc: string;
+  model: string;
+  cost: number;
+}> = [
+  {
+    id: "image-nano",
+    name: "Nano Banana",
+    desc: "Fast & cheap",
+    model: "google/gemini-2.5-flash-image",
+    cost: 0.04,
+  },
+  {
+    id: "image-gemini",
+    name: "Gemini 3 Pro",
+    desc: "Best realism",
+    model: "google/gemini-3-pro-image",
+    cost: 0.14,
+  },
+  {
+    id: "image-gpt",
+    name: "GPT-5 Image",
+    desc: "Sharpest detail",
+    model: "openai/gpt-5-image",
+    cost: 0.21,
+  },
+];
+
+/** Default image model when none is picked (matches generate_image's default). */
+export const DEFAULT_IMAGE_MODEL: SelectedModel = "image-gemini";
+
+/** Resolve an image-* selection to its OpenRouter model + cost, or null. */
+export function resolveImageModel(
+  selectedModel?: string | null,
+): { model: string; cost: number } | null {
+  const entry = IMAGE_MODELS.find((m) => m.id === selectedModel);
+  return entry ? { model: entry.model, cost: entry.cost } : null;
+}
+
+/**
+ * The model options shown in the Build-mode picker. `id` is stored in
+ * `selectedModel`; the backend maps it to an OpenRouter model in `selectModel`.
+ * Ordered cheapest → most capable.
+ */
+export const BUILD_MODELS: ReadonlyArray<{
+  id: Extract<SelectedModel, `build-${string}`>;
+  label: string;
+  model: string;
+  desc: string;
+}> = [
+  {
+    id: "build-fast",
+    label: "Fast",
+    model: "Gemini 3 Flash",
+    desc: "Fastest & cheapest",
+  },
+  {
+    id: "build-balanced",
+    label: "Balanced",
+    model: "Claude Sonnet 4.6",
+    desc: "Best all-round",
+  },
+  {
+    id: "build-codex",
+    label: "Codex",
+    model: "GPT-5.3 Codex",
+    desc: "Coding-specialized",
+  },
+  {
+    id: "build-max",
+    label: "Max",
+    model: "Claude Opus 4.8",
+    desc: "Hardest builds",
+  },
+  {
+    id: "build-gpt55",
+    label: "Premium",
+    model: "GPT-5.5",
+    desc: "Most capable overall",
+  },
+  {
+    id: "build-glm",
+    label: "GLM-5.2",
+    model: "GLM-5.2",
+    desc: "Frontier · uncensored",
+  },
+  {
+    id: "build-grok",
+    label: "Grok 4.3",
+    model: "xAI Grok 4.3",
+    desc: "Free · fast & capable",
+  },
+  {
+    id: "build-deepseek",
+    label: "DeepSeek V4",
+    model: "DeepSeek V4 Flash",
+    desc: "Free · efficient coder",
+  },
+  {
+    id: "build-kimi",
+    label: "Kimi K2.7",
+    model: "Kimi K2.7 Code",
+    desc: "Coding-specialized",
+  },
+  {
+    id: "build-opus46",
+    label: "Opus 4.6",
+    model: "Claude Opus 4.6",
+    desc: "Strong reasoning",
+  },
+];
+
+/** The Build picker's default when no build-specific model is selected yet.
+ * GLM-5.2: frontier-tier, strong at codegen, and — unlike the Claude options
+ * (Sonnet/Opus) — NOT emptied by a provider content-filter on security-adjacent
+ * context, so builds work out of the box for every user. */
+export const DEFAULT_BUILD_MODEL: SelectedModel = "build-glm";
 
 /**
  * Map of legacy ids to the current `SelectedModel` union. Covers two prior

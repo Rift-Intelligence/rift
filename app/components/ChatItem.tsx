@@ -286,9 +286,9 @@ const ChatItem: React.FC<ChatItemProps> = ({
 
   return (
     <div
-      className={`group relative flex w-full cursor-pointer items-center rounded-md px-2 py-1.5 text-[12.5px] transition-colors hover:bg-sidebar-accent focus:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
+      className={`group relative flex w-full cursor-pointer items-center rounded-md px-2 py-[3px] text-[11px] leading-tight transition-colors hover:bg-sidebar-accent focus:outline-none focus-visible:ring-1 focus-visible:ring-ring ${
         isCurrentlyActive
-          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          ? "bg-sidebar-accent text-foreground"
           : "text-muted-foreground"
       }`}
       onMouseEnter={() => setIsHovered(true)}
@@ -310,30 +310,34 @@ const ChatItem: React.FC<ChatItemProps> = ({
         dir="auto"
       >
         <span className="flex items-center gap-1.5">
-          {isStreaming && (
+          {/* Codex-style: plain text rows. Only a status glyph when relevant
+              (streaming / pinned / branched) — no default per-chat icon. */}
+          {isStreaming ? (
             <LoaderCircle
-              className="size-3 flex-shrink-0 animate-spin text-muted-foreground"
+              className="size-3.5 flex-shrink-0 animate-spin text-muted-foreground"
               data-testid="chat-item-streaming-icon"
             />
-          )}
-          {isPinned && !isStreaming && (
+          ) : isPinned ? (
             <Pin
-              className="size-3 flex-shrink-0 text-muted-foreground"
+              className="size-3.5 flex-shrink-0 text-muted-foreground"
               data-testid="chat-item-pin-icon"
+              strokeWidth={1.75}
             />
-          )}
-          {isBranched && branchedFromTitle && !isStreaming && (
+          ) : isBranched && branchedFromTitle ? (
             <TooltipProvider delayDuration={300}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Split className="size-3 flex-shrink-0 text-muted-foreground" />
+                  <Split
+                    className="size-3.5 flex-shrink-0 text-muted-foreground"
+                    strokeWidth={1.75}
+                  />
                 </TooltipTrigger>
                 <TooltipContent side="right">
                   <p className="text-xs">Branched from: {branchedFromTitle}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          )}
+          ) : null}
           {title}
         </span>
       </div>

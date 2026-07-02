@@ -2,6 +2,11 @@ import { RefObject, useEffect, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useGlobalState } from "../contexts/GlobalState";
+import {
+  onLaunchOperation,
+  type LaunchOperationDetail,
+} from "@/lib/utils/launch-operation";
+import { onSubmitChatMessage } from "@/lib/utils/submit-message";
 import { useInputApi } from "../contexts/InputContext";
 import { useLatestRef } from "@/app/hooks/useLatestRef";
 import { isTauriEnvironment } from "@/app/hooks/useTauri";
@@ -64,6 +69,8 @@ export const useChatHandlers = ({
   const {
     uploadedFiles,
     chatMode,
+    setChatMode,
+    setActiveOperation,
     clearUploadedFiles,
     todos,
     setTodos,
@@ -91,6 +98,65 @@ export const useChatHandlers = ({
   const chatModeRef = useLatestRef(chatMode);
   const sandboxPreferenceRef = useLatestRef(sandboxPreference);
   const subscriptionRef = useLatestRef(subscription);
+
+  // Launch an Operation from the Arsenal launcher: switch the UI to the
+  // operation's mode and send the built prompt in that mode. The ref holds the
+  // latest send config so the listener (subscribed once) never goes stale.
+  const launchOperationRef = useRef<(detail: LaunchOperationDetail) => void>(
+    () => {},
+  );
+  useEffect(() => {
+    launchOperationRef.current = (detail) => {
+      setChatMode(detail.mode);
+      setActiveOperation({
+        id: detail.operationId,
+        label: detail.operationLabel,
+        target: detail.target,
+      });
+      sendMessage(
+        { text: detail.prompt },
+        {
+          body: {
+            mode: detail.mode,
+            todos,
+            temporary: temporaryChatsEnabled,
+            sandboxPreference,
+            selectedModel,
+          },
+        },
+      );
+    };
+  });
+  useEffect(
+    () => onLaunchOperation((detail) => launchOperationRef.current(detail)),
+    [],
+  );
+
+  // Programmatic message submit (e.g. Plan-mode question cards): send `text`
+  // as a normal user message in the CURRENT chat mode — no operation badge,
+  // no mode switch. Ref keeps the send config fresh for the once-subscribed
+  // listener.
+  const submitMessageRef = useRef<(text: string) => void>(() => {});
+  useEffect(() => {
+    submitMessageRef.current = (text) => {
+      sendMessage(
+        { text },
+        {
+          body: {
+            mode: chatModeRef.current,
+            todos,
+            temporary: temporaryChatsEnabled,
+            sandboxPreference,
+            selectedModel,
+          },
+        },
+      );
+    };
+  });
+  useEffect(
+    () => onSubmitChatMessage((text) => submitMessageRef.current(text)),
+    [],
+  );
 
   const isSendableUploadedFile = (file: (typeof uploadedFiles)[number]) =>
     file.uploaded &&

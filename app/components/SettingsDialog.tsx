@@ -8,6 +8,7 @@ import {
   Database,
   Infinity,
   Server,
+  KeyRound,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ManageNotesDialog } from "@/app/components/ManageNotesDialog";
@@ -17,6 +18,7 @@ import { AccountTab } from "@/app/components/AccountTab";
 import { DataControlsTab } from "@/app/components/DataControlsTab";
 import { AgentsTab } from "@/app/components/AgentsTab";
 import { RemoteControlTab } from "@/app/components/RemoteControlTab";
+import { ApiKeysTab } from "@/app/components/ApiKeysTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGlobalState } from "@/app/contexts/GlobalState";
 
@@ -42,6 +44,7 @@ const SettingsDialog = ({
     { id: "Personalization", label: "Personalization", icon: Settings },
     { id: "Data controls", label: "Data controls", icon: Database },
     { id: "Agents", label: "Agents", icon: Infinity },
+    { id: "API Keys", label: "API Keys", icon: KeyRound },
     { id: "Remote Control", label: "Remote Control", icon: Server },
     { id: "Account", label: "Account", icon: CircleUserRound },
   ];
@@ -88,7 +91,7 @@ const SettingsDialog = ({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           data-testid="settings-dialog"
-          className="w-[380px] max-w-[98%] md:w-[95vw] md:max-w-[920px] max-h-[95%] md:h-[672px] p-0 overflow-hidden rounded-[20px]"
+          className="w-[380px] max-w-[98%] md:w-[92vw] md:max-w-[760px] max-h-[95%] md:h-[600px] p-0 overflow-hidden rounded-[18px]"
           showCloseButton={!isMobile}
         >
           {/* Accessibility: Always include DialogTitle */}
@@ -97,7 +100,7 @@ const SettingsDialog = ({
           {isMobile && (
             <div className="relative z-10 p-0">
               <div className="flex items-center justify-between px-4 py-3 border-b">
-                <h3 className="text-lg font-semibold">Settings</h3>
+                <h3 className="text-base font-semibold">Settings</h3>
                 <div
                   className="flex h-7 w-7 items-center justify-center cursor-pointer rounded-md hover:bg-muted"
                   onClick={() => onOpenChange(false)}
@@ -109,11 +112,11 @@ const SettingsDialog = ({
           )}
 
           <div
-            className={`flex ${isMobile ? "flex-col" : "flex-row"} ${isMobile ? "h-[80dvh]" : "h-[672px]"} max-h-[90vh] min-h-0`}
+            className={`flex ${isMobile ? "flex-col" : "flex-row"} ${isMobile ? "h-[80dvh]" : "h-[600px]"} max-h-[90vh] min-h-0`}
           >
             {/* Tabs */}
             <div
-              className={`${isMobile ? "overflow-x-auto md:overflow-x-visible border-r pb-2 md:pb-0 relative" : "md:w-[221px] border-r"}`}
+              className={`${isMobile ? "overflow-x-auto md:overflow-x-visible border-r pb-2 md:pb-0 relative" : "md:w-[190px] border-r"}`}
             >
               {!isMobile && (
                 <div className="items-center hidden px-5 pt-5 pb-3 md:flex">
@@ -133,7 +136,7 @@ const SettingsDialog = ({
                           data-testid={`settings-tab-${tab.id.toLowerCase().replace(/\s+/g, "-")}`}
                           type="button"
                           onClick={() => setActiveTab(tab.id)}
-                          className={`group flex items-center gap-1.5 px-1 py-2 text-sm leading-5 max-md:whitespace-nowrap md:h-12 md:gap-2.5 md:self-stretch md:px-4 md:rounded-lg hover:bg-muted transition-colors ${
+                          className={`group flex items-center gap-1.5 px-1 py-2 text-[13px] leading-5 max-md:whitespace-nowrap md:h-10 md:gap-2.5 md:self-stretch md:px-4 md:rounded-lg hover:bg-muted transition-colors ${
                             activeTab === tab.id
                               ? `${isMobile ? "font-medium" : "bg-muted font-medium"}`
                               : ""
@@ -141,7 +144,10 @@ const SettingsDialog = ({
                         >
                           {!isMobile && (
                             <div className="flex items-center justify-center">
-                              <IconComponent className="h-5 w-5" />
+                              <IconComponent
+                                className="size-[18px]"
+                                strokeWidth={1.75}
+                              />
                             </div>
                           )}
                           <div className="flex min-w-0 grow items-center">
@@ -161,8 +167,8 @@ const SettingsDialog = ({
             {/* Content area */}
             <div className="flex flex-col items-start self-stretch flex-1 overflow-hidden min-h-0">
               {!isMobile && (
-                <div className="gap-1 items-center px-6 py-5 hidden md:flex self-stretch border-b">
-                  <h3 className="text-lg font-medium">{activeTab}</h3>
+                <div className="gap-1 items-center px-6 py-4 hidden md:flex self-stretch border-b">
+                  <h3 className="text-[15px] font-medium">{activeTab}</h3>
                 </div>
               )}
               <div className="flex-1 self-stretch items-start overflow-y-auto px-4 pt-4 pb-4 md:px-6 md:pt-4 min-h-0">
@@ -178,6 +184,10 @@ const SettingsDialog = ({
                 {activeTab === "Data controls" && <DataControlsTab />}
 
                 {activeTab === "Agents" && <AgentsTab />}
+
+                {activeTab === "API Keys" && (
+                  <ApiKeysTab subscription={subscription} />
+                )}
 
                 {activeTab === "Remote Control" && <RemoteControlTab />}
 

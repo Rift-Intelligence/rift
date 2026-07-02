@@ -31,7 +31,7 @@ const severityColors: Record<GuardrailConfigUI["severity"], string> = {
   critical: "text-red-500",
   high: "text-orange-500",
   medium: "text-yellow-500",
-  low: "text-blue-500",
+  low: "text-muted-foreground",
 };
 
 const AgentsTab = () => {

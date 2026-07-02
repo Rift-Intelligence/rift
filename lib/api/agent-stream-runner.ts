@@ -153,6 +153,13 @@ export type AgentStreamContext = {
   trackedProvider: ReturnType<typeof createTrackedProvider>;
   currentSystemPrompt: string;
   tools: ToolSet;
+  /**
+   * When set, the model is forced to call this tool on the FIRST step
+   * (toolChoice), then released to "auto" for later steps. Used by image mode
+   * to guarantee generate_image is actually called instead of the model just
+   * describing the image in text.
+   */
+  forceFirstToolName?: string;
   mode: ChatMode;
   userId: string;
   subscription: SubscriptionTier;
@@ -283,6 +290,17 @@ export async function createAgentStream(
     ),
     tools: ctx.tools,
     activeTools: initialActiveTools,
+    // Force the first tool (e.g. generate_image for image mode) so the model
+    // can't just describe the result in text. Released to "auto" after step 1
+    // via prepareStep below.
+    ...(ctx.forceFirstToolName
+      ? {
+          toolChoice: {
+            type: "tool" as const,
+            toolName: ctx.forceFirstToolName,
+          },
+        }
+      : {}),
     abortSignal: ctx.abortController.signal,
     providerOptions: getStepProviderOptions(),
 
@@ -376,6 +394,19 @@ export async function createAgentStream(
         }
 
         return {
+          // Force the tool on step 0, then release to "auto" so the model can
+          // write its reply after the forced tool call (no infinite loop).
+          ...(ctx.forceFirstToolName
+            ? {
+                toolChoice:
+                  steps.length === 0
+                    ? {
+                        type: "tool" as const,
+                        toolName: ctx.forceFirstToolName,
+                      }
+                    : ("auto" as const),
+              }
+            : {}),
           activeTools: await getActiveTools(),
           providerOptions: getStepProviderOptions(),
           messages: prepareProviderMessages(

@@ -18,6 +18,9 @@ import PostHogClient from "@/app/posthog";
 import { systemPrompt } from "@/lib/system-prompt";
 import { getResumeSection } from "@/lib/system-prompt/resume";
 import { createTools } from "@/lib/ai/tools";
+import { loadUserMcpTools } from "@/lib/ai/mcp/load-user-mcp-tools";
+import { loadUserGithubToken } from "@/lib/github/load-user-github-token";
+import { injectSkillsIntoMessages } from "@/lib/ai/skills/inject-skills";
 import { ptySessionManager } from "@/lib/ai/tools/utils/pty-session-manager";
 import { generateTitleFromUserMessageWithWriter } from "@/lib/actions";
 import { createTrackedProvider } from "@/lib/ai/providers";
@@ -41,6 +44,7 @@ import {
   captureBudgetSnapshot,
 } from "@/lib/chat/budget-monitor";
 import { UsageTracker } from "@/lib/usage-tracker";
+import { getExtraUsageBalance } from "@/lib/extra-usage";
 import {
   acquireFreeRunConcurrencyLock,
   checkFreeMonthlyCostLimit,
@@ -93,6 +97,7 @@ import type {
   Todo,
   SandboxPreference,
   SelectedModel,
+  ChatPurpose,
   RateLimitInfo,
 } from "@/types";
 import {
@@ -524,6 +529,7 @@ export type AgentLongPayload = {
   baseTodos: Todo[];
   sandboxPreference?: SandboxPreference;
   selectedModel?: SelectedModel;
+  purpose?: ChatPurpose;
   userLocation: Geo;
   temporary?: boolean;
   isAutoContinue?: boolean;
@@ -584,6 +590,7 @@ export const agentLongTask = task({
       localDesktopAttachmentsPrepared,
       sandboxPreference: _sandboxPreference,
       selectedModel: selectedModelOverride,
+      purpose = "security",
       userLocation,
       temporary,
       isAutoContinue,
@@ -624,12 +631,23 @@ export const agentLongTask = task({
     const usageRefundTracker = new UsageRefundTracker();
     usageRefundTracker.setUser(userId, subscription, organizationId);
     let releaseFreeRunLock: (() => Promise<void>) | undefined;
+    let lockRefreshTimer: ReturnType<typeof setInterval> | undefined;
     const releaseFreeRunLockOnce = async () => {
+      if (lockRefreshTimer) {
+        clearInterval(lockRefreshTimer);
+        lockRefreshTimer = undefined;
+      }
       const release = releaseFreeRunLock;
       if (!release) return;
       releaseFreeRunLock = undefined;
       await release();
     };
+
+    // MCP connector teardown — see chat-handler.ts for the rationale. Assigned
+    // once the user's MCP servers connect (inside execute); closed at the same
+    // terminal points as the free-run lock so transports survive fallback retry
+    // legs but are always cleaned up when the run ends. Idempotent.
+    let closeMcpToolsOnce: () => Promise<void> = async () => {};
 
     let chatLogger: ChatLogger | undefined = createChatLogger({
       chatId,
@@ -701,6 +719,7 @@ export const agentLongTask = task({
           subscription,
           uploadBasePath,
           modelOverride: selectedModelOverride,
+          purpose,
           allowLocalDesktopFiles: false,
         });
 
@@ -781,12 +800,30 @@ export const agentLongTask = task({
 
           try {
             await assertUserCanMakeCostIncurringRequest(userId);
-            if (subscription === "free") {
+            // Only cap concurrency for genuinely-free runs. Everyone is
+            // subscription "free" now, so a paying user (usable balance) must
+            // never be blocked by the free-run lock.
+            const balance =
+              subscription === "free"
+                ? await getExtraUsageBalance(userId)
+                : null;
+            // A positive token balance = a paying user; don't also require the
+            // legacy extra_usage_enabled toggle (purchases never set it).
+            const hasUsableBalance = !!balance && balance.balancePoints > 0;
+            if (subscription === "free" && !hasUsableBalance) {
               const lock = await acquireFreeRunConcurrencyLock(
                 userId,
                 FREE_AGENT_LONG_RUN_LOCK_TTL_SECONDS,
               );
               releaseFreeRunLock = lock.release;
+              // Keep the short-TTL lock alive while the run is active; if the
+              // task dies the refresh stops and the lock expires within one TTL
+              // (≈3 min) instead of stranding the user for over an hour.
+              lockRefreshTimer = setInterval(() => {
+                void lock
+                  .refresh(FREE_AGENT_LONG_RUN_LOCK_TTL_SECONDS)
+                  .catch(() => {});
+              }, 60 * 1000);
             }
 
             extraUsageConfig = await buildExtraUsageConfig({
@@ -817,6 +854,11 @@ export const agentLongTask = task({
                 : null;
 
             usageRefundTracker.recordDeductions(rateLimitInfo);
+            if (rateLimitInfo.servedFrom === "free") {
+              // agent-long is always agent mode; a free-served run spent the
+              // one lifetime claim — refund it if the run fails.
+              usageRefundTracker.recordFreeAgentClaim();
+            }
             chatLogger?.setRateLimit(
               {
                 pointsDeducted: rateLimitInfo.pointsDeducted,
@@ -834,6 +876,19 @@ export const agentLongTask = task({
               mode,
               rateLimitInfo,
             });
+
+            // Connect the user's MCP servers and merge their tools. Non-fatal;
+            // connections stay open for the run and close via closeMcpToolsOnce.
+            const mcpLoaded = await loadUserMcpTools(userId);
+            // Connected GitHub token → pre-authenticate git in the sandbox so
+            // the Build agent can clone/push the user's repos.
+            const githubConn = await loadUserGithubToken(userId);
+            let mcpClosed = false;
+            closeMcpToolsOnce = async () => {
+              if (mcpClosed) return;
+              mcpClosed = true;
+              await mcpLoaded.close();
+            };
 
             const {
               tools,
@@ -869,6 +924,11 @@ export const agentLongTask = task({
               (info) => chatLogger?.setSandboxBoot(info),
               undefined,
               selectedModel,
+              mcpLoaded.tools,
+              undefined, // imageModel (image mode runs on the fast path)
+              undefined, // imageCost
+              githubConn?.token,
+              githubConn?.username,
             );
 
             // Eagerly start the sandbox NOW so its cold-start (E2B create or
@@ -968,6 +1028,7 @@ export const agentLongTask = task({
               userCustomization,
               temporary,
               sandboxContext,
+              purpose,
             );
             const systemPromptTokens = countTokens(currentSystemPrompt);
 
@@ -998,14 +1059,28 @@ export const agentLongTask = task({
             const noteInjectionOpts = {
               userId,
               subscription,
+              // SECURITY-ONLY: pentest/OSINT notes are irrelevant to Build (app)
+              // & Image modes, and injecting that offensive-security content
+              // trips Anthropic's real-time content-filter on Claude upstreams
+              // (Bedrock/Vertex), which EMPTIES the response
+              // (finish_reason:"content-filter", 0 output tokens) — that's why
+              // Build-mode Claude Fable 5 came back blank. Mirror of the same
+              // gate in chat-handler.ts (this Trigger path duplicates it).
               shouldIncludeNotes:
-                userCustomization?.include_memory_entries ?? true,
+                purpose === "security" &&
+                (userCustomization?.include_memory_entries ?? true),
               isTemporary: !!temporary as boolean | undefined,
             };
             finalMessages = await injectNotesIntoMessages(
               finalMessages,
               noteInjectionOpts,
             );
+
+            // Inject the user's enabled skills scoped to the current purpose.
+            finalMessages = await injectSkillsIntoMessages(finalMessages, {
+              userId,
+              purpose,
+            });
 
             // Mutable stream state — updated in-place by the shared runner and
             // read back here in toUIMessageStream.onFinish.
@@ -1691,6 +1766,7 @@ export const agentLongTask = task({
                     } finally {
                       if (!retryScheduled) {
                         await releaseFreeRunLockOnce();
+                        await closeMcpToolsOnce();
                       }
                     }
                   },
@@ -1700,6 +1776,7 @@ export const agentLongTask = task({
             );
           } catch (error) {
             await releaseFreeRunLockOnce();
+            await closeMcpToolsOnce();
             throw error;
           }
         },
@@ -1743,6 +1820,7 @@ export const agentLongTask = task({
       await phLogger.flush().catch(() => {});
     } catch (error) {
       await releaseFreeRunLockOnce();
+      await closeMcpToolsOnce();
       const chatMissingAfterStream =
         streamPiped &&
         error instanceof ChatSDKError &&

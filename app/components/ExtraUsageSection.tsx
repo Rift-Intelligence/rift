@@ -9,7 +9,6 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   TurnOffExtraUsageDialog,
-  BuyExtraUsageDialog,
   AdjustSpendingLimitDialog,
   AutoReloadDialog,
 } from "@/app/components/extra-usage";
@@ -29,20 +28,22 @@ const ExtraUsageSection = () => {
     api.extraUsage.updateExtraUsageSettings,
   );
 
-  // Convex actions for Stripe operations
+  // Convex actions. Card payments + subscriptions now go through LemonSqueezy
+  // (merchant of record, handles VAT). getPaymentStatus is still used to gate
+  // auto-reload (which uses the saved Stripe card).
   const getPaymentStatus = useAction(api.extraUsageActions.getPaymentStatus);
-  const createPurchaseSession = useAction(
-    api.extraUsageActions.createPurchaseSession,
+  const createLemonsqueezySubscription = useAction(
+    api.extraUsageActions.createLemonsqueezySubscription,
   );
+  const activeSubscription = useQuery(api.subscriptions.getActiveSubscription);
 
   // Loading states
   const [isTogglingExtraUsage, setIsTogglingExtraUsage] = useState(false);
-  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState<null | "pro" | "ultra">(null);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Dialog states
   const [showTurnOffDialog, setShowTurnOffDialog] = useState(false);
-  const [showBuyDialog, setShowBuyDialog] = useState(false);
   const [showSpendingLimitDialog, setShowSpendingLimitDialog] = useState(false);
   const [showAutoReloadDialog, setShowAutoReloadDialog] = useState(false);
 
@@ -94,25 +95,24 @@ const ExtraUsageSection = () => {
     }
   };
 
-  // Purchase credits (redirects to Stripe Checkout with saved cards shown)
-  const handlePurchaseCredits = async (amountDollars: number) => {
-    setIsPurchasing(true);
+  // Subscribe to / upgrade a plan (Pro or Max → "ultra") via LemonSqueezy.
+  const handleUpgrade = async (tier: "pro" | "ultra") => {
+    setIsUpgrading(tier);
     try {
-      const result = await createPurchaseSession({
-        amountDollars,
+      const result = await createLemonsqueezySubscription({
+        tier,
         baseUrl: window.location.origin,
       });
-
       if (result.url) {
         window.location.href = result.url;
       } else {
-        toast.error(result.error || "Failed to create checkout session");
+        toast.error(result.error || "Could not start checkout");
+        setIsUpgrading(null);
       }
     } catch (error) {
-      console.error("Failed to purchase credits:", error);
-      toast.error("Failed to purchase credits");
-    } finally {
-      setIsPurchasing(false);
+      console.error("Failed to start subscription checkout:", error);
+      toast.error("Could not start checkout");
+      setIsUpgrading(null);
     }
   };
 
@@ -184,7 +184,7 @@ const ExtraUsageSection = () => {
   const getUsageColorClass = (percentage: number): string => {
     if (percentage >= 90) return "bg-red-500";
     if (percentage >= 70) return "bg-orange-500";
-    return "bg-blue-500";
+    return "bg-primary";
   };
 
   return (
@@ -193,6 +193,129 @@ const ExtraUsageSection = () => {
         data-testid="extra-usage-section"
         className="flex flex-col gap-6"
       >
+        {/* Plans — subscribe/upgrade via LemonSqueezy */}
+        {(() => {
+          const currentTier: "free" | "pro" | "ultra" = activeSubscription
+            ? activeSubscription.tier === "ultra"
+              ? "ultra"
+              : "pro"
+            : "free";
+          const PLANS = [
+            {
+              tier: "free" as const,
+              name: "Free",
+              price: "$0",
+              cadence: "",
+              features: [
+                "10 questions per day",
+                "1 full agent run each month",
+                "Build, Create & Secure",
+                "Isolated cloud sandbox",
+              ],
+            },
+            {
+              tier: "pro" as const,
+              name: "Pro",
+              price: "$39",
+              cadence: "/mo",
+              features: [
+                "500,000 credits every month",
+                "All models & capabilities",
+                "Unlimited chats & projects",
+                "Priority sandboxes",
+              ],
+            },
+            {
+              tier: "ultra" as const,
+              name: "Max",
+              price: "$129",
+              cadence: "/mo",
+              features: [
+                "1,800,000 credits every month",
+                "Personal API keys",
+                "Highest limits & priority",
+                "Early access to new tools",
+              ],
+            },
+          ];
+          const rank = { free: 0, pro: 1, ultra: 2 } as const;
+          return (
+            <div className="w-full flex flex-col gap-3 border-b border-border pb-6">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm font-medium">Plan</p>
+                <p className="text-sm text-muted-foreground">
+                  {currentTier === "free"
+                    ? "You're on the free plan. Upgrade for monthly credits and all features across build, image, and security."
+                    : `You're on ${currentTier === "ultra" ? "Max" : "Pro"} — thanks for supporting RIFT.`}
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {PLANS.map((plan) => {
+                  const isCurrent = plan.tier === currentTier;
+                  const isUpgrade = rank[plan.tier] > rank[currentTier];
+                  const featured = plan.tier === "pro";
+                  return (
+                    <div
+                      key={plan.tier}
+                      className={`relative flex flex-col rounded-xl border p-4 ${
+                        isCurrent
+                          ? "border-primary/60 bg-primary/[0.06]"
+                          : featured
+                            ? "border-primary/30 bg-card"
+                            : "border-border bg-card"
+                      }`}
+                    >
+                      {isCurrent && (
+                        <span className="absolute -top-2 left-4 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+                          Current
+                        </span>
+                      )}
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-sm font-semibold">
+                          {plan.name}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          <span className="font-semibold text-foreground">
+                            {plan.price}
+                          </span>
+                          {plan.cadence}
+                        </span>
+                      </div>
+                      <ul className="mt-3 flex flex-1 flex-col gap-1.5">
+                        {plan.features.map((f) => (
+                          <li
+                            key={f}
+                            className="flex items-start gap-1.5 text-[12.5px] text-muted-foreground"
+                          >
+                            <span className="mt-1.5 size-1 shrink-0 rounded-full bg-primary" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      {plan.tier !== "free" && isUpgrade && (
+                        <Button
+                          variant={featured ? "default" : "outline"}
+                          size="sm"
+                          className="mt-4"
+                          disabled={isUpgrading !== null}
+                          onClick={() => handleUpgrade(plan.tier)}
+                          aria-label={`Upgrade to ${plan.name}`}
+                        >
+                          {isUpgrading === plan.tier
+                            ? "Redirecting…"
+                            : currentTier === "free"
+                              ? `Upgrade to ${plan.name}`
+                              : `Switch to ${plan.name}`}
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Toggle Row */}
         <div className="w-full min-w-0 flex flex-row gap-x-8 gap-y-3 justify-between items-center">
           <div className="w-full min-w-0 flex flex-row gap-4 items-center">
@@ -330,13 +453,14 @@ const ExtraUsageSection = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowBuyDialog(true)}
-                disabled={isPurchasing}
+                onClick={() => {
+                  window.location.href = "/upgrade";
+                }}
                 className="min-w-[5rem]"
-                aria-label="Buy tokens"
+                aria-label="Add credits"
                 tabIndex={0}
               >
-                Buy tokens
+                Add credits
               </Button>
             </div>
           </>
@@ -349,13 +473,6 @@ const ExtraUsageSection = () => {
         onOpenChange={setShowTurnOffDialog}
         onConfirm={handleConfirmTurnOff}
         isLoading={isTogglingExtraUsage}
-      />
-
-      <BuyExtraUsageDialog
-        open={showBuyDialog}
-        onOpenChange={setShowBuyDialog}
-        onPurchase={handlePurchaseCredits}
-        isLoading={isPurchasing}
       />
 
       <AdjustSpendingLimitDialog

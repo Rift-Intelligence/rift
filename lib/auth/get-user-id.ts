@@ -7,6 +7,7 @@ import {
   MOCK_TIER_STORAGE_KEY,
   resolveMockTierFromCookie,
 } from "@/lib/billing/mock-billing";
+import { resolveApiKeyAuth } from "@/lib/auth/api-key";
 
 /**
  * Server-side identity, backed by Convex Auth.
@@ -28,10 +29,14 @@ async function resolveUserId(): Promise<string | null> {
 }
 
 /**
- * Get the current user ID from the authenticated session.
- * @throws ChatSDKError when the user is not authenticated.
+ * Get the current user ID from the authenticated session, or from a RIFT
+ * personal API key (`Authorization: Bearer rift_live_...`) when present.
+ * @throws ChatSDKError when neither is valid.
  */
-export const getUserID = async (_req?: NextRequest): Promise<string> => {
+export const getUserID = async (req?: NextRequest): Promise<string> => {
+  const apiKeyAuth = await resolveApiKeyAuth(req);
+  if (apiKeyAuth) return apiKeyAuth.userId;
+
   const userId = await resolveUserId();
   if (!userId) {
     throw new ChatSDKError("unauthorized:auth");
@@ -42,9 +47,15 @@ export const getUserID = async (_req?: NextRequest): Promise<string> => {
 /**
  * Get the current user ID plus subscription tier.
  *
- * NOTE: paid entitlements were a billing construct; billing/teams migration is
- * deferred, so the tier defaults to `"free"` unless a local mock-billing cookie
- * overrides it (used for exercising paid features in development).
+ * Checks for a RIFT personal API key first (`Authorization: Bearer
+ * rift_live_...`) — issuing one already requires an active pro/ultra
+ * subscription (see convex/apiKeys.ts), so its tier is used directly. This is
+ * what lets a premium user drive the full agent from their own terminal.
+ *
+ * Otherwise falls back to the browser session. NOTE: paid entitlements were a
+ * billing construct; billing/teams migration is deferred, so the session-based
+ * tier defaults to `"free"` unless a local mock-billing cookie overrides it
+ * (used for exercising paid features in development).
  */
 export const getUserIDAndPro = async (
   req?: NextRequest,
@@ -53,6 +64,15 @@ export const getUserIDAndPro = async (
   subscription: SubscriptionTier;
   organizationId?: string;
 }> => {
+  const apiKeyAuth = await resolveApiKeyAuth(req);
+  if (apiKeyAuth) {
+    return {
+      userId: apiKeyAuth.userId,
+      subscription: apiKeyAuth.subscription,
+      organizationId: undefined,
+    };
+  }
+
   const userId = await resolveUserId();
   if (!userId) {
     throw new ChatSDKError("unauthorized:auth");

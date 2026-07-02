@@ -9,6 +9,9 @@ import { systemPrompt } from "@/lib/system-prompt";
 import { getResumeSection } from "@/lib/system-prompt/resume";
 import { AGENT_MAX_STREAM_DURATION_MS } from "@/lib/chat/stop-conditions";
 import { createTools } from "@/lib/ai/tools";
+import { loadUserMcpTools } from "@/lib/ai/mcp/load-user-mcp-tools";
+import { loadUserGithubToken } from "@/lib/github/load-user-github-token";
+import { injectSkillsIntoMessages } from "@/lib/ai/skills/inject-skills";
 import { ptySessionManager } from "@/lib/ai/tools/utils/pty-session-manager";
 import { generateTitleFromUserMessageWithWriter } from "@/lib/actions";
 import { getUserIDAndPro } from "@/lib/auth/get-user-id";
@@ -20,7 +23,12 @@ import type {
   SelectedModel,
   RateLimitInfo,
 } from "@/types";
-import { coerceSelectedModel } from "@/types";
+import {
+  coerceSelectedModel,
+  coerceChatPurpose,
+  resolveImageModel,
+} from "@/types";
+import type { ChatPurpose } from "@/types";
 import { getBaseTodosForRequest } from "@/lib/utils/todo-utils";
 import {
   acquireFreeRunConcurrencyLock,
@@ -64,6 +72,7 @@ import {
   estimatePreflightInputTokens,
   getRetryFallbackModel,
 } from "@/lib/api/chat-stream-helpers";
+import { getExtraUsageBalance } from "@/lib/extra-usage";
 import { geolocation } from "@vercel/functions";
 import { NextRequest } from "next/server";
 import {
@@ -143,6 +152,11 @@ export const createChatHandler = () => {
     let chatLogger: ChatLogger | undefined;
     let outerChatId: string | undefined;
     let releaseFreeRunLock: (() => Promise<void>) | undefined;
+    // MCP connector teardown. Assigned once the user's MCP servers connect
+    // inside execute(); closed at the same terminal points as the free-run lock
+    // so transports survive provider-fallback retry legs but are always torn
+    // down when the run truly ends. Idempotent + best-effort.
+    let closeMcpToolsOnce: () => Promise<void> = async () => {};
     const releaseFreeRunLockOnce = async () => {
       const release = releaseFreeRunLock;
       if (!release) return;
@@ -160,6 +174,7 @@ export const createChatHandler = () => {
         temporary,
         sandboxPreference,
         selectedModel: rawSelectedModel,
+        purpose: rawPurpose,
         isAutoContinue,
         useClientMessagesForRegenerate,
       }: {
@@ -171,6 +186,7 @@ export const createChatHandler = () => {
         temporary?: boolean;
         sandboxPreference?: SandboxPreference;
         selectedModel?: string;
+        purpose?: string;
         isAutoContinue?: boolean;
         useClientMessagesForRegenerate?: boolean;
       } = await req.json();
@@ -178,6 +194,7 @@ export const createChatHandler = () => {
 
       const selectedModelOverride: SelectedModel | undefined =
         coerceSelectedModel(rawSelectedModel ?? null) ?? undefined;
+      const purpose: ChatPurpose = coerceChatPurpose(rawPurpose);
 
       chatLogger = createChatLogger({ chatId, endpoint });
       chatLogger.setRequestDetails({
@@ -194,23 +211,37 @@ export const createChatHandler = () => {
       // first-token critical path. The suspension assert still throws first if
       // it rejects (Promise.all rejects fast); the two reads are cheap and
       // discarded if it does.
-      const [, userCustomization, fetched] = await Promise.all([
-        assertUserCanMakeCostIncurringRequest(userId),
-        getUserCustomization({ userId }),
-        getMessagesByChatId({
-          chatId,
-          userId,
-          subscription,
-          newMessages: messages,
-          regenerate,
-          isTemporary: temporary,
-          mode,
-          useClientMessagesForRegenerate,
-        }),
-      ]);
+      const [, userCustomization, fetched, extraUsageBalance] =
+        await Promise.all([
+          assertUserCanMakeCostIncurringRequest(userId),
+          getUserCustomization({ userId }),
+          getMessagesByChatId({
+            chatId,
+            userId,
+            subscription,
+            newMessages: messages,
+            regenerate,
+            isTemporary: temporary,
+            mode,
+            useClientMessagesForRegenerate,
+          }),
+          // Used only to decide whether the free-run concurrency lock applies.
+          subscription === "free"
+            ? getExtraUsageBalance(userId)
+            : Promise.resolve(null),
+        ]);
 
       usageRefundTracker.setUser(userId, subscription, organizationId);
-      if (subscription === "free") {
+      // The free-run concurrency lock exists to cap concurrent free-allowance
+      // runs. Everyone is subscription "free" now, so gate it on actually
+      // relying on the free allowance: a user with a usable token balance is a
+      // paying user and must never hit "you already have a free request running".
+      // A positive token balance = a paying user. Do NOT also require the
+      // legacy extra_usage_enabled toggle — buying tokens never sets it, so
+      // requiring it would hard-lock paying users out of their own usage.
+      const hasUsableBalance =
+        !!extraUsageBalance && extraUsageBalance.balancePoints > 0;
+      if (subscription === "free" && !hasUsableBalance) {
         const lock = await acquireFreeRunConcurrencyLock(
           userId,
           FREE_RUN_LOCK_TTL_SECONDS,
@@ -269,6 +300,7 @@ export const createChatHandler = () => {
             regenerate,
             chat,
             isHidden: isAutoContinue ? true : undefined,
+            purpose,
           });
       // Always observe the rejection at creation so that if an earlier preflight
       // await (rate-limit exhaustion, ownership throw, token estimation, …)
@@ -300,6 +332,7 @@ export const createChatHandler = () => {
           subscription,
           uploadBasePath,
           modelOverride: selectedModelOverride,
+          purpose,
           allowLocalDesktopFiles:
             isAgentMode(mode) && sandboxPreference === "desktop",
           // Run moderation concurrently with estimation + rate-limit below.
@@ -381,11 +414,19 @@ export const createChatHandler = () => {
 
       // Apply the moderation-gated authorization message before streaming so the
       // model sees it on the very first step (uncensor path must not race).
-      if (moderationResult?.shouldUncensorResponse) {
+      // ONLY for the security purpose — the uncensor/authorization preamble is
+      // offensive-security framing. Injecting it into image/app modes confuses
+      // the model (it starts talking about "pentest authorization" and skips the
+      // generate_image / build tools), so those benign purposes never get it.
+      if (purpose === "security" && moderationResult?.shouldUncensorResponse) {
         addAuthMessage(processedMessages, moderationResult.moderationText);
       }
 
       usageRefundTracker.recordDeductions(rateLimitInfo);
+      if (isAgentMode(mode) && rateLimitInfo.servedFrom === "free") {
+        // Free agent run spent the one lifetime claim — refund it if it fails.
+        usageRefundTracker.recordFreeAgentClaim();
+      }
 
       chatLogger.setRateLimit(
         {
@@ -452,6 +493,21 @@ export const createChatHandler = () => {
               rateLimitInfo,
             });
 
+            // Connect the user's MCP servers (if any) and merge their tools into
+            // the agent's tool set. Non-fatal: a dead/slow server degrades to
+            // "fewer tools", never an agent failure. Connections stay open for
+            // the whole stream and are torn down via closeMcpToolsOnce().
+            const mcpLoaded = await loadUserMcpTools(userId);
+            // Connected GitHub token (if any) → pre-authenticate git in the
+            // Build agent's sandbox so it can clone/push the user's repos.
+            const githubConn = await loadUserGithubToken(userId);
+            let mcpClosed = false;
+            closeMcpToolsOnce = async () => {
+              if (mcpClosed) return;
+              mcpClosed = true;
+              await mcpLoaded.close();
+            };
+
             const {
               tools,
               getSandbox,
@@ -489,6 +545,12 @@ export const createChatHandler = () => {
               (info) => chatLogger?.setSandboxBoot(info),
               (info) => chatLogger?.setCaidoReady(info),
               selectedModel,
+              mcpLoaded.tools,
+              // Image-mode picker selection → generate_image model + cost.
+              resolveImageModel(selectedModelOverride)?.model,
+              resolveImageModel(selectedModelOverride)?.cost,
+              githubConn?.token,
+              githubConn?.username,
             );
 
             // Helper to send file metadata via stream for resumable stream clients
@@ -564,7 +626,12 @@ export const createChatHandler = () => {
                 // onError and never reach the outer catch, so refund / timeout
                 // clear / error logging must happen here. refund() is idempotent.
                 preemptiveTimeout?.clear();
-                await usageRefundTracker.refund();
+                if (!(await usageRefundTracker.refund())) {
+                  phLogger.error(
+                    "Credit refund failed after upload error — credits not yet restored",
+                    usageRefundTracker.getDeductionSummary(),
+                  );
+                }
                 chatLogger?.emitChatError(uploadError);
                 throw uploadError;
               }
@@ -593,6 +660,7 @@ export const createChatHandler = () => {
               userCustomization,
               temporary,
               sandboxContext,
+              purpose,
             );
 
             const systemPromptTokens = countTokens(currentSystemPrompt);
@@ -616,9 +684,17 @@ export const createChatHandler = () => {
             }
 
             // Inject notes into messages instead of system prompt
-            // to keep the system prompt stable for prompt caching
+            // to keep the system prompt stable for prompt caching.
+            // SECURITY-ONLY: notes are pentest/OSINT findings — irrelevant to
+            // Build (app) & Image modes, and injecting that offensive-security
+            // content trips Anthropic's real-time content-filter on Claude
+            // upstreams (Bedrock/Vertex), which EMPTIES the response
+            // (finish_reason:"content-filter", 0 output tokens). That's exactly
+            // why Build-mode Claude Fable 5 returned blank. Keep notes to
+            // Security mode so Build stays clean and unfiltered.
             const shouldIncludeNotes =
-              userCustomization?.include_memory_entries ?? true;
+              purpose === "security" &&
+              (userCustomization?.include_memory_entries ?? true);
             const noteInjectionOpts = {
               userId,
               subscription,
@@ -629,6 +705,13 @@ export const createChatHandler = () => {
               finalMessages,
               noteInjectionOpts,
             );
+
+            // Inject the user's enabled skills (loadable instruction packs) as a
+            // <system-reminder>, scoped to the current purpose. Non-fatal.
+            finalMessages = await injectSkillsIntoMessages(finalMessages, {
+              userId,
+              purpose,
+            });
 
             // Mutable stream state — updated in-place by the shared runner.
             const state = initAgentStreamState(
@@ -804,6 +887,10 @@ export const createChatHandler = () => {
               trackedProvider,
               currentSystemPrompt,
               tools,
+              // Image mode: force generate_image on the first step so the model
+              // actually produces an image instead of describing one in text.
+              forceFirstToolName:
+                purpose === "image" ? "generate_image" : undefined,
               mode,
               userId,
               subscription,
@@ -952,7 +1039,13 @@ export const createChatHandler = () => {
                         usageTracker.resetModelLeg();
 
                         const retryResult = await createStream(fallbackModel);
-                        const retryMessageId = generateId();
+                        // Reuse the FIRST leg's message id, not a fresh one. The
+                        // client builds a single streaming message; if the retry
+                        // flips the id mid-stream, the empty first bubble (only a
+                        // step-start part) is orphaned next to the fallback —
+                        // showing two assistant messages. Sharing the id keeps it
+                        // one message: the step-start + fallback content coalesce.
+                        const retryMessageId = assistantMessageId;
 
                         writer.merge(
                           retryResult.toUIMessageStream({
@@ -1535,6 +1628,9 @@ export const createChatHandler = () => {
                   } finally {
                     if (!retryScheduled) {
                       await releaseFreeRunLockOnce();
+                      // Run truly finished (not a fallback retry) — tear down
+                      // any MCP connector transports.
+                      await closeMcpToolsOnce();
                     }
                   }
                 },
@@ -1543,6 +1639,7 @@ export const createChatHandler = () => {
             );
           } catch (error) {
             await releaseFreeRunLockOnce();
+            await closeMcpToolsOnce();
             throw error;
           }
         },
@@ -1582,6 +1679,7 @@ export const createChatHandler = () => {
       // Clear timeout if error occurs before onFinish
       preemptiveTimeout?.clear();
       await releaseFreeRunLockOnce();
+      await closeMcpToolsOnce();
 
       // Best-effort PTY cleanup — the stream may never have reached onFinish.
       if (outerChatId) {
@@ -1597,8 +1695,15 @@ export const createChatHandler = () => {
 
       // Refund the upfront deduction when the request fails before any tokens
       // were consumed. refund() is idempotent and only fires if deductions were
-      // recorded and nothing has been refunded yet.
-      await usageRefundTracker.refund();
+      // recorded and nothing has been refunded yet. A false return means the
+      // refund itself failed (Convex hiccup) — surface it so the burn is
+      // visible and reconcilable instead of silently dropped.
+      if (!(await usageRefundTracker.refund())) {
+        phLogger.error(
+          "Credit refund failed after request error — credits not yet restored",
+          usageRefundTracker.getDeductionSummary(),
+        );
+      }
 
       // Handle ChatSDKErrors (including authentication errors)
       if (error instanceof ChatSDKError) {

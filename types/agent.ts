@@ -116,6 +116,14 @@ export interface ToolContext {
   modelName?: string;
   /** Returns the currently active stream model, including provider fallback legs. */
   getCurrentModelName?: () => string | undefined;
+  /** User-picked image model (OpenRouter id) for generate_image; falls back to the default. */
+  imageModel?: string;
+  /** Real per-image cost for the picked image model. */
+  imageCost?: number;
+  /** Connected GitHub token — wired into the sandbox git credentials so the agent can clone/push repos. */
+  githubToken?: string;
+  /** Connected GitHub username, for git config. */
+  githubUsername?: string;
   subscription?: SubscriptionTier;
   isE2BSandbox: IsE2BSandboxFn;
   guardrailsConfig?: string;

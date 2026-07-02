@@ -14,6 +14,61 @@ import { SummarizationHandler } from "./tools/SummarizationHandler";
 import type { ChatStatus } from "@/types";
 import type { FileDetails } from "@/types/file";
 import { ReasoningHandler } from "./ReasoningHandler";
+import {
+  GeneratingImagePlaceholder,
+  ImageGenerationError,
+} from "./GeneratingImagePlaceholder";
+import { ExposePreviewCard } from "./ExposePreviewCard";
+import { FilePartRenderer } from "./FilePartRenderer";
+import type { FilePart } from "@/types/file";
+import { PlanQuestions, parsePlanQuestions } from "./PlanQuestions";
+
+// Matches a ```rift-questions … ``` fenced block the agent emits in Plan mode.
+const PLAN_QUESTIONS_RE = /```rift-questions\s*\n([\s\S]*?)\n```/;
+// While streaming, the opening fence may have arrived without its close yet.
+const PLAN_QUESTIONS_OPEN_RE = /```rift-questions\s*\n[\s\S]*$/;
+
+/**
+ * Render an assistant text part, upgrading a fenced `rift-questions` block into
+ * interactive Plan-mode option cards. Falls back to plain markdown when there's
+ * no block. While the block is still streaming (no closing fence), the raw JSON
+ * is hidden so the user never sees half-written machine payload.
+ */
+function AssistantText({
+  text,
+  isStreaming = false,
+}: {
+  text: string;
+  isStreaming?: boolean;
+}) {
+  const match = text.match(PLAN_QUESTIONS_RE);
+  if (match) {
+    const data = parsePlanQuestions(match[1]);
+    const before = text.slice(0, match.index).trimEnd();
+    const after = text.slice((match.index ?? 0) + match[0].length).trimStart();
+    return (
+      <>
+        {before && <MemoizedMarkdown content={before} />}
+        {data ? (
+          <PlanQuestions data={data} />
+        ) : (
+          <MemoizedMarkdown content={match[0]} />
+        )}
+        {after && <MemoizedMarkdown content={after} />}
+      </>
+    );
+  }
+  // An unclosed `rift-questions` fence: hide the half-written JSON ONLY while the
+  // stream is still in flight. Once the message is done, an unclosed fence means
+  // the block never completed (e.g. truncated) — render the raw text so the
+  // message is never blank. (This is what made Fable's Plan-mode replies look
+  // empty: reasoning models can end a turn mid-fence.)
+  if (isStreaming && PLAN_QUESTIONS_OPEN_RE.test(text)) {
+    const before = text.replace(PLAN_QUESTIONS_OPEN_RE, "").trimEnd();
+    return before ? <MemoizedMarkdown content={before} /> : null;
+  }
+  return <MemoizedMarkdown content={text} />;
+}
 
 interface MessagePartHandlerProps {
   message: UIMessage;
@@ -144,8 +199,14 @@ export const MessagePartHandler = memo(function MessagePartHandler({
         return <UserTextPart text={text} />;
       }
 
-      // For assistant messages, use memoized markdown rendering
-      return <MemoizedMarkdown content={text} />;
+      // For assistant messages, render markdown + any Plan-mode question cards.
+      // Only the last message can be actively streaming.
+      return (
+        <AssistantText
+          text={text}
+          isStreaming={status === "streaming" && !!isLastMessage}
+        />
+      );
     }
 
     case "reasoning":
@@ -177,6 +238,67 @@ export const MessagePartHandler = memo(function MessagePartHandler({
 
     case "tool-file":
       return <FileHandler part={part} status={status} />;
+
+    case "tool-generate_image": {
+      // Done: render the generated image from the tool output (durable URL, so
+      // it persists across reload — unlike a transient UI file part).
+      if (part.state === "output-available") {
+        const out = part.output;
+        if (out && typeof out === "object" && out.url) {
+          return (
+            <FilePartRenderer
+              part={
+                {
+                  type: "file",
+                  url: out.url,
+                  mediaType: out.mediaType ?? "image/png",
+                } as FilePart
+              }
+              partIndex={partIndex}
+              messageId={message.id}
+              large
+            />
+          );
+        }
+        // Tool returned a structured failure (no key, blocked prompt, out of
+        // credits, no image, etc.) — surface it instead of a stuck placeholder.
+        const errorText =
+          out && typeof out === "object" && typeof out.error === "string"
+            ? out.error
+            : "Please try again.";
+        return <ImageGenerationError message={errorText} />;
+      }
+      if (part.state === "output-error") {
+        return (
+          <ImageGenerationError
+            message={
+              typeof part.errorText === "string" && part.errorText
+                ? part.errorText
+                : "Please try again."
+            }
+          />
+        );
+      }
+      // Still generating (input-streaming / input-available).
+      return <GeneratingImagePlaceholder />;
+    }
+
+    case "tool-expose_preview": {
+      if (part.state === "output-available") {
+        const out = part.output;
+        const url =
+          out && typeof out === "object" && typeof out.url === "string"
+            ? out.url
+            : undefined;
+        const error =
+          out && typeof out === "object" && typeof out.error === "string"
+            ? out.error
+            : undefined;
+        return <ExposePreviewCard url={url} error={error} />;
+      }
+      if (part.state === "output-error") return null;
+      return null;
+    }
 
     case "tool-web_search":
     case "tool-open_url":

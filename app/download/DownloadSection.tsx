@@ -120,7 +120,7 @@ export function DownloadSection() {
       <Button
         asChild
         size="lg"
-        className="mb-4 rounded-full bg-[#ff6309] text-lg font-semibold text-[#1c1c1c] hover:bg-[#ff7e28]"
+        className="mb-4 rounded-full bg-[#00d3f5] text-lg font-semibold text-[#0a0e10] hover:bg-[#5fe6ff]"
       >
         <a href={detected.downloadUrl}>
           <DownloadIcon />

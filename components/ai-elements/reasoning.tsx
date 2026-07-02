@@ -130,35 +130,47 @@ export function ReasoningTrigger({
   return (
     <CollapsibleTrigger
       className={cn(
-        "group/reason flex w-full items-center gap-2 border-l-2 border-primary/30 py-0.5 pl-2.5 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:border-primary/70 hover:text-foreground",
+        "group/reason flex w-full items-center gap-2.5 py-0.5 text-left transition-colors",
         className,
       )}
       {...props}
     >
-      <span
-        aria-hidden
-        className={cn("text-primary", isStreaming && "animate-pulse")}
-      >
-        {isStreaming ? "◇" : "◆"}
-      </span>
-      <span className="flex-1 text-left">
-        {getThinkingMessage(isStreaming)}
-        {isStreaming && <span className="text-primary">…</span>}
+      {/* Status glyph — a live accent dot that pings while thinking, calm when
+          done. Replaces the old geometric marker with something quieter. */}
+      {isStreaming ? (
+        <span className="relative flex size-3.5 shrink-0 items-center justify-center">
+          <span className="absolute inline-flex size-3.5 animate-ping rounded-full bg-primary/25" />
+          <span className="relative size-[6px] rounded-full bg-primary shadow-[0_0_8px_var(--signal-bright)]" />
+        </span>
+      ) : (
+        <span
+          aria-hidden
+          className="flex size-3.5 shrink-0 items-center justify-center"
+        >
+          <span className="size-[5px] rounded-full bg-muted-foreground/40 transition-colors group-hover/reason:bg-primary/70" />
+        </span>
+      )}
+
+      <span className="flex-1 font-mono text-[10.5px] font-medium uppercase tracking-[0.22em]">
+        {isStreaming ? (
+          <span className="rift-thinking-shimmer">
+            {getThinkingMessage(true)}
+          </span>
+        ) : (
+          <span className="text-muted-foreground/70 transition-colors group-hover/reason:text-foreground/90">
+            {getThinkingMessage(false)}
+          </span>
+        )}
         {duration > 0 && (
-          <span className="ml-1.5 text-muted-foreground/50 tabular-nums normal-case tracking-normal">
-            · {duration}s
+          <span className="ml-2 text-muted-foreground/40 tabular-nums normal-case tracking-normal">
+            {duration}s
           </span>
         )}
       </span>
-      {isStreaming && (
-        <span className="relative flex items-center">
-          <span className="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-full bg-primary/60 opacity-75" />
-          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
-        </span>
-      )}
+
       <ChevronDownIcon
         className={cn(
-          "size-3.5 text-muted-foreground/60 transition-transform group-hover/reason:text-primary/70",
+          "size-3.5 text-muted-foreground/40 transition-all group-hover/reason:text-primary/70",
           isOpen ? "rotate-180" : "rotate-0",
         )}
       />
@@ -186,7 +198,7 @@ export function ReasoningContent({
     <CollapsibleContent
       ref={contentRef}
       className={cn(
-        "mt-1 ml-[1px] space-y-3 border-l border-primary/15 pl-3 text-muted-foreground max-h-60 min-w-0 max-w-full overflow-x-hidden overflow-y-auto break-words",
+        "mt-2 ml-[6px] space-y-3 border-l border-primary/20 pl-3.5 text-muted-foreground max-h-60 min-w-0 max-w-full overflow-x-hidden overflow-y-auto break-words",
         "[overflow-wrap:anywhere]",
         "[&_pre]:max-w-full [&_pre]:overflow-x-auto",
         "data-[state=closed]:animate-out data-[state=open]:animate-in",

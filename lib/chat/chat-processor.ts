@@ -1,5 +1,10 @@
 import { getModerationResult } from "@/lib/moderation";
-import type { ChatMode, SubscriptionTier, SelectedModel } from "@/types";
+import type {
+  ChatMode,
+  SubscriptionTier,
+  SelectedModel,
+  ChatPurpose,
+} from "@/types";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
 import { UIMessage } from "ai";
 import { processMessageFiles } from "@/lib/utils/file-transform-utils";
@@ -43,12 +48,55 @@ export const getMaxStepsForUser = (
 // reintroduce the exact refusals this product depends on avoiding.
 const SINGLE_MODEL: ModelName = "model-grok-4.3";
 
+// App-builder (purpose="app") uses a strong codegen model instead of Grok.
+// Grok exists only to dodge security-content refusals, which is irrelevant to
+// benign app/game codegen — so build mode gets the better coder.
+const APP_BUILDER_MODEL: ModelName = "model-sonnet-4.6";
+// Default when no Build model is explicitly picked. GLM-5.2 (not a Claude model)
+// so it isn't emptied by the provider content-filter on security-adjacent
+// context the way Sonnet/Opus/Fable are — builds work out of the box.
+const APP_BUILDER_DEFAULT_MODEL: ModelName = "model-glm-5.2";
+// Opus behind an explicit "max quality" tier toggle (rift-max) for build mode.
+const APP_BUILDER_MAX_MODEL: ModelName = "model-opus-4.8";
+
+// Build-mode picker selection → OpenRouter model. Keys are the `build-*`
+// SelectedModel ids (see types/chat.ts BUILD_MODELS); `rift-max` is the legacy
+// build "max" toggle. Anything unmapped falls back to the Sonnet default.
+const BUILD_MODEL_BY_SELECTION: Partial<Record<SelectedModel, ModelName>> = {
+  "build-fast": "model-gemini-3-flash",
+  "build-balanced": APP_BUILDER_MODEL,
+  "build-codex": "model-gpt-5.3-codex",
+  "build-max": APP_BUILDER_MAX_MODEL,
+  "build-gpt55": "model-gpt-5.5",
+  "build-glm": "model-glm-5.2",
+  "build-grok": "model-grok-4.3",
+  "build-deepseek": "model-deepseek-v4-flash",
+  "build-kimi": "model-kimi-k2.7-code",
+  "build-opus46": "model-opus-4.6",
+  "rift-max": APP_BUILDER_MAX_MODEL,
+};
+
 export function selectModel(
   _mode: ChatMode,
   _subscription: SubscriptionTier,
-  _selectedModel?: SelectedModel,
+  selectedModel?: SelectedModel,
   _hasImageOrPdf?: boolean,
+  purpose: ChatPurpose = "security",
 ): ModelName {
+  if (purpose === "app") {
+    return (
+      (selectedModel && BUILD_MODEL_BY_SELECTION[selectedModel]) ??
+      APP_BUILDER_DEFAULT_MODEL
+    );
+  }
+  // Image mode orchestrates the generate_image tool. It uses Sonnet (not Grok)
+  // because reliable tool-calling matters here: Grok tends to "describe" an
+  // image in text instead of actually calling the tool, so no image appears.
+  // The image itself is still produced by generate_image (gemini via
+  // OpenRouter) — only the tool-deciding model differs.
+  if (purpose === "image") {
+    return APP_BUILDER_MODEL;
+  }
   return SINGLE_MODEL;
 }
 
@@ -601,6 +649,7 @@ export async function processChatMessages({
   subscription,
   uploadBasePath,
   modelOverride,
+  purpose = "security",
   allowLocalDesktopFiles = false,
   deferModeration = false,
 }: {
@@ -610,6 +659,7 @@ export async function processChatMessages({
   subscription: SubscriptionTier;
   uploadBasePath?: string;
   modelOverride?: SelectedModel;
+  purpose?: ChatPurpose;
   allowLocalDesktopFiles?: boolean;
   /**
    * When true, skip the (blocking) moderation round-trip here and let the
@@ -688,6 +738,7 @@ export async function processChatMessages({
     subscription,
     modelOverride,
     hasImageOrPdfAttachment(messagesWithoutDuplicates),
+    purpose,
   );
 
   // Strip providerMetadata for Anthropic models to prevent cross-model signature errors.

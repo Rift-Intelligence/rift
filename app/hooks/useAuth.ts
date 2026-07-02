@@ -28,6 +28,12 @@ export function useAuth(): {
 } {
   const { isLoading, isAuthenticated } = useConvexAuth();
   const viewer = useQuery(api.users.viewer, isAuthenticated ? {} : "skip");
+  // Entitlement slugs derived from the user's active LemonSqueezy subscription
+  // (Pro/Max). Empty = free tier. resolveSubscriptionTier maps these to a tier.
+  const entitlements = useQuery(
+    api.subscriptions.getMyEntitlements,
+    isAuthenticated ? {} : "skip",
+  );
 
   const loading = isLoading || (isAuthenticated && viewer === undefined);
 
@@ -45,7 +51,10 @@ export function useAuth(): {
     };
   }
 
-  // Entitlements were a billing construct; billing/teams migration is deferred,
-  // so expose an empty set for now (consumers treat this as "free tier").
-  return { user, loading, isAuthenticated, entitlements: [] };
+  return {
+    user,
+    loading,
+    isAuthenticated,
+    entitlements: entitlements ?? [],
+  };
 }

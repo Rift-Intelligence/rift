@@ -23,6 +23,7 @@ const FilePartRendererComponent = ({
   partIndex,
   messageId,
   totalFileParts = 1,
+  large = false,
 }: FilePartRendererProps) => {
   const convex = useConvex();
   const getFileUrlAction = useAction(api.s3Actions.getFileUrlAction);
@@ -411,10 +412,12 @@ const FilePartRendererComponent = ({
         const altText = part.name || `Uploaded image ${partIndex + 1}`;
         const isMultipleImages = totalFileParts > 1;
 
-        // Different styling for single vs multiple images
+        // Different styling for single vs multiple images. `large` (assistant-
+        // generated images) renders at a bigger size like Grok/ChatGPT.
+        const singleMaxW = large ? "max-w-lg w-full" : "max-w-64";
         const containerClass = isMultipleImages
           ? "overflow-hidden rounded-lg"
-          : "overflow-hidden rounded-lg max-w-64";
+          : `overflow-hidden rounded-lg ${singleMaxW}`;
 
         const innerContainerClass = isMultipleImages
           ? "bg-token-main-surface-secondary text-token-text-tertiary relative flex items-center justify-center overflow-hidden"
@@ -426,7 +429,9 @@ const FilePartRendererComponent = ({
 
         const imageClass = isMultipleImages
           ? "aspect-square object-cover object-center h-32 w-32 rounded-se-2xl rounded-ee-sm overflow-hidden transition-opacity duration-300 opacity-100"
-          : "w-full h-auto max-h-96 max-w-64 object-contain rounded-lg transition-opacity duration-300 opacity-100";
+          : large
+            ? "w-full h-auto max-h-[32rem] object-contain rounded-lg transition-opacity duration-300 opacity-100"
+            : "w-full h-auto max-h-96 max-w-64 object-contain rounded-lg transition-opacity duration-300 opacity-100";
 
         return (
           <div key={partId} className={containerClass}>

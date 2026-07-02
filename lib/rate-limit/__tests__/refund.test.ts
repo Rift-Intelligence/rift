@@ -8,11 +8,13 @@ import type { RateLimitInfo } from "@/types";
 
 describe("UsageRefundTracker", () => {
   const mockRefundUsage = jest.fn();
+  const mockRefundFreeAgentRun = jest.fn();
 
   beforeEach(() => {
     jest.resetModules();
     jest.clearAllMocks();
     mockRefundUsage.mockResolvedValue(undefined);
+    mockRefundFreeAgentRun.mockResolvedValue(true);
   });
 
   const getIsolatedModule = () => {
@@ -21,6 +23,10 @@ describe("UsageRefundTracker", () => {
     jest.isolateModules(() => {
       jest.doMock("../token-bucket", () => ({
         refundUsage: mockRefundUsage,
+      }));
+
+      jest.doMock("@/lib/extra-usage", () => ({
+        refundFreeAgentRun: mockRefundFreeAgentRun,
       }));
 
       isolatedModule = require("../refund");
@@ -224,6 +230,47 @@ describe("UsageRefundTracker", () => {
       // Third attempt blocked (already refunded)
       await tracker.refund();
       expect(mockRefundUsage).toHaveBeenCalledTimes(2);
+    });
+
+    it("un-claims the free agent run on refund even with no balance deductions", async () => {
+      const { UsageRefundTracker } = getIsolatedModule();
+      const tracker = new UsageRefundTracker();
+
+      // A free agent run is served free (no balance points), but it spends the
+      // one lifetime claim — which must be refunded if the run fails.
+      tracker.setUser("user-123", "free");
+      tracker.recordDeductions({
+        remaining: 0,
+        resetTime: new Date(),
+        limit: 1,
+        servedFrom: "free",
+      });
+      tracker.recordFreeAgentClaim();
+
+      await tracker.refund();
+
+      expect(mockRefundUsage).not.toHaveBeenCalled();
+      expect(mockRefundFreeAgentRun).toHaveBeenCalledWith("user-123");
+    });
+
+    it("free agent un-claim is idempotent (only once)", async () => {
+      const { UsageRefundTracker } = getIsolatedModule();
+      const tracker = new UsageRefundTracker();
+
+      tracker.setUser("user-123", "free");
+      tracker.recordDeductions({
+        remaining: 0,
+        resetTime: new Date(),
+        limit: 1,
+        servedFrom: "free",
+      });
+      tracker.recordFreeAgentClaim();
+
+      await tracker.refund();
+      await tracker.refund();
+      await tracker.refund();
+
+      expect(mockRefundFreeAgentRun).toHaveBeenCalledTimes(1);
     });
   });
 });

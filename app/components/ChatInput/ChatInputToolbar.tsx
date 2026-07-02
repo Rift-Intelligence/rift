@@ -1,9 +1,10 @@
 "use client";
 
-import { AtSign } from "lucide-react";
 import { AttachmentButton } from "@/app/components/AttachmentButton";
 import { ChatModeSelector } from "./ChatModeSelector";
 import { ModelSelector } from "@/app/components/ModelSelector";
+import { BuildModelSelector } from "./BuildModelSelector";
+import { ImageModelSelector } from "./ImageModelSelector";
 import {
   SubmitStopButton,
   type SubmitStopButtonProps,
@@ -21,9 +22,6 @@ export interface ChatInputToolbarProps extends SubmitStopButtonProps {
   contextUsageVariant?: "tooltip" | "compact-popover";
 }
 
-const pillBtn =
-  "inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
-
 export function ChatInputToolbar({
   onAttachClick,
   contextUsage,
@@ -32,27 +30,27 @@ export function ChatInputToolbar({
   chatMode,
   ...submitStopProps
 }: ChatInputToolbarProps) {
-  const { selectedModel, setSelectedModel } = useGlobalState();
+  const { selectedModel, setSelectedModel, chatPurpose } = useGlobalState();
 
   return (
     <div className="flex items-center gap-0.5 min-w-0">
-      <button
-        type="button"
-        className={pillBtn}
-        aria-label="Add context"
-        title="Add context"
-      >
-        <AtSign className="size-3.5" />
-      </button>
       <div className="shrink-0">
         <AttachmentButton onAttachClick={onAttachClick} />
       </div>
-      <ChatModeSelector />
-      <ModelSelector
-        value={selectedModel}
-        onChange={setSelectedModel}
-        mode={chatMode}
-      />
+      {/* Image mode has no Agent/Ask choice — it always runs generate_image —
+          so the mode toggle is hidden there; only the image model picker shows. */}
+      {chatPurpose !== "image" && <ChatModeSelector />}
+      {chatPurpose === "app" ? (
+        <BuildModelSelector value={selectedModel} onChange={setSelectedModel} />
+      ) : chatPurpose === "image" ? (
+        <ImageModelSelector value={selectedModel} onChange={setSelectedModel} />
+      ) : (
+        <ModelSelector
+          value={selectedModel}
+          onChange={setSelectedModel}
+          mode={chatMode}
+        />
+      )}
       <div className="ml-auto shrink-0 flex items-center gap-2">
         {showContextIndicator && contextUsage && (
           <ContextUsageIndicator

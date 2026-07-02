@@ -53,14 +53,30 @@ pub fn run() {
         "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 RIFTWrapperLite/1.0"
       };
 
-      WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url))
+      let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url))
         .title("RIFT")
         .inner_size(1280.0, 800.0)
         .min_inner_size(900.0, 600.0)
         .resizable(true)
+        .transparent(true)
         .user_agent(user_agent)
         .initialization_script("window.__RIFT_DESKTOP_LITE__ = true;")
         .build()?;
+
+      // macOS "glass": frosted vibrancy behind the transparent webview, so the
+      // desktop shows through wherever the web content is translucent (the
+      // sidebar) — Codex-style. The web app tints the sidebar over this.
+      #[cfg(target_os = "macos")]
+      {
+        use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
+        let _ = apply_vibrancy(
+          &window,
+          NSVisualEffectMaterial::Sidebar,
+          Some(NSVisualEffectState::Active),
+          None,
+        );
+      }
+      let _ = &window;
 
       Ok(())
     })

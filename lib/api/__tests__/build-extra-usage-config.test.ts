@@ -238,15 +238,41 @@ describe("buildExtraUsageConfig — team users", () => {
 });
 
 describe("buildExtraUsageConfig — individual paid users (pro / pro-plus / ultra)", () => {
-  it("returns undefined when personal extra_usage_enabled is off", async () => {
+  it("returns undefined when extra_usage is off and the balance is empty", async () => {
+    mockGetUserBalance.mockResolvedValue({
+      balanceDollars: 0,
+      balancePoints: 0,
+      enabled: false,
+      autoReloadEnabled: false,
+    });
     const config = await buildExtraUsageConfig({
       userId: USER_ID,
       subscription: "pro",
       userCustomization: { extra_usage_enabled: false } as any,
     });
     expect(config).toBeUndefined();
-    expect(mockGetUserBalance).not.toHaveBeenCalled();
     expect(mockGetTeamState).not.toHaveBeenCalled();
+  });
+
+  it("spends the balance even when extra_usage_enabled is off (tokens are the opt-in)", async () => {
+    // Token-only model: buying tokens never flips the legacy toggle, so a user
+    // with a balance must still be able to spend it — and must not be locked.
+    mockGetUserBalance.mockResolvedValue({
+      balanceDollars: 218,
+      balancePoints: 2_180_000,
+      enabled: false,
+      autoReloadEnabled: false,
+    });
+    const config = await buildExtraUsageConfig({
+      userId: USER_ID,
+      subscription: "pro",
+      userCustomization: { extra_usage_enabled: false } as any,
+    });
+    expect(config).toMatchObject({
+      enabled: true,
+      hasBalance: true,
+      balanceDollars: 218,
+    });
   });
 
   it("reads personal balance when extra_usage_enabled is on", async () => {

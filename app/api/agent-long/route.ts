@@ -12,7 +12,7 @@ import {
   setActiveTriggerRun,
 } from "@/lib/db/actions";
 import { assertFreeAgentGates } from "@/lib/api/chat-stream-helpers";
-import { coerceSelectedModel } from "@/types";
+import { coerceSelectedModel, coerceChatPurpose } from "@/types";
 import { ChatSDKError } from "@/lib/errors";
 import type { Todo, SandboxPreference, SelectedModel } from "@/types";
 import { HybridSandboxManager } from "@/lib/ai/tools/utils/hybrid-sandbox-manager";
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
       temporary,
       sandboxPreference,
       selectedModel: rawSelectedModel,
+      purpose: rawPurpose,
       isAutoContinue,
     }: {
       messages: UIMessage[];
@@ -47,11 +48,13 @@ export async function POST(req: NextRequest) {
       temporary?: boolean;
       sandboxPreference?: SandboxPreference;
       selectedModel?: string;
+      purpose?: string;
       isAutoContinue?: boolean;
     } = await req.json();
 
     const selectedModelOverride: SelectedModel | undefined =
       coerceSelectedModel(rawSelectedModel ?? null) ?? undefined;
+    const purpose = coerceChatPurpose(rawPurpose);
 
     const { userId, subscription, organizationId } = await getUserIDAndPro(req);
     await assertUserCanMakeCostIncurringRequest(userId);
@@ -157,6 +160,7 @@ export async function POST(req: NextRequest) {
         regenerate,
         chat: existingChat ?? null,
         isHidden: isAutoContinue ? true : undefined,
+        purpose,
       });
     }
 
@@ -183,6 +187,7 @@ export async function POST(req: NextRequest) {
         baseTodos: Array.isArray(todos) ? todos : [],
         sandboxPreference,
         selectedModel: selectedModelOverride,
+        purpose,
         userLocation,
         temporary,
         isAutoContinue,

@@ -17,6 +17,7 @@ import SidebarUserNav from "./SidebarUserNav";
 import SidebarHistory from "./SidebarHistory";
 import SidebarHeaderContent from "./SidebarHeader";
 import { PentestArsenal } from "./PentestArsenal";
+import { SidebarProjects } from "./SidebarProjects";
 
 /** Chat list data lifted from parent so the subscription stays active when sidebar closes. */
 export type ChatListData = ReturnType<typeof useChats>;
@@ -26,15 +27,26 @@ const ChatListContent: FC<{ chatListData: ChatListData }> = ({
   chatListData,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { chatPurpose } = useGlobalState();
+  // Operations (the pentest arsenal) is Security-only; Build & Image get a
+  // simpler sidebar (Projects + recent).
+  const isSecurity = chatPurpose === "security";
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* Operation templates — pinned above scrollable history */}
-      <PentestArsenal />
+      {/* Operations — the primary surface in Security mode, so it sits at the
+          very top, above Projects. Hidden in Build / Image modes. */}
+      {isSecurity && <PentestArsenal />}
 
-      {/* Chat history — scrollable */}
+      {/* Projects — its own section, below Operations. */}
+      <SidebarProjects />
+
+      {/* Chat history — pinned small under Operations in Security mode; grows to
+          fill the sidebar when Operations is hidden (Build / Image). */}
       <div
-        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden terminal-scrollbar"
+        className={`overflow-y-auto overflow-x-hidden terminal-scrollbar ${
+          isSecurity ? "max-h-[180px] shrink-0" : "min-h-0 flex-1"
+        }`}
         ref={scrollContainerRef}
         data-testid="sidebar-chat-list-scroll-container"
       >

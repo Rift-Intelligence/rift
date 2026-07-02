@@ -13,6 +13,7 @@ describe("checkRateLimit", () => {
   const mockCheckBalanceLimit = jest.fn();
   const mockCreateRedisClient = jest.fn();
   const mockCheckFreeMonthlyCostLimit = jest.fn();
+  const mockClaimFreeAgentRun = jest.fn();
 
   beforeEach(() => {
     jest.resetModules();
@@ -30,6 +31,9 @@ describe("checkRateLimit", () => {
       extraUsageAutoReload: false,
       monthlyExhausted: false,
     });
+
+    // Default: the user still has their one free agent run available.
+    mockClaimFreeAgentRun.mockResolvedValue(true);
 
     mockCheckTokenBucketLimit.mockResolvedValue({
       remaining: 5000,
@@ -64,6 +68,10 @@ describe("checkRateLimit", () => {
         recordFreeMonthlyCost: jest.fn(),
       }));
 
+      jest.doMock("@/lib/extra-usage", () => ({
+        claimFreeAgentRun: mockClaimFreeAgentRun,
+      }));
+
       isolatedModule = require("../index");
     });
 
@@ -71,26 +79,61 @@ describe("checkRateLimit", () => {
   };
 
   describe("free users", () => {
-    it("should use the shared free rate limit with cost 1 in agent mode", async () => {
+    it("serves the one free agent run for life (no daily window)", async () => {
       const { checkRateLimit } = getIsolatedModule();
 
       mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
+      mockClaimFreeAgentRun.mockResolvedValue(true);
 
       const result = await checkRateLimit("user-123", "agent", "free", 0);
 
-      expect(mockEvalFn).toHaveBeenCalledWith(
-        expect.any(String),
-        [
-          expect.stringMatching(/^free_limit:user-123:free:\d+$/),
-          "free_referral_bonus:user-123",
-        ],
-        [1, 1, expect.any(Number)],
-      );
+      // Lifetime claim was made; the daily Ask window and balance are untouched.
+      expect(mockClaimFreeAgentRun).toHaveBeenCalledWith("user-123");
+      expect(mockEvalFn).not.toHaveBeenCalled();
+      expect(mockCheckBalanceLimit).not.toHaveBeenCalled();
       expect(mockCheckTokenBucketLimit).not.toHaveBeenCalled();
-      expect(result.remaining).toBe(5);
+      expect(result.servedFrom).toBe("free");
+      expect(result.limit).toBe(1);
     });
 
-    it("should use sliding window for free users in ask mode", async () => {
+    it("routes a free user's 2nd+ agent run to the prepaid balance", async () => {
+      const { checkRateLimit } = getIsolatedModule();
+
+      mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
+      // Lifetime free agent run already spent.
+      mockClaimFreeAgentRun.mockResolvedValue(false);
+      mockCheckBalanceLimit.mockResolvedValue({
+        remaining: 4900,
+        resetTime: new Date(),
+        limit: 5000,
+        pointsDeducted: 100,
+        extraUsagePointsDeducted: 100,
+        servedFrom: "balance",
+      });
+
+      const cfg = { enabled: true, hasBalance: true, autoReloadEnabled: false };
+      const result = await checkRateLimit(
+        "user-123",
+        "agent",
+        "free",
+        1000,
+        cfg,
+        "model-x",
+      );
+
+      expect(mockClaimFreeAgentRun).toHaveBeenCalledWith("user-123");
+      expect(mockCheckBalanceLimit).toHaveBeenCalledWith(
+        "user-123",
+        1000,
+        "model-x",
+        cfg,
+      );
+      // Agent never touches the daily Ask sliding window.
+      expect(mockEvalFn).not.toHaveBeenCalled();
+      expect(result.servedFrom).toBe("balance");
+    });
+
+    it("should use sliding window for free users in ask mode (3/day)", async () => {
       const { checkRateLimit } = getIsolatedModule();
 
       mockCreateRedisClient.mockReturnValue({ eval: mockEvalFn });
@@ -103,8 +146,9 @@ describe("checkRateLimit", () => {
           expect.stringMatching(/^free_limit:user-123:free:\d+$/),
           "free_referral_bonus:user-123",
         ],
-        [1, 1, expect.any(Number)],
+        [3, 1, expect.any(Number)],
       );
+      expect(mockClaimFreeAgentRun).not.toHaveBeenCalled();
       expect(mockCheckTokenBucketLimit).not.toHaveBeenCalled();
       expect(result.remaining).toBe(5);
     });
@@ -115,8 +159,8 @@ describe("checkRateLimit", () => {
       mockCreateRedisClient.mockReturnValue(null);
 
       const result = await checkRateLimit("user-123", "ask", "free", 0);
-      expect(result.remaining).toBe(1);
-      expect(result.limit).toBe(1);
+      expect(result.remaining).toBe(3);
+      expect(result.limit).toBe(3);
       expect(result.rateLimitSkipped).toBe(true);
     });
 

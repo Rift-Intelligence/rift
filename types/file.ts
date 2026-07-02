@@ -57,6 +57,8 @@ export interface FilePartRendererProps {
   partIndex: number;
   messageId: string;
   totalFileParts?: number;
+  /** Render images at a larger size (e.g. assistant-generated images). */
+  large?: boolean;
 }
 
 // File upload preview interfaces

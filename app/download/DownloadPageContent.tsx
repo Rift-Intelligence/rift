@@ -11,17 +11,18 @@ import { DownloadSection, useDetectedPlatform } from "./DownloadSection";
 import { downloadLinks } from "./constants";
 import { AppleIcon, WindowsIcon } from "./icons";
 
-/** snulja-aligned palette, forced so the download page matches the landing. */
+/** air.dev-aligned palette (cyan on cool gray), forced so the download page
+ *  matches the landing. */
 const SHELL: CSSProperties = {
-  ["--background" as string]: "#1c1c1c",
+  ["--background" as string]: "#26282c",
   ["--foreground" as string]: "#ffffff",
-  ["--muted-foreground" as string]: "#a1a1a1",
-  ["--card" as string]: "#232323",
-  ["--popover" as string]: "#232323",
-  ["--border" as string]: "#3a3a3a",
-  ["--accent" as string]: "#262626",
-  ["--signal" as string]: "#ff6309",
-  ["--primary" as string]: "#ff6309",
+  ["--muted-foreground" as string]: "#a3a8b0",
+  ["--card" as string]: "#1e2023",
+  ["--popover" as string]: "#1e2023",
+  ["--border" as string]: "rgba(255,255,255,0.10)",
+  ["--accent" as string]: "#2c2e33",
+  ["--signal" as string]: "#00d3f5",
+  ["--primary" as string]: "#00d3f5",
 };
 
 function AuthenticatedHeader() {
@@ -30,14 +31,14 @@ function AuthenticatedHeader() {
       <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ff6309]"
+          className="flex items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#00d3f5]"
         >
           <RiftPixelMark size={22} />
           <RiftWordmark height={13} fill="#ffffff" />
         </Link>
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-[#ff6309]"
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition-colors hover:text-[#00d3f5]"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Chat
@@ -56,11 +57,11 @@ function DownloadContent() {
     <div className="px-4 py-12 pb-20 md:px-0">
       <div className="container mx-auto max-w-3xl space-y-10">
         <div className="text-center">
-          <p className="mb-4 font-pixel text-[11px] uppercase tracking-[0.2em] text-[#ff6309]">
+          <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-[#00d3f5]">
             {isMobile ? "Install" : "Desktop app"}
           </p>
-          <h1 className="mb-3 text-4xl font-semibold tracking-tight text-foreground">
-            {isMobile ? "Install RIFT" : "Download RIFT"}
+          <h1 className="font-display mb-3 text-[2.6rem] lowercase leading-[0.95] tracking-tight text-foreground">
+            {isMobile ? "install rift" : "download rift"}
           </h1>
           <p className="text-[16px] text-muted-foreground">
             {isMobile
@@ -73,8 +74,8 @@ function DownloadContent() {
 
         {!isMobile && (
           <div className="rounded-2xl border border-border bg-card p-6">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
-              Desktop downloads
+            <h2 className="font-display mb-4 text-2xl lowercase tracking-tight text-foreground">
+              desktop downloads
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <DownloadCard
@@ -101,11 +102,11 @@ export function DownloadPageContent() {
   return (
     <div
       style={SHELL}
-      className="font-montserrat relative min-h-screen overflow-hidden bg-background text-foreground"
+      className="font-mono relative min-h-screen overflow-hidden bg-background text-foreground"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_-4%,rgba(255,99,9,0.13),transparent_70%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_50%_-4%,rgba(0,178,214,0.16),transparent_70%)]"
       />
       <div className="relative z-10">
         <Authenticated>
@@ -135,9 +136,9 @@ function DownloadCard({
   return (
     <a
       href={href}
-      className="group flex items-center gap-3 rounded-xl border border-border bg-[#1c1c1c] p-4 transition-colors hover:border-[#ff6309]/60"
+      className="group flex items-center gap-3 rounded-xl border border-border bg-[#1b1e23] p-4 transition-colors hover:border-[#00d3f5]/60"
     >
-      <div className="text-muted-foreground transition-colors group-hover:text-[#ff6309]">
+      <div className="text-muted-foreground transition-colors group-hover:text-[#00d3f5]">
         {icon}
       </div>
       <div>

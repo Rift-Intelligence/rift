@@ -144,6 +144,23 @@ export async function POST(request: NextRequest) {
     token = cookieStore.get(cookieName("token", isLocalhost))?.value;
   }
 
+  // OAuth code exchange: the PKCE/OAuth verifier was stored as an httpOnly
+  // cookie when sign-in STARTED (it is never handed to the client), so it must
+  // be injected here for the code-redemption call. Without this, Convex's
+  // verifyCodeAndSignIn fails with "Invalid verifier" and the Google login
+  // silently drops the user back on the landing page, logged out.
+  if (
+    action === "auth:signIn" &&
+    (args.params as { code?: unknown } | undefined)?.code !== undefined
+  ) {
+    const verifier = cookieStore.get(
+      cookieName("verifier", isLocalhost),
+    )?.value;
+    if (verifier !== undefined) {
+      args.verifier = verifier;
+    }
+  }
+
   if (action === "auth:signIn") {
     // Don't require auth when refreshing tokens or validating a code — those are
     // steps in the auth flow, not authenticated requests.

@@ -7,7 +7,9 @@ import { useChats } from "../hooks/useChats";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import MainSidebar from "./Sidebar";
 import SidebarUserNav from "./SidebarUserNav";
+import { SidebarRail } from "./SidebarRail";
 import { SettingsDialog } from "./SettingsDialog";
+import { OperationLauncherController } from "./OperationLauncher";
 import { ChatTitlebar } from "./ChatTitlebar";
 import { onOpenSettingsDialog } from "@/lib/utils/settings-dialog";
 
@@ -122,38 +124,39 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
   }, [isMobile, chatSidebarOpen, setChatSidebarOpen]);
 
   return (
-    <div className="flex min-h-0 flex-1 w-full flex-col overflow-hidden bg-background">
+    <div className="relative flex min-h-0 flex-1 w-full flex-col overflow-hidden bg-background">
       <ChatTitlebar chatListData={chatListData} />
       <div className="flex min-h-0 flex-1 w-full overflow-hidden">
-        {/* Chat Sidebar - Desktop: only mount once isMobile is resolved to avoid flash on mobile */}
-        {isMobile === false && (
-          <div
-            data-testid="sidebar"
-            className={`relative flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar transition-[width] duration-300 ${
-              chatSidebarOpen ? "w-[260px]" : "w-0 border-r-0"
-            }`}
-          >
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <SidebarProvider
-                open={chatSidebarOpen}
-                onOpenChange={setChatSidebarOpen}
-                defaultOpen={true}
-                className="h-full min-h-0"
-                style={{ "--sidebar-width": "260px" } as React.CSSProperties}
-              >
-                <MainSidebar chatListData={chatListData} />
-              </SidebarProvider>
-            </div>
-            {chatSidebarOpen ? (
+        {/* Chat Sidebar - Desktop: only mount once isMobile is resolved to avoid
+            flash on mobile. Closed = a thin icon rail (à la Mistral), not fully
+            hidden. */}
+        {isMobile === false &&
+          (chatSidebarOpen ? (
+            <div
+              data-testid="sidebar"
+              className="relative flex h-full min-h-0 w-[260px] shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar"
+            >
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                <SidebarProvider
+                  open={chatSidebarOpen}
+                  onOpenChange={setChatSidebarOpen}
+                  defaultOpen={true}
+                  className="h-full min-h-0"
+                  style={{ "--sidebar-width": "260px" } as React.CSSProperties}
+                >
+                  <MainSidebar chatListData={chatListData} />
+                </SidebarProvider>
+              </div>
               <div
                 data-testid="sidebar-session-dock"
                 className="shrink-0 border-t border-sidebar-border bg-sidebar px-2 pb-2 pt-2"
               >
                 <SidebarUserNav />
               </div>
-            ) : null}
-          </div>
-        )}
+            </div>
+          ) : (
+            <SidebarRail />
+          ))}
 
         {/* Main content slot - pages render here */}
         <div className="rift-cursor-app flex min-h-0 flex-1 min-w-0 flex-col relative bg-background">
@@ -184,6 +187,9 @@ export function ChatLayout({ children }: { children: React.ReactNode }) {
           onOpenChange={setSettingsDialogOpen}
           initialTab={settingsDialogTab}
         />
+        {/* Operation launcher — single instance, opened from the Arsenal or
+            from operation-mode next-step suggestions. */}
+        <OperationLauncherController />
       </div>
     </div>
   );

@@ -202,6 +202,12 @@ const buildProviderMap = (or: OpenRouterInstance) =>
     // agentic-coding workhorse.
     "model-grok-4.3": or("x-ai/grok-4.3"),
     "model-kimi-k2.7-code": or("moonshotai/kimi-k2.7-code"),
+    // Build-mode (app builder) picker options — strong codegen models offered
+    // alongside Sonnet 4.6 (default) and Opus 4.8 (max).
+    "model-gpt-5.3-codex": or("openai/gpt-5.3-codex"),
+    "model-gpt-5.5": or("openai/gpt-5.5"),
+    "model-glm-5.2": or("z-ai/glm-5.2"),
+    "model-fable-5": or("anthropic/claude-fable-5"),
     "fallback-agent-model": or("google/gemini-3-flash-preview"),
     "fallback-ask-model": or("google/gemini-3-flash-preview"),
     "fallback-gemini-3.5-flash": or("google/gemini-3.5-flash"),
@@ -227,6 +233,10 @@ export const modelCutoffDates: Record<ModelName, string> &
   "model-kimi-k2.6": "April 2024",
   "model-grok-4.3": "Late 2025",
   "model-kimi-k2.7-code": "April 2024",
+  "model-gpt-5.3-codex": "Late 2025",
+  "model-gpt-5.5": "Early 2026",
+  "model-glm-5.2": "Early 2026",
+  "model-fable-5": "Early 2026",
   "fallback-agent-model": "January 2025",
   "fallback-ask-model": "January 2025",
   "fallback-gemini-3.5-flash": "May 2026",
@@ -248,6 +258,10 @@ export const modelDisplayNames: Record<ModelName, string> &
   "model-kimi-k2.6": "Moonshot Kimi K2.6",
   "model-grok-4.3": "xAI Grok 4.3",
   "model-kimi-k2.7-code": "Moonshot Kimi K2.7 Code",
+  "model-gpt-5.3-codex": "OpenAI GPT-5.3 Codex",
+  "model-gpt-5.5": "OpenAI GPT-5.5",
+  "model-glm-5.2": "Zhipu GLM-5.2",
+  "model-fable-5": "Anthropic Claude Fable 5",
   "fallback-agent-model": "Auto, an intelligent model router built by RIFT",
   "fallback-ask-model": "Auto, an intelligent model router built by RIFT",
   "fallback-gemini-3.5-flash": "Google Gemini 3.5 Flash",
@@ -264,7 +278,20 @@ export const getModelCutoffDate = (modelName: ModelName): string => {
 };
 
 export function isAnthropicModel(modelName: string): boolean {
-  return modelName.includes("sonnet") || modelName.includes("opus");
+  // Matches BOTH RIFT keys ("model-fable-5", "model-sonnet-4.6") and raw slugs
+  // ("anthropic/claude-fable-5"). Fable 5 is an Anthropic model too, so it must
+  // get the same Anthropic-only handling as Sonnet/Opus — the agentic message
+  // repair + cache breakpoints. Missing "fable" here meant Build-mode agent
+  // loops on Fable sent un-repaired message sequences that Anthropic upstream
+  // rejects, so Fable returned no response at all.
+  const m = modelName.toLowerCase();
+  return (
+    m.includes("sonnet") ||
+    m.includes("opus") ||
+    m.includes("fable") ||
+    m.includes("claude") ||
+    m.includes("anthropic")
+  );
 }
 
 export function isDeepSeekModel(modelName: string): boolean {
@@ -333,6 +360,10 @@ export function resolveTierToProviderKey(
       // output, unlike Claude/Opus (real-time content-filter) or the Chinese
       // models (Chinese safety refusal).
       return "model-grok-4.3";
+    default:
+      // build-* selections are Build-mode only (mapped in selectModel); they
+      // have no security/ask tier route, so fall through to the auto router.
+      return null;
   }
 }
 

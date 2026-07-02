@@ -453,12 +453,27 @@ export const deductPoints = mutation({
 
     const currentBalancePoints = settings.balance_points ?? 0;
 
-    // Check if user has enough balance
-    if (currentBalancePoints < args.amountPoints) {
+    // Current month key (UTC) for monthly resets.
+    const now = new Date();
+    const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+
+    // Monthly subscription allowance ("granted" points) is consumed BEFORE the
+    // purchased balance. It resets each calendar month; the LemonSqueezy webhook
+    // re-grants it on each successful subscription payment (grantMonthlyAllowance).
+    const grantedTotal = settings.monthly_granted_points ?? 0;
+    const grantedUsedThisMonth =
+      settings.monthly_granted_reset_date === currentMonth
+        ? (settings.monthly_granted_used_points ?? 0)
+        : 0;
+    const grantedAvailable = Math.max(0, grantedTotal - grantedUsedThisMonth);
+
+    // Check the combined allowance + purchased balance covers the charge.
+    if (grantedAvailable + currentBalancePoints < args.amountPoints) {
       convexLogger.warn("deduct_points_failed", {
         user_id: args.userId,
         amount_points: args.amountPoints,
         current_balance_points: currentBalancePoints,
+        granted_available_points: grantedAvailable,
         reason: "insufficient_balance",
         insufficient_funds: true,
       });
@@ -470,10 +485,6 @@ export const deductPoints = mutation({
         monthlyCapExceeded: false,
       };
     }
-
-    // Calculate current month for tracking
-    const now = new Date();
-    const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
 
     // Reset monthly spending if month changed
     let monthlySpentPoints = settings.monthly_spent_points ?? 0;
@@ -508,10 +519,15 @@ export const deductPoints = mutation({
     // Add to monthly spending
     monthlySpentPoints += args.amountPoints;
 
-    // Deduct balance and update monthly tracking
-    const newBalancePoints = currentBalancePoints - args.amountPoints;
+    // Spend the monthly allowance first, then the purchased balance.
+    const fromGranted = Math.min(grantedAvailable, args.amountPoints);
+    const fromBalance = args.amountPoints - fromGranted;
+    const newGrantedUsedPoints = grantedUsedThisMonth + fromGranted;
+    const newBalancePoints = currentBalancePoints - fromBalance;
     await ctx.db.patch(settings._id, {
       balance_points: newBalancePoints,
+      monthly_granted_used_points: newGrantedUsedPoints,
+      monthly_granted_reset_date: currentMonth,
       monthly_spent_points: monthlySpentPoints,
       monthly_reset_date: currentMonth,
       updated_at: Date.now(),
@@ -533,6 +549,58 @@ export const deductPoints = mutation({
       insufficientFunds: false,
       monthlyCapExceeded: false,
     };
+  },
+});
+
+/**
+ * Grant (or revoke) a user's monthly subscription allowance. Called by the
+ * LemonSqueezy webhook on each successful subscription payment (allowancePoints
+ * = the tier's monthly allowance) and on cancel/expire (allowancePoints = 0).
+ * Resets the month's used counter so the full allowance is available at once.
+ */
+export const grantMonthlyAllowance = mutation({
+  args: {
+    serviceKey: v.string(),
+    userId: v.string(),
+    allowancePoints: v.number(),
+  },
+  returns: v.object({ ok: v.boolean() }),
+  handler: async (ctx, args) => {
+    validateServiceKey(args.serviceKey);
+    const now = new Date();
+    const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+    const allowance = Math.max(0, Math.floor(args.allowancePoints));
+    const settings = await ctx.db
+      .query("extra_usage")
+      .withIndex("by_user_id", (q) => q.eq("user_id", args.userId))
+      .first();
+    if (settings) {
+      // Idempotency: the LemonSqueezy webhook can fire more than once for the
+      // same payment (provider retries). Only reset the used counter when this
+      // is a genuinely new billing month — within the same month, preserve
+      // usage so a duplicate webhook updates the allowance ceiling WITHOUT
+      // handing back the full allowance the user has already partly spent.
+      const sameMonth = settings.monthly_granted_reset_date === currentMonth;
+      const preservedUsed = sameMonth
+        ? (settings.monthly_granted_used_points ?? 0)
+        : 0;
+      await ctx.db.patch(settings._id, {
+        monthly_granted_points: allowance,
+        monthly_granted_used_points: preservedUsed,
+        monthly_granted_reset_date: currentMonth,
+        updated_at: Date.now(),
+      });
+    } else {
+      await ctx.db.insert("extra_usage", {
+        user_id: args.userId,
+        balance_points: 0,
+        monthly_granted_points: allowance,
+        monthly_granted_used_points: 0,
+        monthly_granted_reset_date: currentMonth,
+        updated_at: Date.now(),
+      });
+    }
+    return { ok: true };
   },
 });
 
@@ -621,6 +689,87 @@ export const refundPoints = mutation({
 // =============================================================================
 // Queries
 // =============================================================================
+
+/**
+ * Atomically claim the user's one lifetime free Agent run. Returns
+ * `{ granted: true }` on the first claim, `{ granted: false }` if already used.
+ * The check-then-set runs inside one Convex mutation, so concurrent agent
+ * starts can never both be granted.
+ */
+export const claimFreeAgentRunForBackend = mutation({
+  args: {
+    serviceKey: v.string(),
+    userId: v.string(),
+  },
+  returns: v.object({ granted: v.boolean() }),
+  handler: async (ctx, args) => {
+    validateServiceKey(args.serviceKey);
+
+    const settings = await ctx.db
+      .query("extra_usage")
+      .withIndex("by_user_id", (q) => q.eq("user_id", args.userId))
+      .first();
+
+    const claimDate = new Date();
+    const currentMonth = `${claimDate.getUTCFullYear()}-${String(claimDate.getUTCMonth() + 1).padStart(2, "0")}`;
+
+    // One free Agent run per calendar month (was lifetime; now resets monthly).
+    if (settings?.free_agent_run_month === currentMonth) {
+      return { granted: false };
+    }
+
+    const now = Date.now();
+    if (settings) {
+      await ctx.db.patch(settings._id, {
+        free_agent_run_month: currentMonth,
+        updated_at: now,
+      });
+    } else {
+      await ctx.db.insert("extra_usage", {
+        user_id: args.userId,
+        balance_points: 0,
+        free_agent_run_month: currentMonth,
+        updated_at: now,
+      });
+    }
+
+    return { granted: true };
+  },
+});
+
+/**
+ * Un-claim the user's free Agent run — used to refund the lifetime claim when
+ * the agent run that consumed it fails. No-op if it wasn't claimed.
+ */
+export const refundFreeAgentRunForBackend = mutation({
+  args: {
+    serviceKey: v.string(),
+    userId: v.string(),
+  },
+  returns: v.object({ refunded: v.boolean() }),
+  handler: async (ctx, args) => {
+    validateServiceKey(args.serviceKey);
+
+    const settings = await ctx.db
+      .query("extra_usage")
+      .withIndex("by_user_id", (q) => q.eq("user_id", args.userId))
+      .first();
+
+    const refundDate = new Date();
+    const currentMonth = `${refundDate.getUTCFullYear()}-${String(refundDate.getUTCMonth() + 1).padStart(2, "0")}`;
+
+    // Only refund the claim if it was made THIS month.
+    if (!settings || settings.free_agent_run_month !== currentMonth) {
+      return { refunded: false };
+    }
+
+    await ctx.db.patch(settings._id, {
+      free_agent_run_month: undefined,
+      updated_at: Date.now(),
+    });
+    return { refunded: true };
+  },
+});
 
 /**
  * Get user's extra usage balance and settings (for backend).

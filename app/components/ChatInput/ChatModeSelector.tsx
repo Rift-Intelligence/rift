@@ -17,6 +17,7 @@ export function ChatModeSelector({ className }: ChatModeSelectorProps) {
   const {
     chatMode,
     setChatMode,
+    chatPurpose,
     temporaryChatsEnabled,
     hasLocalSandbox,
     defaultLocalSandboxPreference,
@@ -26,6 +27,12 @@ export function ChatModeSelector({ className }: ChatModeSelectorProps) {
     setSelectedModel,
   } = useGlobalState();
   const { user } = useAuth();
+
+  // In Build mode the two modes are framed as "Agent" (builds it) vs "Plan"
+  // (thinks it through without executing — the ask path). Elsewhere it's the
+  // usual Agent / Ask.
+  const isBuild = chatPurpose === "app";
+  const askLabel = isBuild ? "Plan" : "Ask";
 
   const handleAgentModeClick = () => {
     if (!user) {
@@ -80,7 +87,7 @@ export function ChatModeSelector({ className }: ChatModeSelectorProps) {
             : "bg-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground"
         }`}
       >
-        Ask
+        {askLabel}
       </button>
     </div>
   );

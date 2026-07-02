@@ -10,6 +10,8 @@ import { createGetTerminalFiles } from "./get-terminal-files";
 import { createFile } from "./file";
 import { createWebSearch } from "./web-search";
 import { createOpenUrlTool } from "./open-url";
+import { createGenerateImage } from "./generate-image";
+import { createExposePreview } from "./expose-preview";
 import { createTodoWrite } from "./todo-write";
 // Caido proxy temporarily disabled for all users — see lib/api/chat-handler.ts kill switch.
 // import { createProxyTools } from "./proxy-tool";
@@ -63,6 +65,18 @@ export const createTools = (
   onSandboxBoot?: (info: SandboxBootInfo) => void,
   onCaidoReady?: (info: CaidoReadyInfo) => void,
   modelName?: string,
+  // Tools contributed by the user's connected MCP servers (see lib/ai/mcp/*).
+  // Already namespaced + AI-SDK-ready; merged into every rebuilt tool set so
+  // provider-fallback legs keep them too.
+  mcpTools?: ToolSet,
+  // User-picked image model (OpenRouter id) + its per-image cost, for the
+  // generate_image tool. Undefined → generate_image uses its default.
+  imageModel?: string,
+  imageCost?: number,
+  // Connected GitHub token/username — wired into the sandbox git credentials by
+  // run_terminal_cmd so the agent can clone/push the user's repos.
+  githubToken?: string,
+  githubUsername?: string,
 ) => {
   let sandbox: AnySandbox | null = null;
   let sandboxFirstUsedAt: number | null = null;
@@ -119,6 +133,10 @@ export const createTools = (
     mode,
     modelName,
     getCurrentModelName: () => currentModelName,
+    imageModel,
+    imageCost,
+    githubToken,
+    githubUsername,
     subscription,
     isE2BSandbox,
     guardrailsConfig,
@@ -154,6 +172,17 @@ export const createTools = (
       ...(process.env.JINA_API_KEY && {
         open_url: createOpenUrlTool(),
       }),
+      // Image generation via OpenRouter (reuses the existing key, no new
+      // provider). Available in every mode.
+      ...(process.env.OPENROUTER_API_KEY && {
+        generate_image: createGenerateImage(context),
+      }),
+      // App-builder: expose a sandbox dev-server port as a live preview URL.
+      expose_preview: createExposePreview(context),
+      // User-connected MCP server tools. Available in every mode — a connected
+      // GitHub / Slack / Notion connector is just as useful in ask mode as in
+      // agent mode.
+      ...(mcpTools ?? {}),
     };
 
     // Filter tools based on mode
@@ -172,6 +201,10 @@ export const createTools = (
           ...(process.env.JINA_API_KEY && {
             open_url: createOpenUrlTool(),
           }),
+          ...(process.env.OPENROUTER_API_KEY && {
+            generate_image: createGenerateImage(context),
+          }),
+          ...(mcpTools ?? {}),
         }
       : allTools;
   };

@@ -55,7 +55,7 @@ const formatResetDateFull = (resetTime: string | null): string => {
 const getUsageColorClass = (percentage: number): string => {
   if (percentage >= 90) return "bg-red-500";
   if (percentage >= 70) return "bg-orange-500";
-  return "bg-blue-500";
+  return "bg-primary";
 };
 
 const formatProjectionDate = (date: Date): string => {

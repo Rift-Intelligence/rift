@@ -39,7 +39,7 @@ export function getCategoryColor(category: NoteCategory): string {
     case "findings":
       return "text-red-500";
     case "methodology":
-      return "text-blue-500";
+      return "text-primary";
     case "questions":
       return "text-yellow-500";
     case "plan":

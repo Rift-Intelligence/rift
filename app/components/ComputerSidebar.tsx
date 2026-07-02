@@ -684,6 +684,12 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                             overflowWrap: "break-word",
                             wordBreak: "break-word",
                             whiteSpace: "pre-wrap",
+                            // Classic terminal face (native macOS / Linux mono)
+                            // instead of the UI code font, so the computer panel
+                            // reads like a real terminal.
+                            fontFamily: isCodeScreen
+                              ? 'ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Monaco, "Cascadia Code", "Roboto Mono", monospace'
+                              : undefined,
                           }}
                         >
                           {isFile && resolvedFile && (
@@ -1004,7 +1010,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                         className={`flex items-center justify-center w-[24px] h-[24px] transition-colors cursor-pointer ${
                           !canGoPrev
                             ? "text-muted-foreground/30 cursor-not-allowed"
-                            : "text-muted-foreground hover:text-blue-500"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                         aria-label="Previous tool execution"
                       >
@@ -1017,7 +1023,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                         className={`flex items-center justify-center w-[24px] h-[24px] transition-colors cursor-pointer ${
                           !canGoNext
                             ? "text-muted-foreground/30 cursor-not-allowed"
-                            : "text-muted-foreground hover:text-blue-500"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                         aria-label="Next tool execution"
                       >
@@ -1040,7 +1046,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                     >
                       <span className="relative h-full w-full rounded-full bg-muted">
                         <span
-                          className="absolute h-full rounded-full bg-blue-500"
+                          className="absolute h-full rounded-full bg-primary"
                           style={{
                             left: "0%",
                             width: `${getProgressPercentage}%`,
@@ -1061,7 +1067,7 @@ export const ComputerSidebarBase: React.FC<ComputerSidebarProps> = ({
                             aria-valuemax={maxIndex}
                             aria-valuenow={currentIndex}
                             aria-label={`Tool execution ${currentIndex + 1}`}
-                            className="relative block h-[14px] w-[14px] rounded-full bg-blue-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 border-2 border-background drop-shadow-[0px_1px_4px_rgba(0,0,0,0.06)]"
+                            className="relative block h-[14px] w-[14px] rounded-full bg-primary transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-2 border-background drop-shadow-[0px_1px_4px_rgba(0,0,0,0.06)]"
                           ></span>
                         </span>
                       )}

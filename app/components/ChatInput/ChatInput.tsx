@@ -22,6 +22,14 @@ import { ChatInputTextarea } from "./ChatInputTextarea";
 import { ChatInputToolbar } from "./ChatInputToolbar";
 import { type ContextUsageData } from "../ContextUsageIndicator";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { ChatPurpose } from "@/types/chat";
+
+/** Placeholder copy for the composer, per chat purpose (mode). */
+function purposePlaceholder(purpose: ChatPurpose): string {
+  if (purpose === "app") return "Describe an app or game to build…";
+  if (purpose === "image") return "Describe an image to generate…";
+  return "Plan, @ for context, / for commands";
+}
 
 interface ChatInputProps {
   onSubmit: (e: React.FormEvent) => void;
@@ -67,6 +75,7 @@ export const ChatInput = ({
   const {
     chatMode,
     setChatMode,
+    chatPurpose,
     uploadedFiles,
     isUploadingFiles,
     messageQueue,
@@ -228,7 +237,7 @@ export const ChatInput = ({
               chatMode={chatMode}
               onEnterSubmit={handleSubmit}
               minRows={isCentered ? 3 : 1}
-              placeholder={placeholder}
+              placeholder={placeholder ?? purposePlaceholder(chatPurpose)}
               autoFocus={autoFocus}
             />
             <ChatInputToolbar

@@ -2,14 +2,17 @@
 
 import { action } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
-import { generateS3UploadUrl, generateS3DownloadUrl } from "./s3Utils";
+import {
+  generateS3UploadUrl,
+  generateS3DownloadUrl,
+  isS3Configured,
+} from "./s3Utils";
 import { internal } from "./_generated/api";
 import { validateServiceKey } from "./lib/utils";
 import { convexLogger } from "./lib/logger";
 import { checkFileUploadRateLimit } from "./fileActions";
 import { Doc } from "./_generated/dataModel";
 import { validateUploadPolicy } from "../lib/utils/upload-policy";
-import { hasPaidEntitlement } from "../lib/auth/entitlements";
 
 type StorageUsage = {
   usedBytes: number;
@@ -39,6 +42,19 @@ const getIdentityEntitlements = (identity: unknown) => {
 };
 
 /**
+ * Result of an upload-URL request: an S3 presigned PUT target, or a Convex
+ * built-in storage POST target when S3 isn't configured. Annotated explicitly
+ * so TypeScript doesn't have to infer through the action's own `ctx.runMutation`
+ * call (which would create a circular reference in the generated API types).
+ */
+type UploadTarget = {
+  backend: "s3" | "convex";
+  uploadUrl: string;
+  s3Key?: string;
+  rateLimit?: { remaining: number; limit: number; reset: number };
+};
+
+/**
  * Generate presigned S3 upload URL for authenticated users
  *
  * This action:
@@ -55,8 +71,11 @@ export const generateS3UploadUrlAction = action({
     mode: v.optional(v.union(v.literal("ask"), v.literal("agent"))),
   },
   returns: v.object({
+    // "s3": client PUTs to uploadUrl, then saveFile({ s3Key }).
+    // "convex": client POSTs to uploadUrl, gets { storageId }, saveFile({ storageId }).
+    backend: v.union(v.literal("s3"), v.literal("convex")),
     uploadUrl: v.string(),
-    s3Key: v.string(),
+    s3Key: v.optional(v.string()),
     rateLimit: v.optional(
       v.object({
         remaining: v.number(),
@@ -65,7 +84,7 @@ export const generateS3UploadUrlAction = action({
       }),
     ),
   }),
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<UploadTarget> => {
     // Authenticate user
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -112,12 +131,9 @@ export const generateS3UploadUrlAction = action({
     const userId = identity.subject.split("|")[0];
     const entitlements = getIdentityEntitlements(identity);
 
-    if (!hasPaidEntitlement(entitlements)) {
-      throw new ConvexError({
-        code: "PAID_PLAN_REQUIRED",
-        message: "Paid plan required for file uploads",
-      });
-    }
+    // File uploads are available to every signed-in user (the composer's
+    // attach button advertises this — no plan gate). Storage + rate limits
+    // below still apply.
 
     // Check storage limit before allowing upload
     const storageUsage: StorageUsage = await ctx.runQuery(
@@ -146,7 +162,25 @@ export const generateS3UploadUrlAction = action({
       entitlements,
     });
 
+    const rateLimit = rateLimitResult
+      ? {
+          remaining: rateLimitResult.remaining,
+          limit: rateLimitResult.limit,
+          reset: rateLimitResult.reset,
+        }
+      : undefined;
+
     try {
+      // When S3 isn't configured, fall back to Convex's built-in file storage
+      // so uploads work out of the box with no external setup.
+      if (!isS3Configured()) {
+        const uploadUrl: string = await ctx.runMutation(
+          internal.fileStorage.generateConvexUploadUrl,
+          {},
+        );
+        return { backend: "convex", uploadUrl, rateLimit };
+      }
+
       // Generate presigned upload URL with user-scoped S3 key
       const { uploadUrl, s3Key } = await generateS3UploadUrl(
         args.fileName,
@@ -163,17 +197,7 @@ export const generateS3UploadUrlAction = action({
         size: args.size,
       });
 
-      return {
-        uploadUrl,
-        s3Key,
-        rateLimit: rateLimitResult
-          ? {
-              remaining: rateLimitResult.remaining,
-              limit: rateLimitResult.limit,
-              reset: rateLimitResult.reset,
-            }
-          : undefined,
-      };
+      return { backend: "s3", uploadUrl, s3Key, rateLimit };
     } catch (error) {
       if (error instanceof ConvexError) {
         throw error;

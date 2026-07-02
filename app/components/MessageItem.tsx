@@ -387,6 +387,24 @@ export const MessageItem = memo(function MessageItem({
                 </div>
               )}
 
+              {/* Render assistant-generated file parts (e.g. images from the
+                  generate_image tool) — these are emitted on the assistant
+                  message, not just user uploads. */}
+              {!isUser && fileParts.length > 0 && (
+                <div className="flex flex-wrap items-start gap-2 w-full mb-2">
+                  {fileParts.map((part, partIndex) => (
+                    <FilePartRenderer
+                      key={`${message.id}-afile-${partIndex}`}
+                      part={part}
+                      partIndex={partIndex}
+                      messageId={message.id}
+                      totalFileParts={fileParts.length}
+                      large
+                    />
+                  ))}
+                </div>
+              )}
+
               {/* Render text and other parts */}
               {nonFileParts.length > 0 && (
                 <div

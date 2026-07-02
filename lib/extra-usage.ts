@@ -64,6 +64,44 @@ export async function getExtraUsageBalance(
 }
 
 /**
+ * Claim the user's one lifetime free Agent run. Returns true if THIS call
+ * claimed it (first ever agent run), false if it was already used — in which
+ * case the caller must draw from the prepaid balance. Errors propagate so a
+ * Convex hiccup surfaces as a retryable rate-limit error rather than silently
+ * granting or denying.
+ */
+export async function claimFreeAgentRun(userId: string): Promise<boolean> {
+  const convex = getConvexClient();
+  const result = await convex.mutation(
+    api.extraUsage.claimFreeAgentRunForBackend,
+    {
+      serviceKey: process.env.CONVEX_SERVICE_ROLE_KEY!,
+      userId,
+    },
+  );
+  return result.granted;
+}
+
+/**
+ * Refund (un-claim) the user's one free Agent run after a failed agent run, so
+ * the lifetime gate is only spent on a run that actually completed. Resilient —
+ * never throws (called from error handlers); returns true on success.
+ */
+export async function refundFreeAgentRun(userId: string): Promise<boolean> {
+  try {
+    const convex = getConvexClient();
+    await convex.mutation(api.extraUsage.refundFreeAgentRunForBackend, {
+      serviceKey: process.env.CONVEX_SERVICE_ROLE_KEY!,
+      userId,
+    });
+    return true;
+  } catch (error) {
+    console.error("Error refunding free agent run:", error);
+    return false;
+  }
+}
+
+/**
  * Deduct from user's prepaid balance for extra usage.
  * Also triggers auto-reload if enabled and balance is below threshold.
  * All logic is handled internally by the Convex action.

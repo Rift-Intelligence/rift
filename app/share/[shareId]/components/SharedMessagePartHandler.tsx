@@ -107,6 +107,13 @@ export const SharedMessagePartHandler = ({
     );
   }
 
+  // Generated image (generate_image tool) — render the stored image inline so
+  // it survives on public share pages. The chat is finished here, so there is
+  // no in-progress placeholder; failed generations simply render nothing.
+  if (part.type === "tool-generate_image") {
+    return renderGeneratedImage(part, idx);
+  }
+
   // Terminal commands
   if (
     part.type === "data-terminal" ||
@@ -182,6 +189,23 @@ export const SharedMessagePartHandler = ({
 
   return null;
 };
+
+// Generated image renderer — shows the image from the durable tool-output URL.
+function renderGeneratedImage(part: MessagePart, idx: number) {
+  if (part.state !== "output-available") return null;
+  const out = part.output as { url?: string; mediaType?: string } | undefined;
+  if (!out || !out.url) return null;
+  return (
+    <div key={idx} className="my-1">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={out.url}
+        alt="Generated image"
+        className="h-auto max-h-[32rem] w-full max-w-lg rounded-lg border border-border object-contain"
+      />
+    </div>
+  );
+}
 
 // Terminal tool renderer
 function renderTerminalTool(

@@ -157,7 +157,7 @@ describe("WorkedFor", () => {
     expect(screen.getByText("Hidden work")).toBeVisible();
   });
 
-  it("auto-collapses when timing finishes", () => {
+  it("keeps the work visible after timing finishes (no auto-collapse)", () => {
     jest.useFakeTimers();
     const { rerender } = render(
       <WorkedFor hasWork isTiming>
@@ -182,18 +182,16 @@ describe("WorkedFor", () => {
       screen.getByRole("button", { name: /worked for 1s/i }),
     ).not.toBeDisabled();
 
+    // The transcript stays visible the moment timing ends...
     expect(screen.getByText("Hidden work")).toBeVisible();
 
+    // ...and keeps staying visible — the old 700ms auto-collapse is gone, so
+    // the reasoning + terminal steps no longer vanish when the answer arrives.
     act(() => {
-      jest.advanceTimersByTime(700);
+      jest.advanceTimersByTime(2_000);
     });
+    expect(screen.getByText("Hidden work")).toBeVisible();
 
-    const hiddenWork = screen.queryByText("Hidden work");
-    if (hiddenWork) {
-      expect(hiddenWork).not.toBeVisible();
-    } else {
-      expect(hiddenWork).not.toBeInTheDocument();
-    }
     jest.useRealTimers();
   });
 

@@ -81,7 +81,6 @@ const getScrollableAncestor = (element: HTMLElement): HTMLElement | null => {
 };
 
 const now = () => Date.now();
-const AUTO_COLLAPSE_DELAY_MS = 700;
 const SCROLL_RESTORE_MS = 450;
 const BOTTOM_SCROLL_RESTORE_MS = 1_100;
 // Mobile browser chrome and smooth resize timing can make "at bottom" read
@@ -115,7 +114,6 @@ export function WorkedFor({
   });
   const scrollSnapshotRef = useRef<ScrollSnapshot | null>(null);
   const restoreTokenRef = useRef(0);
-  const wasTimingRef = useRef(isTiming);
   const autoCollapseTimeoutRef = useRef<number | null>(null);
 
   const clearAutoCollapseTimeout = useCallback(() => {
@@ -202,20 +200,15 @@ export function WorkedFor({
   );
 
   useEffect(() => {
-    const wasTiming = wasTimingRef.current;
-
+    // Keep the transcript open while working — and, crucially, KEEP it open
+    // after the run finishes. Previously a 700ms timer collapsed the whole
+    // WorkedFor when timing stopped, so every reasoning + terminal step appeared
+    // to vanish the instant the final answer arrived. Now the steps stay as a
+    // persistent record (Hermes-style); the user can collapse them by hand.
     if (isTiming) {
       clearAutoCollapseTimeout();
       setIsOpen(true);
-    } else if (wasTiming) {
-      clearAutoCollapseTimeout();
-      autoCollapseTimeoutRef.current = window.setTimeout(() => {
-        autoCollapseTimeoutRef.current = null;
-        setIsOpen(false);
-      }, AUTO_COLLAPSE_DELAY_MS);
     }
-
-    wasTimingRef.current = isTiming;
   }, [clearAutoCollapseTimeout, isTiming, setIsOpen]);
 
   useEffect(() => clearAutoCollapseTimeout, [clearAutoCollapseTimeout]);

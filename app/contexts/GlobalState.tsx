@@ -11,14 +11,17 @@ import React, {
   ReactNode,
 } from "react";
 import { useAuth } from "@/app/hooks/useAuth";
+import type { ActiveOperation } from "@/lib/operations/operations";
 import {
   type ChatMode,
+  type ChatPurpose,
   type SelectedModel,
   type SidebarContent,
   type QueuedMessage,
   type QueueBehavior,
   type SandboxPreference,
   isChatMode,
+  coerceChatPurpose,
 } from "@/types/chat";
 import { isAgentMode } from "@/lib/utils/mode-helpers";
 import type { Todo } from "@/types";
@@ -70,11 +73,27 @@ interface GlobalStateType {
   chatMode: ChatMode;
   setChatMode: (mode: ChatMode) => void;
 
+  // Chat purpose state (security pentest / app builder / image generator).
+  // Orthogonal to chatMode: purpose picks the persona + system prompt + model,
+  // chatMode picks the execution path. Set by the sidebar mode launcher.
+  chatPurpose: ChatPurpose;
+  setChatPurpose: (purpose: ChatPurpose) => void;
+
+  // Active operation (operation mode) — set by the Arsenal launcher on launch
+  activeOperation: ActiveOperation | null;
+  setActiveOperation: (op: ActiveOperation | null) => void;
+
   // Computer sidebar state (right side)
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   sidebarContent: SidebarContent | null;
   setSidebarContent: (content: SidebarContent | null) => void;
+
+  // Build mode live preview (embedded dev-server iframe pane)
+  buildPreviewUrl: string | null;
+  setBuildPreviewUrl: (url: string | null) => void;
+  buildPreviewOpen: boolean;
+  setBuildPreviewOpen: (open: boolean) => void;
 
   // Chat sidebar state (left side)
   chatSidebarOpen: boolean;
@@ -132,7 +151,7 @@ interface GlobalStateType {
   closeSidebar: () => void;
   toggleChatSidebar: () => void;
   initializeChat: (chatId: string, fromRoute?: boolean) => void;
-  initializeNewChat: () => void;
+  initializeNewChat: (purpose?: ChatPurpose) => void;
 
   // Temporary chats preference
   temporaryChatsEnabled: boolean;
@@ -175,10 +194,25 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     if (!isChatMode(saved)) return "ask";
     return saved;
   });
+  // Purpose is initialized from the ?purpose= URL param for deep-links; the
+  // sidebar mode launcher updates it for new chats, and reopening a saved chat
+  // restores it from the chat row.
+  const [chatPurpose, setChatPurpose] = useState<ChatPurpose>(() => {
+    if (typeof window === "undefined") return "security";
+    return coerceChatPurpose(
+      new URLSearchParams(window.location.search).get("purpose"),
+    );
+  });
+  const [activeOperation, setActiveOperation] =
+    useState<ActiveOperation | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarContent, setSidebarContent] = useState<SidebarContent | null>(
     null,
   );
+  // Build mode live preview: the running dev-server URL exposed by the agent
+  // (expose_preview tool) and whether the embedded preview pane is open.
+  const [buildPreviewUrl, setBuildPreviewUrl] = useState<string | null>(null);
+  const [buildPreviewOpen, setBuildPreviewOpen] = useState(false);
 
   // Persist chat mode preference to localStorage on change
   useEffect(() => {
@@ -667,13 +701,23 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     setTemporaryChatsEnabled(false);
   }, []);
 
-  const initializeNewChat = useCallback(() => {
+  const initializeNewChat = useCallback((purpose: ChatPurpose = "security") => {
     // Allow chat component to reset its local state immediately
     if (chatResetRef.current) {
       chatResetRef.current();
     }
     setTodos([]);
     setIsTodoPanelExpanded(false);
+
+    // Set the purpose for the new chat and force the matching execution path:
+    // app builder needs the long agent worker (sandbox + dev server); image is
+    // a fast single tool call (ask path). Security keeps the user's last choice.
+    setChatPurpose(purpose);
+    if (purpose === "app") {
+      setChatMode("agent");
+    } else if (purpose === "image") {
+      setChatMode("ask");
+    }
   }, []);
 
   const setChatReset = useCallback((fn: (() => void) | null) => {
@@ -760,10 +804,18 @@ export const GlobalStateProvider: React.FC<GlobalStateProviderProps> = ({
     isUploadingFiles,
     chatMode,
     setChatMode,
+    chatPurpose,
+    setChatPurpose,
+    activeOperation,
+    setActiveOperation,
     sidebarOpen,
     setSidebarOpen,
     sidebarContent,
     setSidebarContent,
+    buildPreviewUrl,
+    setBuildPreviewUrl,
+    buildPreviewOpen,
+    setBuildPreviewOpen,
     chatSidebarOpen,
     setChatSidebarOpen,
     todos,

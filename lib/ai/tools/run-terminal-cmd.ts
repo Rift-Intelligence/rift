@@ -2,7 +2,7 @@ import { tool } from "ai";
 import { z } from "zod";
 import { CommandExitError } from "@e2b/code-interpreter";
 import { randomUUID } from "crypto";
-import type { ToolContext } from "@/types";
+import type { ToolContext, AnySandbox } from "@/types";
 import { createTerminalHandler } from "@/lib/utils/terminal-executor";
 import { TIMEOUT_MESSAGE } from "@/lib/token-utils";
 import { saveTruncatedOutput } from "./utils/terminal-output-saver";
@@ -39,6 +39,36 @@ import {
   stripAnsi,
   peekExited,
 } from "./utils/pty-wait-utils";
+import { configureSandboxGit } from "@/lib/github/configure-sandbox-git";
+
+// Tracks E2B sandboxes whose git credentials have already been configured with
+// the user's connected GitHub token, so we only write .git-credentials once per
+// sandbox (the first terminal command). Keyed by the sandbox instance.
+const gitConfiguredSandboxes = new WeakSet<object>();
+
+/**
+ * Lazily inject the user's connected GitHub token into the sandbox's git
+ * credential store the first time a terminal command runs. Best-effort and
+ * non-fatal — a failure here must never block the actual command.
+ */
+async function ensureGitCredentials(
+  sandbox: AnySandbox,
+  context: ToolContext,
+): Promise<void> {
+  const token = context.githubToken;
+  if (!token) return;
+  if (!isE2BSandbox(sandbox)) return;
+  if (gitConfiguredSandboxes.has(sandbox)) return;
+  gitConfiguredSandboxes.add(sandbox);
+  try {
+    await configureSandboxGit(sandbox, token, context.githubUsername);
+  } catch (error) {
+    // Non-fatal: the agent can still run commands; git pushes just won't be
+    // pre-authenticated. Drop the flag so a later command can retry.
+    gitConfiguredSandboxes.delete(sandbox);
+    console.warn("[run_terminal_cmd] git credential setup failed:", error);
+  }
+}
 
 const DEFAULT_STREAM_TIMEOUT_SECONDS = 60;
 const MAX_TIMEOUT_SECONDS = 600;
@@ -246,6 +276,7 @@ In using these tools, adhere to the following guidelines:
             );
           }
           const { sandbox } = await sandboxManager.getSandbox();
+          await ensureGitCredentials(sandbox, context);
           const isCentrifugo = isCentrifugoSandbox(sandbox);
           const isE2B = isE2BSandbox(sandbox);
 
@@ -386,6 +417,7 @@ In using these tools, adhere to the following guidelines:
         }
         // Get fresh sandbox and verify it's ready
         const { sandbox } = await sandboxManager.getSandbox();
+        await ensureGitCredentials(sandbox, context);
 
         // Check for sandbox fallback and notify frontend
         const fallbackInfo = sandboxManager.consumeFallbackInfo?.();

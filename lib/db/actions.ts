@@ -293,10 +293,12 @@ export async function saveChat({
   id,
   userId,
   title,
+  purpose,
 }: {
   id: string;
   userId: string;
   title: string;
+  purpose?: string;
 }) {
   try {
     return await getConvexClient().mutation(api.chats.saveChat, {
@@ -304,6 +306,7 @@ export async function saveChat({
       id,
       userId,
       title,
+      ...(purpose ? { purpose } : {}),
     });
   } catch (error) {
     throw databaseError("chats.saveChat", error, {
@@ -467,6 +470,7 @@ export async function handleInitialChatAndUserMessage({
   regenerate,
   chat,
   isHidden,
+  purpose,
 }: {
   chatId: string;
   userId: string;
@@ -474,6 +478,7 @@ export async function handleInitialChatAndUserMessage({
   regenerate?: boolean;
   chat: any; // Chat data from getMessagesByChatId
   isHidden?: boolean;
+  purpose?: string;
 }) {
   if (!chat) {
     // Save new chat and get the document _id
@@ -500,6 +505,7 @@ export async function handleInitialChatAndUserMessage({
       id: chatId,
       userId,
       title,
+      purpose,
     });
   } else {
     // Check if user owns the chat

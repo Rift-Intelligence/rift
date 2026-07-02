@@ -40,8 +40,18 @@ export function useAutoResume({
     if (!hasActiveStream) return;
 
     const mostRecentMessage = initialMessages.at(-1);
+    if (!mostRecentMessage) return;
 
-    if (mostRecentMessage?.role === "user") {
+    // Resume whenever the server is still producing — whether the last
+    // persisted message is the user's prompt (assistant hasn't started yet) OR
+    // a partial assistant reply (we navigated away mid-stream and came back).
+    // Previously this only resumed on a trailing `user` message, so returning
+    // to a chat mid-assistant-response showed the partial reply frozen, as if
+    // it had finished. Reconnecting continues the live stream (Claude-style).
+    if (
+      mostRecentMessage.role === "user" ||
+      mostRecentMessage.role === "assistant"
+    ) {
       hasAutoResumedRef.current = true;
       setIsAutoResuming(true);
       resumeStream();

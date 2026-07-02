@@ -40,6 +40,10 @@ export default defineSchema({
     pinned_at: v.optional(v.number()),
     sandbox_type: v.optional(v.string()),
     selected_model: v.optional(v.string()),
+    // What the agent is for: "security" (default, offensive-security agent) or
+    // "app" (Claude-Code-style app/game builder). Additive + optional so old
+    // rows validate unchanged; absence means "security".
+    purpose: v.optional(v.string()),
     // Legacy field retained on historical rows. The local-provider feature
     // was removed and nothing reads or writes this anymore — kept in the
     // schema so old rows still pass validation.
@@ -169,10 +173,47 @@ export default defineSchema({
     // broken saved card does not keep retrying.
     auto_reload_consecutive_failures: v.optional(v.number()),
     auto_reload_disabled_reason: v.optional(v.string()),
+    // Lifetime gate: set true once the user spends their one free Agent run.
+    // Legacy — retained so old rows validate. Superseded by free_agent_run_month
+    // (monthly gate): free users now get one free Agent run per calendar month.
+    free_agent_run_used: v.optional(v.boolean()),
+    // YYYY-MM in which the user spent their free Agent run; resets monthly.
+    free_agent_run_month: v.optional(v.string()),
+    // Monthly subscription allowance (Pro/Max). Granted points are "included"
+    // usage that resets each calendar month and is consumed BEFORE the purchased
+    // balance_points. Set by the LemonSqueezy webhook on each successful payment;
+    // zeroed on cancel/expire.
+    monthly_granted_points: v.optional(v.number()),
+    monthly_granted_used_points: v.optional(v.number()),
+    monthly_granted_reset_date: v.optional(v.string()),
     updated_at: v.number(),
   })
     .index("by_user_id", ["user_id"])
     .index("by_stripe_customer_id", ["stripe_customer_id"]),
+
+  // Active paid subscriptions (Pro / Max) via LemonSqueezy. One row per user's
+  // current subscription; the LemonSqueezy webhook upserts it. resolveSubscription
+  // Tier reads the derived tier through getActiveSubscription → useAuth entitlements.
+  subscriptions: defineTable({
+    user_id: v.string(),
+    provider: v.string(), // "lemonsqueezy"
+    ls_subscription_id: v.string(),
+    ls_customer_id: v.optional(v.string()),
+    ls_variant_id: v.optional(v.string()),
+    ls_order_id: v.optional(v.string()),
+    // RIFT tier: "pro" (RIFT Pro) or "ultra" (RIFT Max — maps to the existing
+    // top consumer tier in SubscriptionTier).
+    tier: v.string(),
+    // LemonSqueezy status: active | on_trial | paused | past_due | unpaid |
+    // cancelled | expired. Only active/on_trial/past_due grant entitlements.
+    status: v.string(),
+    renews_at: v.optional(v.string()),
+    ends_at: v.optional(v.string()),
+    created_at: v.number(),
+    updated_at: v.number(),
+  })
+    .index("by_user_id", ["user_id"])
+    .index("by_ls_subscription_id", ["ls_subscription_id"]),
 
   // Team-shared extra usage pool. Admin funds it; any member of the org draws
   // from it for overflow once the team subscription bucket is exhausted.
@@ -559,4 +600,131 @@ export default defineSchema({
     session_key: v.string(),
     processed_at: v.number(),
   }).index("by_session_key", ["session_key"]),
+
+  // Server-side rate limiting for verification-code (OTP) emails. Stops an
+  // attacker who calls the sign-up/resend endpoint directly (bypassing the
+  // client-side cooldown) from email-bombing arbitrary inboxes or burning the
+  // Resend send quota / sender reputation. One row per canonicalized recipient,
+  // holding a fixed counting window plus the last-send timestamp for the short
+  // min-interval. See convex/otpRateLimit.ts.
+  otp_send_limits: defineTable({
+    // Canonicalized recipient email (see emailCanonical) so +tag / dot / case
+    // variants of one inbox share a single bucket.
+    email: v.string(),
+    // Start of the current counting window (ms since epoch).
+    window_start: v.number(),
+    // Permitted sends within the current window.
+    count: v.number(),
+    // Timestamp of the last permitted send (ms), for the min-interval gate.
+    last_sent_at: v.number(),
+  })
+    .index("by_email", ["email"])
+    // For the cleanup cron: purge rows whose last send is well in the past.
+    .index("by_last_sent", ["last_sent_at"]),
+
+  // Global backstop counter for OTP emails. Per-IP limiting is not reachable
+  // from the auth action context (the request has no real client IP there), so
+  // a single rolling daily cap bounds total blast radius / Resend spend if the
+  // per-email limiter is somehow evaded at scale. Single row, keyed by bucket.
+  otp_global_limits: defineTable({
+    bucket: v.string(),
+    window_start: v.number(),
+    count: v.number(),
+  }).index("by_bucket", ["bucket"]),
+
+  // User-configured MCP (Model Context Protocol) servers / connectors. Each row
+  // is one remote MCP endpoint whose tools get connected at request time and
+  // merged into the agent's tool set (see lib/ai/mcp/*). This is the foundation
+  // the future "Plugins / Connectors" UI builds on.
+  mcp_servers: defineTable({
+    user_id: v.string(),
+    // Display name; also used to namespace the server's tool names so two
+    // servers exposing a tool of the same name don't collide.
+    name: v.string(),
+    // Remote endpoint URL (Streamable HTTP or legacy SSE).
+    url: v.string(),
+    // Transport hint. "http" = Streamable HTTP (modern, default); "sse" =
+    // legacy Server-Sent-Events transport. The client also auto-falls-back
+    // from http→sse at connect time, so this is just the preferred order.
+    transport: v.union(v.literal("http"), v.literal("sse")),
+    // Optional auth headers (e.g. { key: "Authorization", value: "Bearer …" }).
+    // SECURITY: stored in plaintext for this first iteration — values here are
+    // secrets. Before GA this should move to an encrypted secret store; do not
+    // surface header values back to the client once set.
+    headers: v.optional(
+      v.array(v.object({ key: v.string(), value: v.string() })),
+    ),
+    // When false the server is kept on file but its tools are not loaded.
+    enabled: v.boolean(),
+    created_at: v.number(),
+    updated_at: v.number(),
+  }).index("by_user", ["user_id"]),
+
+  // User skills — loadable instruction packs (à la Claude SKILL.md). Each enabled
+  // skill's instructions are injected into the agent as a <system-reminder> for
+  // matching-scope chats (see lib/ai/skills/*). Curated skills are "installed"
+  // by copying their instructions into a row; custom skills are authored inline.
+  skills: defineTable({
+    user_id: v.string(),
+    name: v.string(),
+    description: v.string(),
+    // The instruction text injected into the agent when this skill is enabled.
+    instructions: v.string(),
+    // Which chat purpose this skill applies to. "all" = every mode.
+    scope: v.union(
+      v.literal("all"),
+      v.literal("security"),
+      v.literal("app"),
+      v.literal("image"),
+    ),
+    // Set when installed from the curated catalog (lib/ai/skills/skill-catalog).
+    // Undefined for user-authored custom skills.
+    catalog_id: v.optional(v.string()),
+    enabled: v.boolean(),
+    created_at: v.number(),
+    updated_at: v.number(),
+  }).index("by_user", ["user_id"]),
+
+  // User projects — named workspaces of a chosen type (Security / Build / Image).
+  // Shown in the sidebar; opening one starts work in that mode. Chats can be
+  // associated later via an optional project_id.
+  projects: defineTable({
+    user_id: v.string(),
+    name: v.string(),
+    type: v.union(v.literal("security"), v.literal("app"), v.literal("image")),
+    created_at: v.number(),
+    updated_at: v.number(),
+  }).index("by_user", ["user_id"]),
+
+  // Connected GitHub account (personal access token) per user. The token lets
+  // the agent (Build) and the user's terminal (CLI) clone/push repos. Stored so
+  // it can be injected into the sandbox's git credentials.
+  // SECURITY: plaintext token for now — treat as a secret; move to an encrypted
+  // store before GA. Never return the token to the client (see convex/github.ts).
+  github_connections: defineTable({
+    user_id: v.string(),
+    token: v.string(),
+    username: v.optional(v.string()),
+    created_at: v.number(),
+    updated_at: v.number(),
+  }).index("by_user", ["user_id"]),
+
+  // Premium-only personal API keys — let a paying user drive the full RIFT
+  // agent (all tools, all purposes) from their own terminal/scripts by calling
+  // /api/chat with `Authorization: Bearer <key>` instead of a browser session.
+  // Only the SHA-256 hash is stored; the plaintext key is shown once at
+  // creation and never persisted or returned again (see convex/apiKeys.ts).
+  api_keys: defineTable({
+    user_id: v.string(),
+    name: v.string(),
+    key_hash: v.string(),
+    // First ~14 chars of the plaintext key (e.g. "rift_live_ab12"), shown in
+    // the UI so the user can tell keys apart without re-revealing the secret.
+    key_prefix: v.string(),
+    created_at: v.number(),
+    last_used_at: v.optional(v.number()),
+    revoked_at: v.optional(v.number()),
+  })
+    .index("by_user", ["user_id"])
+    .index("by_key_hash", ["key_hash"]),
 });

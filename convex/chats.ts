@@ -155,6 +155,7 @@ export const getChatByIdFromClient = query({
       active_trigger_run_id: v.optional(v.string()),
       sandbox_type: v.optional(v.string()),
       selected_model: v.optional(v.string()),
+      purpose: v.optional(v.string()),
     }),
     v.null(),
   ),
@@ -249,6 +250,7 @@ export const getChatById = query({
       active_trigger_run_id: v.optional(v.string()),
       sandbox_type: v.optional(v.string()),
       selected_model: v.optional(v.string()),
+      purpose: v.optional(v.string()),
     }),
     v.null(),
   ),
@@ -284,6 +286,9 @@ export const saveChat = mutation({
     id: v.string(),
     userId: v.string(),
     title: v.string(),
+    // Chat mode (security / app / image). Optional + additive; absence means
+    // "security". Persisted so reopening a saved chat restores its mode.
+    purpose: v.optional(v.string()),
   },
   returns: v.string(),
   handler: async (ctx, args) => {
@@ -296,6 +301,10 @@ export const saveChat = mutation({
         title: args.title,
         user_id: args.userId,
         update_time: Date.now(),
+        // Only store a non-default purpose to keep existing rows untouched.
+        ...(args.purpose && args.purpose !== "security"
+          ? { purpose: args.purpose }
+          : {}),
       });
 
       return chatId;

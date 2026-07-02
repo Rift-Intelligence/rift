@@ -17,6 +17,7 @@ import { Messages } from "./Messages";
 import { ChatInput } from "./ChatInput";
 import type { RateLimitWarningData } from "./RateLimitWarning";
 import { ComputerSidebar } from "./ComputerSidebar";
+import { BuildPreviewPanel } from "./BuildPreviewPanel";
 import ChatHeader from "./ChatHeader";
 import Footer from "./Footer";
 import { useMessageScroll } from "../hooks/useMessageScroll";
@@ -42,7 +43,7 @@ import { isTauriEnvironment } from "@/app/hooks/useTauri";
 import { stripAgentLongHeartbeatPartsFromMessages } from "@/lib/chat/agent-long-heartbeat";
 import { toast } from "sonner";
 import type { Todo, ChatMessage, ChatMode } from "@/types";
-import { coerceSelectedModel } from "@/types/chat";
+import { coerceSelectedModel, coerceChatPurpose } from "@/types/chat";
 import type { ContextUsageData } from "./ContextUsageIndicator";
 import { shouldTreatAsMerge } from "@/lib/utils/todo-utils";
 import { v4 as uuidv4 } from "uuid";
@@ -58,6 +59,7 @@ import { parseRateLimitWarning } from "@/lib/utils/parse-rate-limit-warning";
 import Loading from "@/components/ui/loading";
 
 import { HackingSuggestions } from "./HackingSuggestions";
+import { OperationModeBar } from "./OperationModeBar";
 import { RiftBrandBar } from "./rift/RiftBrandBar";
 
 // --- Streaming ephemeral state reducer ---
@@ -206,7 +208,11 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   const {
     chatMode,
     setChatMode,
+    chatPurpose,
+    setChatPurpose,
     sidebarOpen,
+    buildPreviewOpen,
+    buildPreviewUrl,
     chatSidebarOpen,
     setChatSidebarOpen,
     initializeChat,
@@ -230,6 +236,9 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     subscription,
   } = useGlobalState();
 
+  // Build mode live preview takes the right pane when open + a URL is known.
+  const showBuildPreview = buildPreviewOpen && !!buildPreviewUrl;
+
   // Simple logic: use route chatId if provided, otherwise generate new one
   const [chatId, setChatId] = useState<string>(() => {
     return routeChatId || uuidv4();
@@ -244,6 +253,12 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
   const isExistingChatRef = useLatestRef(isExistingChat);
   const chatModeRef = useLatestRef(chatMode);
   const subscriptionRef = useLatestRef(subscription);
+
+  // Chat purpose (security / app builder / image). Sent with every request; the
+  // backend swaps the model + system prompt accordingly. Mirrors the reactive
+  // global state (set by the sidebar mode launcher, restored from the chat row
+  // when reopening a saved chat) so the streaming transport reads the latest.
+  const chatPurposeRef = useLatestRef(chatPurpose);
 
   // Suppress transient "Chat Not Found" while server creates the chat
   const [awaitingServerChat, setAwaitingServerChat] = useState<boolean>(false);
@@ -450,6 +465,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
           body: {
             chatId: id,
             messages: messagesWithoutUrls,
+            purpose: chatPurposeRef.current,
             ...body,
           },
         };
@@ -742,6 +758,9 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
         // Legacy chats stored as agent-long map to agent mode
         setChatMode("agent");
       }
+      // Restore the chat's purpose (security / app / image) so reopening a
+      // saved build/image chat keeps its mode + sends the right purpose.
+      setChatPurpose(coerceChatPurpose((chatData as any).purpose));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatData, setTodos, shouldFetchMessages, isExistingChat, chatId]);
@@ -1047,6 +1066,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                 temporary: temporaryChatsEnabledRef.current,
                 sandboxPreference: sandboxPreferenceRef.current,
                 selectedModel: selectedModelRef.current,
+                purpose: chatPurposeRef.current,
               },
             },
           );
@@ -1069,6 +1089,7 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
     sendMessage,
     queueBehavior,
     chatModeRef,
+    chatPurposeRef,
     todosRef,
     temporaryChatsEnabledRef,
     sandboxPreferenceRef,
@@ -1210,8 +1231,11 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             {/* Chat interface */}
             <div className="bg-transparent flex flex-col flex-1 relative min-h-0">
               {/* Terminal titlebar with the mascot RIFT — pinned to the top of
-                  the terminal; messages scroll beneath it and never overlap. */}
-              {!isChatNotFound && (
+                  the terminal; messages scroll beneath it and never overlap.
+                  Hidden while the sidebar is collapsed: the floating reopen
+                  toggle would otherwise overlap it, and the collapsed rail
+                  already has its own branding. */}
+              {!isChatNotFound && chatSidebarOpen && (
                 <RiftBrandBar
                   cwd="~/session"
                   status={
@@ -1219,6 +1243,11 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                       ? { label: "incognito", tone: "muted" }
                       : { label: "sandbox ready", tone: "ok" }
                   }
+                />
+              )}
+              {!isChatNotFound && (
+                <OperationModeBar
+                  isIdle={status !== "streaming" && status !== "submitted"}
                 />
               )}
               {/* Messages area */}
@@ -1237,7 +1266,6 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
                         href="/"
                         className="mt-6 inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-5 py-2.5 font-mono text-sm uppercase tracking-widest text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                       >
-                        <span aria-hidden>$</span>
                         Start new session
                         <span aria-hidden>▸</span>
                       </a>
@@ -1351,16 +1379,21 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
             </div>
           </div>
 
-          {/* Desktop Computer Sidebar */}
+          {/* Desktop right pane — Build live preview takes priority over the
+              computer/activity sidebar when open. */}
           {!isMobile && (
             <div
               className={`transition-[width] duration-300 min-w-0 ${
-                sidebarOpen ? "w-1/2 flex-shrink-0" : "w-0 overflow-hidden"
+                showBuildPreview || sidebarOpen
+                  ? "w-1/2 flex-shrink-0"
+                  : "w-0 overflow-hidden"
               }`}
             >
-              {sidebarOpen && (
+              {showBuildPreview ? (
+                <BuildPreviewPanel />
+              ) : sidebarOpen ? (
                 <ComputerSidebar messages={messages} status={status} />
-              )}
+              ) : null}
             </div>
           )}
 
@@ -1371,8 +1404,17 @@ export const Chat = ({ autoResume }: { autoResume: boolean }) => {
           />
         </div>
 
+        {/* Mobile Build live preview (full-screen overlay, takes priority) */}
+        {isMobile && showBuildPreview && (
+          <div className="fixed inset-0 z-50 flex bg-background p-2">
+            <div className="h-full w-full">
+              <BuildPreviewPanel />
+            </div>
+          </div>
+        )}
+
         {/* Mobile Computer Sidebar */}
-        {isMobile && sidebarOpen && (
+        {isMobile && sidebarOpen && !showBuildPreview && (
           <div className="flex fixed inset-0 z-50 bg-background items-center justify-center p-4">
             <div className="w-full max-w-4xl h-full">
               <ComputerSidebar messages={messages} status={status} />
