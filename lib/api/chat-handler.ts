@@ -58,7 +58,6 @@ import {
 } from "@/lib/api/chat-logger";
 import {
   countFileAttachments,
-  stripImageAttachments,
   sendRateLimitWarnings,
   isProviderApiError,
   computeContextUsage,
@@ -276,10 +275,13 @@ export const createChatHandler = () => {
       }
 
       const { chat, isNewChat, fileTokens } = fetched;
-      const truncatedMessages =
-        subscription === "free"
-          ? stripImageAttachments(fetched.truncatedMessages)
-          : fetched.truncatedMessages;
+      // Image attachments are available to every signed-in user (the composer's
+      // attach button advertises this — no plan gate), matching the upload flow.
+      // Previously stripped for `subscription === "free"`, but since the
+      // subscription tier collapsed to "free" for everyone that stripped images
+      // for paying members too — the model then received the "attachment hidden"
+      // placeholder and replied "it's behind a paywall".
+      const truncatedMessages = fetched.truncatedMessages;
 
       const baseTodos: Todo[] = getBaseTodosForRequest(
         (chat?.todos as unknown as Todo[]) || [],
