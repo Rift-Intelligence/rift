@@ -40,10 +40,7 @@ import {
   MAX_GENERATED_FILE_SIZE_BYTES,
   S3_USER_FILES_PREFIX,
 } from "../lib/constants/s3";
-import {
-  hasPaidEntitlement,
-  parseEntitlements,
-} from "../lib/auth/entitlements";
+import { parseEntitlements } from "../lib/auth/entitlements";
 
 const FILE_UPLOAD_WINDOW = "5 h";
 
@@ -725,13 +722,9 @@ export const saveFile = action({
     const shouldSkipTokenValidation =
       args.skipTokenValidation || isAgentUploadMode;
 
-    // Check if paid tier (free tier cannot upload)
-    if (!hasPaidEntitlement(entitlements)) {
-      throw new ConvexError({
-        code: "PAID_PLAN_REQUIRED",
-        message: "Paid plan required for file uploads",
-      });
-    }
+    // File uploads are available to every signed-in user (the composer's attach
+    // button advertises this — no plan gate), matching the s3Actions upload flow.
+    // Rate limits below still apply per entitlement tier.
 
     // Check file upload rate limit (peek mode - verify limit not exceeded)
     // Token was already consumed at URL generation step

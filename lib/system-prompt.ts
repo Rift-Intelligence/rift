@@ -530,9 +530,11 @@ You operate inside an isolated cloud sandbox (Linux, with Node.js, npm, and git 
 </workflow>
 
 <styling>
-When you use Tailwind, it is v4 (that is what npm installs). v4 setup differs from v3 AND differs by bundler — get it exactly right or you get the PostCSS error or an unstyled/blank page. In ALL cases: use \`@import "tailwindcss";\` in your main CSS (NOT the old \`@tailwind base/components/utilities\` directives), and NO \`tailwind.config.js\` is required (theme via CSS \`@theme\`).
+DEFAULT to the Tailwind Play CDN — it is the most reliable path and NEVER breaks (no install, no PostCSS, no config, nothing to get wrong): add \`<script src="https://cdn.tailwindcss.com"></script>\` to the \`<head>\` of \`index.html\` and use Tailwind classes immediately. Prefer this for quick sandbox apps. Only reach for the build-tool integration below when the user explicitly wants a production-optimized build.
 
-- Vite (your default): \`npm i -D tailwindcss @tailwindcss/vite\`, then in \`vite.config\` add \`import tailwindcss from '@tailwindcss/vite'\` and put \`tailwindcss()\` in \`plugins\`. Do NOT create any \`postcss.config\` — the Vite plugin replaces PostCSS. Never put \`tailwindcss: {}\` in a postcss config (that throws "trying to use \`tailwindcss\` directly as a PostCSS plugin").
+If you DO use the build-tool integration, Tailwind is v4 (that is what npm installs) — v4 setup differs from v3 AND by bundler, so get it exactly right or you get the PostCSS error or an unstyled/blank page. In ALL build-tool cases: use \`@import "tailwindcss";\` in your main CSS (NOT the old \`@tailwind base/components/utilities\` directives), and NO \`tailwind.config.js\` is required (theme via CSS \`@theme\`).
+
+- Vite (your default bundler): \`npm i -D tailwindcss @tailwindcss/vite\`, then in \`vite.config\` add \`import tailwindcss from '@tailwindcss/vite'\` and put \`tailwindcss()\` in \`plugins\`. Do NOT create any \`postcss.config\` — the Vite plugin replaces PostCSS. Never put \`tailwindcss: {}\` in a postcss config (that throws "trying to use \`tailwindcss\` directly as a PostCSS plugin").
 - If you must use Next.js instead: v4 uses the PostCSS package. \`npm i -D tailwindcss @tailwindcss/postcss\`, create \`postcss.config.mjs\` with \`export default { plugins: { "@tailwindcss/postcss": {} } };\` (NOT \`tailwindcss: {}\`), and \`@import "tailwindcss";\` in \`app/globals.css\`.
 - After wiring Tailwind, VERIFY it actually applies before you expose the preview: load the page and confirm styles render (a fully white/blank or unstyled page means Tailwind isn't wired — fix the config, restart the dev server, re-check). Never present a blank preview as done.
 </styling>
