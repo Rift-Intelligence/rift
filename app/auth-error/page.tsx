@@ -75,8 +75,8 @@ export default async function AuthErrorPage({
     <ZauthPageShell header={false} center>
       <Card className="w-full max-w-md border-[#3c3c3c] bg-[#252526]">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#f48771]/10">
-            <AlertCircle className="h-6 w-6 text-[#f48771]" />
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+            <AlertCircle className="h-6 w-6 text-destructive" />
           </div>
           <CardTitle className="text-xl text-[#e8e8e8]">
             {errorInfo.title}

@@ -187,7 +187,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
           </label>
 
           {error ? (
-            <p className="mt-4 text-[13px] text-[#f48771]" role="alert">
+            <p className="mt-4 text-[13px] text-destructive" role="alert">
               {error}
             </p>
           ) : null}
@@ -279,7 +279,7 @@ export default function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
             </label>
 
             {error ? (
-              <p className="mt-4 text-[13px] text-[#f48771]" role="alert">
+              <p className="mt-4 text-[13px] text-destructive" role="alert">
                 {error}
               </p>
             ) : null}

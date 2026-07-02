@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   // external so the bundler require()s it at runtime instead of trying to
   // bundle those into the API route.
   serverExternalPackages: ["@modelcontextprotocol/sdk"],
+  // Tree-shake big barrel-import libs so each route only bundles the icons /
+  // helpers it actually uses (lucide-react alone is imported by 100+ files).
+  experimental: {
+    optimizePackageImports: ["lucide-react", "date-fns"],
+  },
   ...(process.env.NODE_ENV === "development" && {
     logging: {
       serverFunctions: false,
